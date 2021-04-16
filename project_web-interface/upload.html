@@ -1,0 +1,133 @@
+<!DOCTYPE HTML>
+<!--
+	Spectral by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>FIRELab</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="viewmodel/css/custom.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<!-- Page Wrapper -->
+			<div id="page-wrapper">
+
+				<!-- Header -->
+				<header id="header">
+					<h1><a href="index.html">FIRELab</a></h1>
+					<nav id="nav">
+						<ul>
+							<li class="special">
+								<a href="#menu" class="menuToggle"><span>Menu</span></a>
+								<div id="menu">
+									<ul>
+										<li><a href="index.html">Home</a></li>
+										<li><a href="generic.html">Generic</a></li>
+										<li><a href="elements.html">Elements</a></li>
+										<li><a href="upload.html">Process Imagery</a></li>
+										<li><a href="#">Sign Up</a></li>
+										<li><a href="#">Log In</a></li>
+									</ul>
+								</div>
+							</li>
+						</ul>
+					</nav>
+				</header>
+
+				<!-- Main -->
+					<article id="main">
+						<header>
+							<h2>Process Imagery</h2>
+							<p></p>
+						</header>
+						<section class="wrapper style5">
+							<div class="inner">
+
+								<section>
+									<h3>Frame Extraction Tool</h3>
+									<p>If you have RGB videos that were captured during the firing, please use this tool in order to extract the frames you wish to be processed.</p>
+									<br />
+									<form method="post" action="#">
+										<div class="row gtr-uniform">
+											<div class="col-6 col-12-xsmall">
+												<input type="text" name="video-fpm" id="video-fpm" value="" placeholder="Number of frames per minute" />
+											</div>
+											<div class="col-6 col-12-xsmall">
+												<ul class="actions">
+													<input class="file-upload__input" type="file" name="videoFile" id="videoFile">
+													<button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
+													<li style="margin-top: 7px;" class="file-upload__label"></li>
+												</ul>
+											</div>
+								</section>
+
+								<hr />
+
+								<section>
+									<h3>Vegetation Classification Tool</h3>
+									<p>If you already have an orthophoto and a grid (shapefile) of the firing area, and only want to classify the vegetation, please use this automatic classification tool. Submit the files bellow, in the correct places. </p> 
+									<br />
+									<form method="post" action="#">
+										<div class="row gtr-uniform">
+											<div class="col-6 col-12-xsmall">
+												<p style="text-align: right; margin-right: 7px; margin-top: 7px; font-weight: 600;" >Orthophoto: </p>
+											</div>
+											<div class="col-6 col-12-xsmall">
+												<ul class="actions">
+													<input class="file-upload__input" type="file" name="videoFile" id="videoFile">
+													<button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
+													<li style="margin-top: 7px;" class="file-upload__label"></li>
+												</ul>
+											</div>
+											<div class="col-6 col-12-xsmall">
+												<p style="text-align: right; margin-right: 7px; margin-top: 7px; font-weight: 600;" >Shapefile: </p>
+											</div>
+											<div class="col-6 col-12-xsmall">
+												<ul class="actions">
+													<input class="file-upload__input" type="file" name="videoFile" id="videoFile">
+													<button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
+													<li style="margin-top: 7px;" class="file-upload__label"></li>
+												</ul>
+											</div>
+								</section>
+								
+								<hr />
+
+							</div>
+						</section>
+					</article>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<ul class="icons">
+							<li><a href="https://github.com/itskikat/firelab" class="icon brands fa-github"><span class="label">Github</span></a></li>
+							<li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
+							<li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+							<li><a href="mailto:firelab@support.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+						</ul>
+						<ul class="copyright">
+							<li>&copy; FIRELab</li><li>Developed by: <a target="_blank" href="http://xcoa.av.it.pt/~pi202021g02/#team">Group02\\PI\\DETI</a></li>
+						</ul>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<!-- CUSTOM SCRIPT -->
+			<script src="viewmodel/js/upload.js"></script>
+
+	</body>
+</html>
