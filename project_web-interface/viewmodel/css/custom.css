@@ -1,0 +1,25 @@
+.file-upload {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+}
+
+.file-upload__input {
+    display: none;
+}
+
+#file-upload__button {
+    -webkit-appearance: none;
+    outline: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.file-upload__label {
+    align-items: center;
+    max-width: 250px;
+    font-size: 0.95em;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
