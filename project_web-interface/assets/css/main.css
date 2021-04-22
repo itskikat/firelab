@@ -7,6 +7,10 @@
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 */
 
+html {
+	height: 100%;
+}
+
 html, body, div, span, applet, object,
 iframe, h1, h2, h3, h4, h5, h6, p, blockquote,
 pre, a, abbr, acronym, address, big, cite,
@@ -53,6 +57,7 @@ table {
 
 body {
 	-webkit-text-size-adjust: none;
+	height: 100%;
 }
 
 mark {
@@ -1859,7 +1864,7 @@ input, select, textarea {
 		input[type="email"]:focus,
 		select:focus,
 		textarea:focus {
-			box-shadow: 0 0 0 2px #21b2a6;
+			box-shadow: 0 0 0 2px #ffffff;
 		}
 
 	select {
@@ -2078,15 +2083,15 @@ input, select, textarea {
 			}
 
 		.icon.style1 {
-			color: #00ffcc;
+			color: #E4C3B1;
 		}
 
 		.icon.style2 {
-			color: #00f0ff;
+			color: #E4C3B1;
 		}
 
 		.icon.style3 {
-			color: #76ddff;
+			color: #E4C3B1;
 		}
 
 /* Image */
@@ -2487,7 +2492,7 @@ input, select, textarea {
 		input[type="button"].primary,
 		button.primary,
 		.button.primary {
-			background-color: #ed4933;
+			background-color: #771300;
 			box-shadow: none !important;
 			color: #ffffff !important;
 		}
@@ -2497,7 +2502,7 @@ input, select, textarea {
 			input[type="button"].primary:hover,
 			button.primary:hover,
 			.button.primary:hover {
-				background-color: #ef5e4a !important;
+				background-color: #990000 !important;
 			}
 
 			input[type="submit"].primary:active,
@@ -2505,7 +2510,7 @@ input, select, textarea {
 			input[type="button"].primary:active,
 			button.primary:active,
 			.button.primary:active {
-				background-color: #eb341c !important;
+				background-color: #b30000 !important;
 			}
 
 		input[type="submit"].disabled, input[type="submit"]:disabled,
@@ -2817,8 +2822,8 @@ input, select, textarea {
 		}
 
 		.wrapper.style1 {
-			background-color: #21b2a6;
-			color: #c8ece9;
+			background-color: #002411;
+			color: #014722;
 		}
 
 			.wrapper.style1 strong, .wrapper.style1 b {
@@ -2842,7 +2847,7 @@ input, select, textarea {
 			}
 
 			.wrapper.style1 header p {
-				color: #a6e0db;
+				color: #ffffff;
 			}
 
 			.wrapper.style1 header.major h2, .wrapper.style1 header.major h3, .wrapper.style1 header.major h4, .wrapper.style1 header.major h5, .wrapper.style1 header.major h6 {
@@ -2850,7 +2855,7 @@ input, select, textarea {
 			}
 
 			.wrapper.style1 header.major p {
-				color: #c8ece9;
+				color: #ffffff;
 			}
 
 			.wrapper.style1 label {
@@ -2976,7 +2981,7 @@ input, select, textarea {
 			}
 
 		.wrapper.style2 {
-			background-color: #2e3842;
+			background-color: #E4C3B1;
 		}
 
 		.wrapper.style3 {
@@ -3351,7 +3356,7 @@ input, select, textarea {
 		-ms-transition: -ms-transform 0.5s ease;
 		transition: transform 0.5s ease;
 		-webkit-overflow-scrolling: touch;
-		background: #21b2a6;
+		background:#771300;
 		color: #ffffff;
 		height: 100%;
 		max-width: 80%;
@@ -3445,7 +3450,7 @@ input, select, textarea {
 		-webkit-transition: background-color 0.2s ease;
 		-ms-transition: background-color 0.2s ease;
 		transition: background-color 0.2s ease;
-		background: #2e3842;
+		background: #771300;
 		height: 3em;
 		left: 0;
 		line-height: 3em;
@@ -3594,7 +3599,7 @@ input, select, textarea {
 			-ms-transition: -ms-transform 0.5s ease, opacity 0.5s ease;
 			transition: transform 0.5s ease, opacity 0.5s ease;
 			display: inline-block;
-			font-size: 1.75em;
+			font-size: 1.80em;
 			opacity: 1;
 			padding: 0.35em 1em;
 			position: relative;
@@ -3610,10 +3615,10 @@ input, select, textarea {
 				-webkit-transition-delay: 0.25s;
 				-ms-transition-delay: 0.25s;
 				transition-delay: 0.25s;
-				background: #fff;
+				background: #771300;
 				content: '';
 				display: block;
-				height: 2px;
+				height: 3px;
 				position: absolute;
 				width: 100%;
 			}
@@ -3885,7 +3890,7 @@ input, select, textarea {
 /* Footer */
 
 	#footer {
-		padding: 6em 0 4em 0 ;
+		padding: 2em 0 1em 0 ;
 		background-color: #1d242a;
 		text-align: center;
 	}

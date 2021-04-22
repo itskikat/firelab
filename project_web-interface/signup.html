@@ -6,11 +6,12 @@
 -->
 <html>
 	<head>
-		<title>FIRELab - Log In</title>
+		<title>FIRELab - Sign Up</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
-        <link rel="stylesheet" href="viewmodel/css/signup.css" />
+		<link rel="stylesheet" href="viewmodel/css/signup.css" />
+	
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 	</head>
 	<body class="is-preload">
@@ -26,9 +27,9 @@
                             <a href="#menu" class="menuToggle"><span>Menu</span></a>
                             <div id="menu">
                                 <ul>
-                                    <li><a href="index.html">Home</a></li>
+                                    <li><a href="index.html">Home</a></li>  
+                                    <li><a href="projects.html">Log In</a></li>
                                     <li><a href="signup.html">Sign Up</a></li>
-                                    <li><a href="login.html">Log In</a></li>
                                 </ul>
                             </div>
                         </li>
@@ -38,23 +39,35 @@
 
             <!-- Main -->
             <div class="row" style="margin: auto; width: 900px;">
-                <article id="main" style="margin-bottom: 110px;"> 
+                <article id="main"> 
                     <section class="wrapper style4">
                         <div class="inner">
                             <section>
-                                <h4>Log In</h4>
-                                <form method="post" action="projects.html">
+                                <h4>Create your account</h4>
+                                <form method="post" action="#">
                                     <div class="row gtr-uniform">
-                                        <div class="col-8 col-12-xsmall" style="align-items: center;">
-                                            <input type="text" name="login_name" id="login_name" value="" placeholder="Username" />
+                                        <div class="col-4 col-12-xsmall">
+                                            <input type="text" class="form-control" name="signup_first_name" id="signup_first_name" value="" placeholder="First Name" required />
+                                        </div>
+                                        <div class="col-4 col-12-xsmall">
+                                            <input type="text" name="signup_last_name" id="signup_last_name" value="" placeholder="Last Name" required />
                                         </div>
                                         <div class="col-8 col-12-xsmall">
-                                            <input type="password" name="login_password" id="login_password" value="" placeholder="Password" />
+                                            <input type="text" name="signup_username" id="signup_username" value="" placeholder="Username" required />
+                                        </div>
+                                        <div class="col-8 col-12-xsmall" style="align-items: center;">
+                                            <input type="email" name="signup_email" id="signup_email" value="" placeholder="Email" required />
+                                        </div>
+                                        <div class="col-8 col-12-xsmall">
+                                            <input type="password" name="signup_password" id="signup_password" value="" placeholder="Password" required />
+                                        </div>
+                                        <div class="col-8 col-12-xsmall">
+                                            <input type="password" name="signup_password_confirm" id="signup_password_confirm" value="" placeholder="Confirm Password" oninput="check(this)" required />
                                         </div>
                                         <div class="col-8">
                                             <ul class="actions" >
-                                                <li ><input type="submit" value="Log In" class="primary"/></li>
-                                                <li><p>Don't have an account yet?<a href="signup.html"> Sign up.</a></p></li>
+                                                <li ><input type="submit" value="Sign Up" class="primary"/></li>
+                                                <li><p>Already have an account?<a href="login.html"> Log in.</a></p></li>
                                             </ul>
                                         </div>
                                     </div>
@@ -64,7 +77,6 @@
                     </section>
                 </article>
             </div>
-
             
             <!-- Footer -->
             <footer id="footer">
@@ -90,7 +102,7 @@
         <script src="assets/js/util.js"></script>
         <script src="assets/js/main.js"></script>
         <!-- CUSTOM SCRIPT -->
-        <script src="viewmodel/js/upload.js"></script>
+        <script src="viewmodel/js/signup.js"></script>
 
 	</body>
 </html>
