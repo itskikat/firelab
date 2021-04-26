@@ -6,17 +6,12 @@ from django.http import HttpResponse
 def index(response):
 	return render(response, "main/home.html", {})
 
-def login(response):
-	return render(response, "main/login.html", {})
-
 def signup(response):
 	return render(response, "main/signup.html", {})
 
-def projects(response):
-	return render(response, "main/projects.html", {})
-
-def frontpage(response):
-	return render(response, "main/front_page.html", {})
+def projects(request):
+	if request.user.is_authenticated:
+		return render(request, "main/projects.html", {})
 
 def account(response):
 	return render(response, "main/account.html", {})

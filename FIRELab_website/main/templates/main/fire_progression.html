@@ -1,6 +1,12 @@
 {% extends 'main/base_projects.html' %}
 
+{% load static %}
+
 {% block content %}
+    <head>
+
+    </head>
+    <link type='text/css' rel="stylesheet" href="{% static 'viewmodel/css/fire_prog.css' %}"/>
 	<div class="toolkit">
 		<table>
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
@@ -38,14 +44,17 @@
             <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
             <span class="file-upload__label"></span>
 		</div>
-		
+        <button class="button icon solid" type="button" value="Draw" name="drawPolygonButton" id="drawPolygonButton" onclick="drawMap()">DRAW </button><br>
 	</div>
+    <br>
 	<!-- TODO see the best way to view the progression-->
-	<!-- <div id="map" style="height: 600px;"></div> -->
+	<div id="map" style="height: 600px;">
+
+    </div>
 						
 
-<link rel="stylesheet" href="static/viewmodel/css/fire_prog.css"/>
-<script src="static/viewmodel/js/map.js"></script>
-<script src="static/viewmodel/js/fire_prog.js"></script>
+
+    <script src="{% static 'viewmodel/js/map.js' %}"></script>
+    <script src="{% static 'viewmodel/js/fire_prog.js' %}"></script>
 
 {% endblock %}
