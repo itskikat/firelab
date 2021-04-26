@@ -1,40 +1,21 @@
 <!DOCTYPE HTML>
-<!--
-	Spectral by HTML5 UP
-	html5up.net | @ajlkn
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
--->
 <html>
+    {% load static %}
+    {% load widget_tweaks %}
 	<head>
 		<title>FIRELab - Sign Up</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="static/assets/css/main.css" />
-		<link rel="stylesheet" href="static/viewmodel/css/signup.css" />
-	
-		<noscript><link rel="stylesheet" href="static/assets/css/noscript.css" /></noscript>
+		<link rel="stylesheet" href="{% static 'assets/css/main.css' %}" />
+		<link rel="stylesheet" href="{% static 'viewmodel/css/signup.css' %}" />
+		<noscript><link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}" /></noscript>
 	</head>
 	<body class="is-preload">
 		<!-- Page Wrapper -->
         <div id="page-wrapper">
-
             <!-- Header -->
             <header id="header">
                 <h1><a href="{% url 'index' %}">FIRELab</a></h1>
-                <nav id="nav">
-                    <ul>
-                        <li class="special">
-                            <a href="#menu" class="menuToggle"><span>Menu</span></a>
-                            <div id="menu">
-                                <ul>
-                                    <li><a href="{% url 'index' %}">Home</a></li>  
-                                    <li><a href="{% url 'login' %}">Log In</a></li>
-                                    <li><a href="{% url 'signup' %}">Sign Up</a></li>
-                                </ul>
-                            </div>
-                        </li>
-                    </ul>
-                </nav>
             </header>
 
             <!-- Main -->
@@ -44,29 +25,31 @@
                         <div class="inner">
                             <section>
                                 <h4>Create your account</h4>
-                                <form method="post" action="#">
+                                <form action="" method="post" id="signupForm" >
+                                    {% csrf_token %}
                                     <div class="row gtr-uniform">
                                         <div class="col-4 col-12-xsmall">
-                                            <input type="text" class="form-control" name="signup_first_name" id="signup_first_name" value="" placeholder="First Name" required />
+                                            {{ form.first_name|add_class:'form-control' }}
                                         </div>
                                         <div class="col-4 col-12-xsmall">
-                                            <input type="text" name="signup_last_name" id="signup_last_name" value="" placeholder="Last Name" required />
+                                            {{ form.last_name|add_class:'form-control' }}
                                         </div>
                                         <div class="col-8 col-12-xsmall">
-                                            <input type="text" name="signup_username" id="signup_username" value="" placeholder="Username" required />
+                                            {{ form.username|add_class:'form-control' }}
                                         </div>
                                         <div class="col-8 col-12-xsmall" style="align-items: center;">
-                                            <input type="email" name="signup_email" id="signup_email" value="" placeholder="Email" required />
+                                            {{ form.email|add_class:'form-control' }}
+                                            <p style="font-size: small;"> {{ form.email.help_text }}</p>
                                         </div>
                                         <div class="col-8 col-12-xsmall">
-                                            <input type="password" name="signup_password" id="signup_password" value="" placeholder="Password" required />
+                                            {{ form.password1|add_class:'form-control' }}
                                         </div>
                                         <div class="col-8 col-12-xsmall">
-                                            <input type="password" name="signup_password_confirm" id="signup_password_confirm" value="" placeholder="Confirm Password" oninput="check(this)" required />
+                                            {{ form.password2|add_class:'form-control' }}
                                         </div>
                                         <div class="col-8">
                                             <ul class="actions" >
-                                                <li ><input type="submit" value="Sign Up" class="primary"/></li>
+                                                <li ><input type="submit" value="Sign Up" class="primary" onclick="submitForm()"/></li>
                                                 <li><p>Already have an account?<a href="{% url 'login' %}"> Log in.</a></p></li>
                                             </ul>
                                         </div>
@@ -77,32 +60,25 @@
                     </section>
                 </article>
             </div>
-            
-            <!-- Footer -->
-            <footer id="footer">
-                <ul class="icons">
-                    <li><a href="https://github.com/itskikat/firelab" class="icon brands fa-github"><span class="label">Github</span></a></li>
-                    <li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
-                    <li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
-                    <li><a href="mailto:firelab@support.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
-                </ul>
-                <ul class="copyright">
-                    <li>&copy; FIRELab</li><li>Developed by: <a target="_blank" href="http://xcoa.av.it.pt/~pi202021g02/#team">Group02\\PI\\DETI</a></li>
-                </ul>
-            </footer>
+
+            {% include 'main/footer.html' %}
 
         </div>
 
-		<!-- Scripts -->
-        <script src="static/assets/js/jquery.min.js"></script>
-        <script src="static/assets/js/jquery.scrollex.min.js"></script>
-        <script src="static/assets/js/jquery.scrolly.min.js"></script>
-        <script src="static/assets/js/browser.min.js"></script>
-        <script src="static/assets/js/breakpoints.min.js"></script>
-        <script src="static/assets/js/util.js"></script>
-        <script src="static/assets/js/main.js"></script>
-        <!-- CUSTOM SCRIPT -->
-        <script src="static/viewmodel/js/signup.js"></script>
+        <!-- Scripts -->
+        <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+        <script src="{% static 'assets/js/jquery.scrollex.min.js' %}"></script>
+        <script src="{% static 'assets/js/jquery.scrolly.min.js' %}"></script>
+        <script src="{% static 'assets/js/browser.min.js' %}"></script>
+        <script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
+        <script src="{% static 'assets/js/util.js' %}"></script>
+        <script src="{% static 'assets/js/main.js' %}"></script>
+
+        <script>
+            function submitForm(){
+                $('#signupForm').submit();
+            }
+        </script>
 
 	</body>
 </html>
