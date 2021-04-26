@@ -1,0 +1,113 @@
+/* sidenav */
+.left table #prog td {
+		  background-color:  #ffffff;  
+		}
+
+		.left table #prog a {
+			color: #771300;
+		}
+
+
+/* Toolkit */
+.right .toolkit {
+	width: 8%;
+	height: 40%;
+	position:absolute;
+   	top:0;
+   	right:1em;
+	padding-top: 1em;
+}
+
+
+
+.toolkit table {
+	background-color: #ffffff; 
+	border-color: #000000;
+	text-align: center;
+	border-collapse: collapse;
+	border-spacing: 0 0px;
+	border: 2px solid black;
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+
+}
+
+
+.toolkit table caption {
+	text-align: left;
+	font-weight: bold;
+}
+
+.toolkit table caption i {
+	padding-left: 1em;
+}
+
+.toolkit a {
+	text-decoration: none;
+	border: none;
+
+}
+
+.toolkit table td {
+			background-color: #ffffff; 
+			color: #000000;
+		}
+
+input, button{
+    vertical-align:middle;
+}
+
+.file-upload {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+}
+
+.file-upload__input {
+    display: none;
+}
+
+#file-upload__button {
+    -webkit-appearance: none;
+    outline: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.file-upload__label {
+	padding-left: 3.2em;
+    max-width: 250px;
+    font-size: 0.85em;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.upload {
+	max-width: 700px;
+	padding: 4em 0 0 2em;
+}
+
+.upload h1 {
+	color: #771300;
+	font-size: 20px;
+}
+
+.upload input[type=text] {
+  width: 400px;
+  float: left;
+  border: none;
+  background: #797b7d;
+  color: white;
+}
+
+input[type="text"]:focus,
+    select:focus,
+    textarea:focus {
+      box-shadow: 0 0 0 2px #771300;
+}
+
+
+
+
+
+

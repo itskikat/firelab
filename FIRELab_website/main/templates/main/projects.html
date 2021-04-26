@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<!--
+	Spectral by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>FIRELab - Projects</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="static/assets/css/projects.css"/>
+		<link rel="stylesheet" href="static/viewmodel/css/projects_custom.css"/>
+		<noscript><link rel="stylesheet" href="static/assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<!-- Page Wrapper -->
+			<div id="page-wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<h1><a href="{% url 'index' %}">Firelab</a></h1>
+						<nav id="nav">
+							<ul>
+								<li class="special">
+									<a href="#menu" class="menuToggle"><span>Menu</span></a>
+									<div id="menu">
+										<ul>
+											<li><a href="{% url 'frontpage' %}">Home</a></li>
+											<li><a href="{% url 'projects' %}">My Projects</a></li>
+											<li><a href="{% url 'account' %}">My account</a></li>
+											<li><a href="{% url 'index' %}">Log out</a></li>
+										</ul>
+									</div>
+								</li>
+							</ul>
+						</nav>
+					</header>
+
+				<!-- Main -->
+				<div class="split" id="blur">
+					<div class="left">
+						<div class="container" style="display: inline-block;">
+							<h2>Projects</h2>
+							<a class="new_proj" href="#" onclick="openForm()">
+        						<i class="fa fa-plus-circle" aria-hidden="true"></i>
+        						New
+							</a>	
+						</div>
+						<div class="existing_proj">
+							<table id="all_projects">
+								<tr>
+									<td><i class="far fa-folder"></i> Example</td>
+								</tr>
+								<tr>
+									<td><i class="far fa-folder"></i> Example 2</td>
+							</table>
+
+						</div>
+					</div>
+					
+
+					<div class="right">
+						<div class="information">
+							<h2>Example</h2> 
+							<div class="delete">
+								<a href="#" onclick="openCheckDelete()" class="button"><i class="fas fa-trash-alt"></i> Delete</a>
+							</div>
+							<p id="dates">Created on: 15-04-2021</p>
+							<p>Last modified on: 15-04-2021</p>
+
+							<p>Description: </p>
+						</div>
+						<div class="actions">
+							<a href="{% url 'process' %}" class="button primary work">Work</a>
+						</div>
+					</div>
+				</div>
+
+				<!-- POP WHEN NEW PROJECT-->
+					<div class="form-popup" id="myForm">
+					  <form action="/action_page.php" class="form-container">
+					    <h1>Create a new Project</h1>
+
+					    <label for="text"><b>Project Name:</b></label>
+					    <input id="project_name" type="text" placeholder="Enter project name" name="project_name" required>
+					    <label for="text"><b>Description:</b></label>
+					    <input id="project_description" type="text" placeholder="Add a description to your project (optional)" name="project_description">
+					    <ul class="actions">
+					    	<li><a href="#" class="button primary create">Create</a></li>
+							<li id="cancel"><a onclick="closeForm()" class="button cancel">Cancel</a></li>			
+						</ul>
+					  </form>
+					</div>
+
+					<!-- POP WHEN DELETE PROJECT-->
+					<div class="delete-popup" id="deleteCheck">
+					    <div class="container-delete">
+					    	<i class="fas fa-trash-alt"></i>
+					    	<h4>Are you sure?</h4>
+					    	<p>Do you want to delete this project? This process cannot be undone.</p>
+
+						    <div class="options">
+						    	<ul class="actions">
+						    	<li><a class="button primary create">Delete</a></li>
+								<li id="cancel"><a onclick="closeDelete()" class="button cancel">Cancel</a></li>			
+							</ul>
+						    </div>
+					    </div>
+					</div>
+					
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="static/assets/js/jquery.min.js"></script>
+			<script src="static/assets/js/jquery.scrollex.min.js"></script>
+			<script src="static/assets/js/jquery.scrolly.min.js"></script>
+			<script src="static/assets/js/browser.min.js"></script>
+			<script src="static/assets/js/breakpoints.min.js"></script>
+			<script src="static/assets/js/util.js"></script>
+			<script src="static/assets/js/main.js"></script>
+			<!-- CUSTOM SCRIPTS-->
+			<script src="static/assets/js/projects.js"></script>
+
+	</body>
+</html>
