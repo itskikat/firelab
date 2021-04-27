@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-import json
-import pickle
-
-from django.shortcuts import render, redirect
-=======
-<<<<<<< HEAD
 import json
 import pickle
 
@@ -14,25 +7,12 @@ from django.http import HttpResponse
 
 from FIRELab_website.settings import MEDIA_ROOT
 from main import utils
-from main.fomrs import *
-import cv2
-import os
-import numpy as np
-=======
-from django.shortcuts import render
->>>>>>> 38301341511351d8a681b73459c75c88f9b8f98b
-from django.http import HttpResponse
->>>>>>> parent of 694a9a9... now creating accounts
-
-from FIRELab_website.settings import MEDIA_ROOT
-from main import utils
 from main.forms import *
 import cv2
 import os
 import numpy as np
+from django.http import HttpResponse
 
-
-<<<<<<< HEAD
 # Create your views here.
 
 def indexView(response):
@@ -53,11 +33,6 @@ def createAccountView(request):
 		data['form'] = form
 		return render(request, 'main/signup.html', data)
 
-=======
-def signup(response):
-	return render(response, "main/signup.html", {})
-
->>>>>>> 38301341511351d8a681b73459c75c88f9b8f98b
 def projects(request):
 	if request.user.is_authenticated:
 		return render(request, "main/projects.html", {})
@@ -71,12 +46,8 @@ def process(response):
 def vegetation(response):
 	return render(response, "main/vegetation_characterization.html", {})
 
-<<<<<<< HEAD
 def frontpage(response):
 	return render(response, "main/front_page.html", {})
-
-=======
->>>>>>> 38301341511351d8a681b73459c75c88f9b8f98b
 
 def upload(request):
 	if request.method == 'POST':
