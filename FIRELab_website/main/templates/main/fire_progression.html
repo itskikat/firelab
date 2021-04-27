@@ -1,0 +1,60 @@
+{% extends 'main/base_projects.html' %}
+
+{% load static %}
+
+{% block content %}
+    <head>
+
+    </head>
+    <link type='text/css' rel="stylesheet" href="{% static 'viewmodel/css/fire_prog.css' %}"/>
+	<div class="toolkit">
+		<table>
+			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
+			<tbody id="toolkit">
+			<tr>
+				<td><i class="fas fa-image fa-lg"></i></td>
+				<td><i class="fas fa-search-plus fa-lg"></i></td>
+			</tr>
+			<tr>
+				<td><i class="fas fa-map-marker-alt fa-lg"></i></td>
+				<td><i class="fas fa-search-minus fa-lg"></i></td>
+			</tr>
+			<tr>
+				<td><i class="fas fa-play fa-lg"></i></td>
+				<td><i class="fas fa-save fa-lg" aria-hidden="true"></i></td>
+			</tr>
+			<tr>
+				<td><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td>
+				<td><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td>
+			</tr>
+			<tr>
+				<td><i class="fas fa-expand-arrows-alt fa-lg" aria-hidden="true"></i></td>
+				<td><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
+			</tr>
+		</tbody>
+		</table>
+	</div>
+
+	<div class="upload">
+		<h1>Upload Files</h1>
+		<p>If you have the polygon coordinates, or the file that contains them, please use this tool in order to see how the fire evolved:</p>
+		<input type="text" name="polygon-coord" id="polygon-coord" value="" placeholder="List with polygon coordinates"  />
+		<div style="overflow: hidden; padding: 0.1em 0 0 1em;">
+			<input class="file-upload__input" type="file" name="videoFile" id="videoFile">
+            <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
+            <span class="file-upload__label"></span>
+		</div>
+        <button class="button icon solid" type="button" value="Draw" name="drawPolygonButton" id="drawPolygonButton" onclick="drawMap()">DRAW </button><br>
+	</div>
+    <br>
+	<!-- TODO see the best way to view the progression-->
+	<div id="map" style="height: 600px;">
+
+    </div>
+						
+
+
+    <script src="{% static 'viewmodel/js/map.js' %}"></script>
+    <script src="{% static 'viewmodel/js/fire_prog.js' %}"></script>
+
+{% endblock %}
