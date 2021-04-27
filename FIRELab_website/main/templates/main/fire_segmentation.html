@@ -6,9 +6,10 @@
     <form id="workingImageForm" action="./segmentation" method="POST">
     {% if image is not None %}
         <div hidden>
-            {{ segmentation.mode.id_for_label }}{{ segmentation.mode }}
-            {{ segmentation.path.id_for_label }}{{ segmentation.path }}
-            {{ segmentation.image_id.id_for_label }}{{ segmentation.image_id }}
+            {{ segmentation.pen }}
+            {{ segmentation.eraser }}
+            {{ segmentation.path }}
+            {{ segmentation.image_id }}
         </div>
         {% csrf_token %}
         {% if segmented %}
@@ -24,11 +25,11 @@
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
 			<tr>
-				<td id="pen" {% if segmentation.mode.value == True %} style="background-color: #771300" {% endif %} onclick="penOn()"><i class="fa fa-fire fa-lg" aria-hidden="true"></i></td>
+				<td id="pen" {% if segmentation.pen.value == True %} style="background-color: #771300" {% endif %} onclick="penOn()"><i class="fa fa-fire fa-lg" aria-hidden="true"></i></td>
 				<td ><i class="fas fa-save fa-lg"></i></td>
 			</tr>
 			<tr>
-				<td id="eraser" {% if segmentation.mode.value == False %} style="background-color: #771300" {% endif %} onclick="penOff()"><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i></td>
+				<td id="eraser" {% if segmentation.eraser.value == True %} style="background-color: #771300" {% endif %} onclick="penOff()"><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i></td>
 				<td><a onclick="openUpload()"><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></a></td>
 			</tr>
 			<tr>
@@ -42,6 +43,8 @@
 		</tbody>
 		</table>
 	</div>
+
+    <p id="penDebug"></p>
 
 	<div class="upload" id="upload">
 		<h1>Upload Files</h1>
@@ -65,10 +68,9 @@
 			<p id="titles">Images:</p>
 			<form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="./segmentation/upload" enctype="multipart/form-data">
                 {% csrf_token %}
-{#				<input class="file-upload__input" type="file" name="videoFile" id="videoFile">#}
-{#                <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>#}
-{#                <span class="file-upload__label"></span>#}
-                {{ form.image }}
+                {{ form.image }} {#	 <input class="file-upload__input" type="file" name="videoFile" id="videoFile"> #}
+                <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
+                <span class="file-upload__label"></span>
                 <input type="submit" value="Upload image">
 			</form>
 		</div>
@@ -82,6 +84,10 @@
 
         let workingImage = $("#workingImage")
         let clicking, path;
+
+        $(document).ready(function(e) {
+            $("#penDebug").text("pen:" + $("#id_pen").attr('checked') + ", eraser:" + $("#id_eraser").attr('checked'))
+        })
 
         workingImage.mousedown(function(event) {
             let selectedFileId = JSON.parse("{{image.file_info.id|escapejs}}");
@@ -109,15 +115,19 @@
         });
 
         function penOn() {
-            $("#id_mode").attr('checked', true);
+            $("#id_pen").attr('checked', true);
+            $("#id_eraser").attr('checked', false);
             $("#pen").css("background-color", "#771300")
             $("#eraser").css("background-color", "")
+            $("#penDebug").text("pen:" + $("#id_pen").attr('checked') + ", eraser:" + $("#id_eraser").attr('checked'))
         }
 
         function penOff() {
-            $("#id_mode").attr('checked', false);
+            $("#id_pen").attr('checked', false);
+            $("#id_eraser").attr('checked', true);
             $("#pen").css("background-color", "")
             $("#eraser").css("background-color", "#771300")
+            $("#penDebug").text("pen:" + $("#id_pen").attr('checked') + ", eraser:" + $("#id_eraser").attr('checked'))
         }
 
 

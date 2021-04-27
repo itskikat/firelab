@@ -49,6 +49,7 @@ def vegetation(response):
 def frontpage(response):
 	return render(response, "main/front_page.html", {})
 
+
 def upload(request):
 	if request.method == 'POST':
 		form = UploadImage(request.POST, request.FILES)
@@ -124,13 +125,17 @@ def segmentation(response):
 			'file_list': FileInfo.objects.all(),
 			'image': None,
 			'form': UploadImage(),
-			'segmentation': Segmentation(initial={"mode": False}),
+			'segmentation': Segmentation(initial={"pen": False, "eraser": False}),
 		}
 
-		mode = False
-		if 'mode' in response.POST:
-			param['segmentation'] = Segmentation(initial={"mode": True})
+		mode = None
+		if 'pen' in response.POST:
+			param['segmentation'] = Segmentation(initial={"pen": True})
 			mode = True
+
+		if 'eraser' in response.POST:
+			param['segmentation'] = Segmentation(initial={"eraser": True})
+			mode = False
 
 		# check if image exists
 		_id = response.POST['image_id']

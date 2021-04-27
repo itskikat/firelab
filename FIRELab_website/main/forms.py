@@ -2,6 +2,7 @@ from django import forms
 from main.models import *
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 
+
 class CreateAccountForm(UserCreationForm):
     first_name = forms.CharField(max_length=50, required=True, widget=forms.TextInput(attrs={'placeholder': 'First Name'}))
     last_name = forms.CharField(max_length=50, required=False, widget=forms.TextInput(attrs={'placeholder': 'Last Name'}))
@@ -23,12 +24,18 @@ class CreateAccountForm(UserCreationForm):
         self.fields['password2'].widget = forms.PasswordInput(
             attrs={'class': 'form-control', 'placeholder': 'Password confirmation'})
 
+
 class UploadImage(forms.Form):
     image = forms.ImageField(label="Image")
 
+    def __init__(self, *args, **kwargs):
+        super(UploadImage, self).__init__(*args, **kwargs)
+        self.fields['image'].widget.attrs = ({'class': 'file-upload__input', 'name': 'videoFile', 'id': 'videoFile'})
+
 
 class Segmentation(forms.Form):
-    mode = forms.BooleanField()
+    pen = forms.BooleanField()
+    eraser = forms.BooleanField()
     path = forms.CharField()
     image_id = forms.IntegerField()
 
