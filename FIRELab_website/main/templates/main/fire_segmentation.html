@@ -1,5 +1,7 @@
 {% extends 'main/base_projects.html' %}
 
+{% load static %}
+
 {% block content %}
     <form id="workingImageForm" action="./segmentation" method="POST">
     {% if image is not None %}

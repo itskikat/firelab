@@ -14,20 +14,30 @@ import numpy as np
 
 # Create your views here.
 
-def index(response):
-	return render(response, "main/home.html", {})
-
-def login(response):
-	return render(response, "main/login.html", {})
+def indexView(request):
+	return render(request, "main/home.html", {})
 
 def signup(response):
 	return render(response, "main/signup.html", {})
 
-def projects(response):
-	return render(response, "main/projects.html", {})
+# Create new user account
+def createAccountView(request):
+	data = {}
+	if request.method == 'POST':
+		form = CreateAccountForm(request.POST)
+		if form.is_valid():
+			print(form)
+			user = form.save()
+			user.refresh_from_db()
+			return redirect('login')
+	else:
+		form = CreateAccountForm()
+		data['form'] = form
+		return render(request, 'main/signup.html', data)
 
-def frontpage(response):
-	return render(response, "main/front_page.html", {})
+def projects(request):
+	if request.user.is_authenticated:
+		return render(request, "main/projects.html", {})
 
 def account(response):
 	return render(response, "main/account.html", {})

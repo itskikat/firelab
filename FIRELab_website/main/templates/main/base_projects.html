@@ -1,5 +1,6 @@
 <!DOCTYPE HTML>
 <html>
+    {% load static %}
 	<head>
 		<title>FIRELab - Projects</title>
 		<meta charset="utf-8" />
@@ -13,7 +14,6 @@
 
 		<!-- Page Wrapper -->
 			<div id="page-wrapper">
-
 				<!-- Main -->
 				<div class="split">
 					<div class="left">
@@ -37,31 +37,28 @@
                             {% endfor %}
                         </div>
 						<div class="actions">
-							<a href="{% url 'projects' %}" class="leave"><i class="fas fa-arrow-circle-left"></i> Leave</a>
+							<a href="{% url 'projects' %}" class="leave"><i class="fas fa-arrow-circle-left"></i> Back to Projects</a>
 						</div>
 					</div>
 					<div class="right">
-						{% block content %}
-						{% endblock %}
-						
+						{% block content %}{% endblock %}
 					</div>
 				</div>
 					
 			</div>
 
-		<!-- Scripts -->
-			<script src="static/assets/js/jquery.min.js"></script>
-			<script src="static/assets/js/jquery.scrollex.min.js"></script>
-			<script src="static/assets/js/jquery.scrolly.min.js"></script>
-			<script src="static/assets/js/browser.min.js"></script>
-			<script src="static/assets/js/breakpoints.min.js"></script>
-			<script src="static/assets/js/util.js"></script>
-			<script src="static/assets/js/main.js"></script>
-			<script src="static/assets/js/projects.js"></script>
+		    <!-- Scripts -->
+			<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+			<script src="{% static 'assets/js/jquery.scrollex.min.js' %}"></script>
+			<script src="{% static 'assets/js/jquery.scrolly.min.js' %}"></script>
+			<script src="{% static 'assets/js/browser.min.js' %}"></script>
+			<script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
+			<script src="{% static 'assets/js/util.js' %}"></script>
+			<script src="{% static 'assets/js/main.js' %}"></script>
+			<script src="{% static 'assets/js/projects.js' %}"></script>
 
 			<!-- CUSTOM SCRIPTS -->
-			<script src="static/viewmodel/js/project_process.js"></script>
-			<script src="static/viewmodel/js/upload.js"></script>
-
+			<script src="{% static 'viewmodel/js/project_process.js' %}"></script>
+			<script src="{% static 'viewmodel/js/upload.js' %}"></script>
 	</body>
 </html>

@@ -28,7 +28,11 @@ $(document).ready(function () {
 
     });
 
-    // SHOW THE MAP 
+
+    
+});
+
+function drawMap() {
     var mapdiv = document.getElementById('map');
 
     var mymap = L.map(mapdiv).setView([40.6405, -8.6538], 13);
@@ -43,18 +47,16 @@ $(document).ready(function () {
     });
     osm.addTo(mymap);
 
-    $("#drawPolygonButton").click(function(){
-        var coords =  '[ [40.640957, -8.658695], [40.648772, -8.623848], [40.614901, -8.656635], [40.640957, -8.658695] ]' ;          
+    var coords =  '[ [40.640957, -8.658695], [40.648772, -8.623848], [40.614901, -8.656635], [40.640957, -8.658695] ]' ;
         //var coords = document.getElementById("polygon-coord").value;
 
-        var a = JSON.parse(coords); // string to json 
+    var a = JSON.parse(coords); // string to json
 
-        var polygon = L.polygon(a, {color: 'red'});
-        polygon.addTo(mymap);
-        polygon.bindPopup("Coordinates: " + coords);
+    var polygon = L.polygon(a, {color: 'red'});
+    polygon.addTo(mymap);
+    polygon.bindPopup("Coordinates: " + coords);
 
-        mymap.fitBounds(polygon.getBounds());
-    });
+    mymap.fitBounds(polygon.getBounds());
 
     var popup = L.popup();
     mymap.on('click', function(e){
@@ -63,5 +65,4 @@ $(document).ready(function () {
             .setContent("You clicked the map at " + e.latlng.toString())
             .openOn(mymap);
     });
-    
-});
+}

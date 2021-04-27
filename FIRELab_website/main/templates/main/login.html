@@ -1,17 +1,13 @@
 <!DOCTYPE HTML>
-<!--
-    Spectral by HTML5 UP
-    html5up.net | @ajlkn
-    Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
--->
 <html>
+    {% load static %}
     <head>
         <title>FIRELab - Log In</title>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-        <link rel="stylesheet" href="static/assets/css/main.css" />
-        <link rel="stylesheet" href="static/viewmodel/css/signup.css" />
-        <noscript><link rel="stylesheet" href="static/assets/css/noscript.css" /></noscript>
+        <link rel="stylesheet" href="{% static 'assets/css/main.css' %}" />
+        <link rel="stylesheet" href="{% static 'viewmodel/css/signup.css' %}" />
+        <noscript><link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}" /></noscript>
     </head>
     <body class="is-preload">
         <!-- Page Wrapper -->
@@ -38,18 +34,19 @@
 
             <!-- Main -->
             <div class="row" style="margin: auto; width: 900px;">
-                <article id="main" style="margin-bottom: 110px;"> 
+                <article id="main" style="margin-bottom: 110px;">
                     <section class="wrapper style4">
                         <div class="inner">
                             <section>
                                 <h4>Log In</h4>
-                                <form  action="{% url 'projects' %}">
+                                <form action="." method="post" >
+                                    {% csrf_token %}
                                     <div class="row gtr-uniform">
                                         <div class="col-8 col-12-xsmall" style="align-items: center;">
-                                            <input type="text" name="login_name" id="login_name" value="" placeholder="Username" />
+                                            <input type="text" id="id_username" class="form-control form.username" name="username" placeholder="Username">
                                         </div>
                                         <div class="col-8 col-12-xsmall">
-                                            <input type="password" name="login_password" id="login_password" value="" placeholder="Password" />
+                                            <input type="password" id="id_password" class="form-control" name="password" placeholder="Password" />
                                         </div>
                                         <div class="col-8">
                                             <ul class="actions" >
@@ -65,32 +62,18 @@
                 </article>
             </div>
 
-            
-            <!-- Footer -->
-            <footer id="footer">
-                <ul class="icons">
-                    <li><a href="https://github.com/itskikat/firelab" class="icon brands fa-github"><span class="label">Github</span></a></li>
-                    <li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
-                    <li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
-                    <li><a href="mailto:firelab@support.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
-                </ul>
-                <ul class="copyright">
-                    <li>&copy; FIRELab</li><li>Developed by: <a target="_blank" href="http://xcoa.av.it.pt/~pi202021g02/#team">Group02\\PI\\DETI</a></li>
-                </ul>
-            </footer>
 
+            {% include 'main/footer.html' %}
         </div>
 
         <!-- Scripts -->
-        <script src="static/assets/js/jquery.min.js"></script>
-        <script src="static/assets/js/jquery.scrollex.min.js"></script>
-        <script src="static/assets/js/jquery.scrolly.min.js"></script>
-        <script src="static/assets/js/browser.min.js"></script>
-        <script src="static/assets/js/breakpoints.min.js"></script>
-        <script src="static/assets/js/util.js"></script>
-        <script src="static/assets/js/main.js"></script>
-        <!-- CUSTOM SCRIPT -->
-        <script src="static/viewmodel/js/upload.js"></script>
+        <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+        <script src="{% static 'assets/js/jquery.scrollex.min.js' %}"></script>
+        <script src="{% static 'assets/js/jquery.scrolly.min.js' %}"></script>
+        <script src="{% static 'assets/js/browser.min.js' %}"></script>
+        <script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
+        <script src="{% static 'assets/js/util.js' %}"></script>
+        <script src="{% static 'assets/js/main.js' %}"></script>
 
     </body>
 </html>
