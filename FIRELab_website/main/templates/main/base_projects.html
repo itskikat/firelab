@@ -4,6 +4,7 @@
 		<title>FIRELab - Projects</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 		<link rel="stylesheet" href="static/assets/css/projects.css"/>
 		<link rel="stylesheet" href="static/viewmodel/css/project_process.css"/>
 		<noscript><link rel="stylesheet" href="static/assets/css/noscript.css" /></noscript>
@@ -30,6 +31,11 @@
 									</tr>
 								</table>
 							</div>
+                        <div>
+                            {% for i in file_list %}
+                                    <a style="font-size: 8px" {%  if i.type_id.id == 2 %} href="./segmentation?id={{ i.id }}" {% endif %}> {{ i.name }}.{{ i.extension }}</a>
+                            {% endfor %}
+                        </div>
 						<div class="actions">
 							<a href="{% url 'projects' %}" class="leave"><i class="fas fa-arrow-circle-left"></i> Leave</a>
 						</div>
