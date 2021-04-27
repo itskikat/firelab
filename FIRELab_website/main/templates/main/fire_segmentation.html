@@ -12,6 +12,7 @@
         </div>
         {% csrf_token %}
         {% if segmented %}
+            
             <img draggable="false" id="workingImage" src={{ segmented }}>
         {% else %}
             <img draggable="false" id="workingImage" src={{ image.content.url }}>
