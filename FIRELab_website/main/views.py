@@ -1,10 +1,7 @@
 import json
 import pickle
 
-import requests
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
-
 from FIRELab_website.settings import MEDIA_ROOT
 from main import utils
 from main.forms import *
@@ -14,7 +11,6 @@ import numpy as np
 from django.http import HttpResponse
 
 # Create your views here.
-
 def indexView(response):
 	return render(response, "main/home.html", {})
 
@@ -41,10 +37,18 @@ def account(response):
 	return render(response, "main/account.html", {})
 
 def process(response):
-	return render(response, "main/project_process.html", {})
+	param = {
+		'project': Directory.objects.all().filter(project_id=1),
+		'project_files': FileInfo.objects.all().filter(dir__project_id=1),
+	}
+	return render(response, "main/project_process.html", param)
 
 def vegetation(response):
-	return render(response, "main/vegetation_characterization.html", {})
+	param = {
+		'project': Directory.objects.all().filter(project_id=1),
+		'project_files': FileInfo.objects.all().filter(dir__project_id=1),
+	}
+	return render(response, "main/vegetation_characterization.html", param)
 
 def frontpage(response):
 	return render(response, "main/front_page.html", {})
@@ -67,7 +71,7 @@ def upload(request):
 					name=name,
 					extension=extension,
 					type_id=FileType.objects.get(id=2),
-					dir=Directory.objects.get(id=2)
+					dir=Directory.objects.get(name="Images", project_id=1)
 				)
 				_file_info.save()
 				_image = Image(
@@ -88,7 +92,7 @@ def upload(request):
 				name=_file_info.name,
 				extension='mask',
 				type_id=FileType.objects.get(type="Mask"),
-				dir=Directory.objects.get(id=3)
+				dir=Directory.objects.get(name="Masks", project_id=1)
 			)
 			mask_file.save()
 
@@ -113,20 +117,56 @@ def segmentation(response):
 				image = None
 
 		param = {
-			'file_list': FileInfo.objects.all(),
 			'image': image,
+			'project': Directory.objects.all().filter(project_id=1),
+			'project_files': FileInfo.objects.all().filter(dir__project_id=1),
 			'form': UploadImage(),
 			'segmentation': Segmentation(),
 		}
+
+		# if the image_id is valid check if it has a mask
+		try:
+			_mask = Mask.objects.get(image_id=image)
+
+		except Mask.DoesNotExist:
+			return render(response, "main/fire_segmentation.html", param)
+
+		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, image.content.name)))
+		mask = pickle.loads(_mask.content)
+
+		# "serialize" the updated mask
+		mask_encoded = pickle.dumps(mask)
+		# update the mask file on db
+		_mask.content = mask_encoded
+		_mask.save()
+
+		mask_32S = mask.astype(
+			np.int32)  # used to convert the mask to CV_32SC1 so it can be accepted by cv2.watershed()
+		blurred = cv2.blur(img, (2, 2))
+		cv2.watershed(blurred, mask_32S)
+
+		# genOverlay()
+		_m = np.uint8(mask_32S)
+		m = cv2.cvtColor(_m, cv2.COLOR_GRAY2BGR)
+		segmented = cv2.addWeighted(img, 0.5, m, 0.5, 0, dtype=cv2.CV_8UC3)
+
+		# convert masked image to base64
+		segmented_base64 = utils.opencv_to_base64(segmented, image.file_info.extension)
+		param['segmented'] = 'data:image/jpg;base64,{image}'.format(image=segmented_base64.decode())
+
 		return render(response, "main/fire_segmentation.html", param)
 
 	elif response.method == "POST":
 		param = {
-			'file_list': FileInfo.objects.all(),
 			'image': None,
+			'project': Directory.objects.all().filter(project_id=1),
+			'project_files': FileInfo.objects.all().filter(dir__project_id=1),
 			'form': UploadImage(),
 			'segmentation': Segmentation(initial={"pen": False, "eraser": False}),
 		}
+
+		if 'image_id' not in response.POST or response.POST['image_id'] == '':
+			return redirect(response.build_absolute_uri())
 
 		mode = None
 		if 'pen' in response.POST:
@@ -195,5 +235,52 @@ def segmentation(response):
 		return render(response, "main/fire_segmentation.html", param)
 
 
+def generate_contour(request, file_id):
+	try:
+		file = FileInfo.objects.get(id=file_id)
+	except FileInfo.DoesNotExist:
+		return redirect(request.get_full_path())
+
+	try:
+		_mask = Mask.objects.get(image_id__file_info_id=file_id)
+	except Mask.DoesNotExist:
+		return redirect(request.get_full_path())
+
+	img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, Image.objects.get(file_info=file).content.name)))
+	mask = pickle.loads(_mask.content)
+
+	# create the final shape
+	mask_32S = mask.astype(np.int32)  # used to convert the mask to CV_32SC1 so it can be accepted by cv2.watershed()
+	blurred = cv2.blur(img, (2, 2))
+	cv2.watershed(blurred, mask_32S)
+
+	# convert shape to polygon
+	binary = np.float32(mask_32S)  # convert mask to CV_32FC1
+	_, binary = cv2.threshold(binary, 200, 255, cv2.THRESH_BINARY)
+	binary = binary.astype(np.uint8)
+	_, vertexes, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+	if len(vertexes) > 1:
+		if request.GET['return_bigger'] and request.GET['return_bigger'] == "1":
+			sizes = [len(pol) for pol in vertexes]
+			vertexes = vertexes[sizes.index(max(sizes))]
+		else:
+			return redirect("/segmentation?id=" + str(file_id))
+	else:
+		vertexes = vertexes[0]
+
+	fs_wkt = ""
+	for point in vertexes:
+		fs_wkt += ", " + str(point[0][0]) + " " + str(point[0][1])
+	fs_wkt = "POLYGON ((" + fs_wkt[2:] + ", " + str(vertexes[0][0][0]) + " " + str(vertexes[0][0][1]) + "))\n"
+	print(fs_wkt)
+	# TODO: store polygon on db
+	return redirect("/segmentation?id=" + str(file_id))
+
+
 def progression(response):
-	return render(response, "main/fire_progression.html", {})
+	param = {
+		'project': Directory.objects.all().filter(project_id=1),
+		'project_files': FileInfo.objects.all().filter(dir__project_id=1),
+	}
+	return render(response, "main/fire_progression.html", param)

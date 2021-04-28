@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from mptt.models import MPTTModel, TreeForeignKey
 
 
 # Create your models here.
@@ -14,10 +15,10 @@ class Project(models.Model):
         return "[Project {}] {}".format(self.id, self.name)
 
 
-class Directory(models.Model):
+class Directory(MPTTModel):
     name = models.CharField(max_length=30)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='directory')
+    parent = TreeForeignKey('self', on_delete=models.CASCADE, default=None, null=True, blank=True, related_name='subdirectories')
 
     def __str__(self):
         return "{} - {} ({})".format(self.id, self.name, self.get_path())
@@ -50,6 +51,9 @@ class FileInfo(models.Model):
         if self.extension:
             full_name += "." + self.extension
         return str(self.id) + " - " + full_name
+
+    def get_path(self):
+        return self.dir.get_path() + "/" + self.name + "." + self.extension
 
 
 class Image(models.Model):

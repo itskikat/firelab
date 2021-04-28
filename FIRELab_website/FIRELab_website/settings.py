@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'main',
     'django.contrib.staticfiles',
+    'mptt'
 
 ]
 

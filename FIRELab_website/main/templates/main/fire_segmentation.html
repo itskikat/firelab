@@ -12,12 +12,14 @@
             {{ segmentation.image_id }}
         </div>
         {% csrf_token %}
+        <div id="img_seg"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
         {% if segmented %}
-            
             <img draggable="false" id="workingImage" src={{ segmented }}>
+            <img hidden draggable="false" id="hiddenWorkingImage" src={{ image.content.url }}>
         {% else %}
             <img draggable="false" id="workingImage" src={{ image.content.url }}>
         {% endif %}
+        </div>
     {% endif %}
     </form>
 	<div class="toolkit">
@@ -26,7 +28,7 @@
 			<tbody id="toolkit">
 			<tr>
 				<td id="pen" {% if segmentation.pen.value == True %} style="background-color: #771300" {% endif %} onclick="penOn()"><i class="fa fa-fire fa-lg" aria-hidden="true"></i></td>
-				<td ><i class="fas fa-save fa-lg"></i></td>
+				<td onclick="window.location='/segmentation/save/{{ image.file_info.id }}'"><i class="fas fa-save fa-lg"></i></td>
 			</tr>
 			<tr>
 				<td id="eraser" {% if segmentation.eraser.value == True %} style="background-color: #771300" {% endif %} onclick="penOff()"><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i></td>
@@ -42,9 +44,10 @@
 			</tr>
 		</tbody>
 		</table>
+        {% if segmented %}
+            <a id="maskToggle">Mask Toggle</a>
+        {% endif %}
 	</div>
-
-    <p id="penDebug"></p>
 
 	<div class="upload" id="upload">
 		<h1>Upload Files</h1>
@@ -83,11 +86,9 @@
     <script>
 
         let workingImage = $("#workingImage")
+        let staticImage = $("#hiddenWorkingImage")
         let clicking, path;
-
-        $(document).ready(function(e) {
-            $("#penDebug").text("pen:" + $("#id_pen").attr('checked') + ", eraser:" + $("#id_eraser").attr('checked'))
-        })
+        let maskOn = true
 
         workingImage.mousedown(function(event) {
             let selectedFileId = JSON.parse("{{image.file_info.id|escapejs}}");
@@ -117,18 +118,27 @@
         function penOn() {
             $("#id_pen").attr('checked', true);
             $("#id_eraser").attr('checked', false);
-            $("#pen").css("background-color", "#771300")
-            $("#eraser").css("background-color", "")
-            $("#penDebug").text("pen:" + $("#id_pen").attr('checked') + ", eraser:" + $("#id_eraser").attr('checked'))
+            $("#pen").css("color", "#B55B29")
+            $("#eraser").css("color", "")
         }
 
         function penOff() {
             $("#id_pen").attr('checked', false);
             $("#id_eraser").attr('checked', true);
-            $("#pen").css("background-color", "")
-            $("#eraser").css("background-color", "#771300")
-            $("#penDebug").text("pen:" + $("#id_pen").attr('checked') + ", eraser:" + $("#id_eraser").attr('checked'))
+            $("#pen").css("color", "")
+            $("#eraser").css("color", "#B55B29")
         }
+
+        $("#maskToggle").click(function (event) {
+            maskOn = !maskOn;
+            if (maskOn) {
+                workingImage.show()
+                staticImage.hide()
+            } else {
+                workingImage.hide()
+                staticImage.show()
+            }
+        });
 
 
     </script>

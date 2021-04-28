@@ -1,3 +1,5 @@
+{% load mptt_tags %}
+
 <!DOCTYPE HTML>
 <html>
     {% load static %}
@@ -31,10 +33,37 @@
 									</tr>
 								</table>
 							</div>
-                        <div>
-                            {% for i in file_list %}
-                                    <a style="font-size: 8px" {%  if i.type_id.id == 2 %} href="./segmentation?id={{ i.id }}" {% endif %}> {{ i.name }}.{{ i.extension }}</a>
-                            {% endfor %}
+                        <div style="color: white">
+{#                            {% for i in file_list %}#}
+{#                                    <a style="font-size: 8px" {%  if i.type_id.id == 2 %} href="./segmentation?id={{ i.id }}" {% endif %}> {{ i.name }}.{{ i.extension }}</a>#}
+{#                            {% endfor %}#}
+
+                        {% recursetree project %}
+                            <div style="padding-left: calc({{ node.level }}* 2em)">
+                                {% comment %} show directory name {% endcomment %}
+                                {% if node.parent is None %}
+                                    <a style="width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" onclick="toggleChildren('{{ node.name }}')">[Project] {{ node.project.name }}</a>
+                                {% else %}
+                                    <a style="width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" onclick="toggleChildren('{{ node.name }}')">{{ node.name }}</a>
+                                {% endif %}
+
+                                <div id="{{ node.name }}_children">
+                                {% comment %} show files of directory {% endcomment %}
+                                    {% for f in project_files %}
+                                        {% if f.dir == node %}
+                                        <a  style="padding-left: 2em; width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" {%  if f.type_id.id == 2 %} href="./segmentation?id={{ f.id }}" {% endif %}> {{ f.name }}.{{ f.extension }}</a>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if not node.is_leaf_node %}
+                                        {% comment %} recursive call to children directories{% endcomment %}
+                                        {{ children }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endrecursetree %}
+
+
                         </div>
 						<div class="actions">
 							<a href="{% url 'projects' %}" class="leave"><i class="fas fa-arrow-circle-left"></i> Back to Projects</a>
@@ -56,6 +85,22 @@
 			<script src="{% static 'assets/js/util.js' %}"></script>
 			<script src="{% static 'assets/js/main.js' %}"></script>
 			<script src="{% static 'assets/js/projects.js' %}"></script>
+
+			<!-- MOVE TO STATIC -->
+            <script>
+                function toggleChildren(childrenName) {
+                    let dirId = "#" + childrenName + "_children"
+                    let displayType = $(dirId).css("display")
+
+                    if (displayType === "none") {
+                         $(dirId).css("display", "block")
+                    } else {
+                         $(dirId).css("display", "none")
+                    }
+
+                }
+            </script>
+
 
 			<!-- CUSTOM SCRIPTS -->
 			<script src="{% static 'viewmodel/js/project_process.js' %}"></script>
