@@ -17,6 +17,7 @@ urlpatterns = [
     path("vegetation", views.vegetation, name="vegetation"),
     path("segmentation", views.segmentation, name="segmentation"),
     path("segmentation/upload", views.upload, name="upload"),
+    path("segmentation/uploadVideo", views.upload_video, name="uploadVideo"),
     path("segmentation/save/<int:file_id>", views.generate_contour, name="upload"),
     path("progression", views.progression, name="progression"),
 ]

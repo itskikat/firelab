@@ -33,6 +33,15 @@ class UploadImage(forms.Form):
         self.fields['image'].widget.attrs = ({'class': 'file-upload__input', 'name': 'videoFile', 'id': 'videoFile'})
 
 
+class UploadVideo(forms.Form):
+    video = forms.FileField(label="Video")
+    frames = forms.IntegerField(label="Number of frames")
+
+    def __init__(self, *args, **kwargs):
+        super(UploadVideo, self).__init__(*args, **kwargs)
+        self.fields['video'].widget.attrs = ({'class': 'file-upload__input', 'name': 'videoFile', 'id': 'videoFile'})
+
+
 class Segmentation(forms.Form):
     pen = forms.BooleanField()
     eraser = forms.BooleanField()

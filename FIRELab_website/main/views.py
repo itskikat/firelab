@@ -1,6 +1,9 @@
+import io
 import json
+import math
 import pickle
 
+from django.core.files.images import ImageFile
 from django.shortcuts import render, redirect
 from FIRELab_website.settings import MEDIA_ROOT
 from main import utils
@@ -107,6 +110,75 @@ def upload(request):
 	return redirect("/segmentation")
 
 
+def upload_video(request):
+	project_id = 1
+	if request.method == 'POST':
+		form = UploadVideo(request.POST, request.FILES)
+		if form.is_valid():
+			name, extension = request.FILES['video'].name.split('.')
+			frame_number = request.POST['frames']
+			video = Video(
+				frame_number=frame_number,
+				name=name,
+				extension=extension,
+				content=request.FILES['video']
+			)
+			video.save()
+
+			video_capture = cv2.VideoCapture()
+			video_capture.open(os.path.abspath(os.path.join(MEDIA_ROOT, video.content.name)))
+			max_frames = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
+			print("Successfully loaded {}.{} with {} frames".format(video.name, video.extension, max_frames))
+
+			step = math.floor(max_frames/int(frame_number))
+			cur_frame = 0
+			frame_index = 1			# retrieved frame index
+
+			frames_dir = Directory(
+				name=name,
+				project=Project.objects.get(id=project_id),
+				parent=Directory.objects.get(project__id=project_id, name="Frames")
+			)
+			frames_dir.save()
+
+			try:
+				while video_capture.isOpened() and cur_frame < max_frames:
+					_, frame = video_capture.read()		# read next image from video
+					if cur_frame % step == 0:
+						frame_name = "{}_{}".format(name, frame_index)
+
+						_, frame_arr = cv2.imencode('.png', frame)  # Numpy one-dim array representative of the img
+						frame_bytes = frame_arr.tobytes()
+						_frame = ImageFile(io.BytesIO(frame_bytes), name='{}.png'.format(frame_name))
+
+						# cv2.imshow('{}.png'.format(frame_name), frame)
+						# cv2.waitKey(0)  # waits until a key is pressed
+						# cv2.destroyAllWindows()  # destroys the window showing image
+
+						_file_info = FileInfo(
+							name=frame_name,
+							extension='png',
+							type_id=FileType.objects.get(id=2),
+							dir=frames_dir
+						)
+						_file_info.save()
+
+						_frame = Frame(
+							video=video,
+							file_info=_file_info,
+							content=_frame
+						)
+						_frame.save()
+						frame_index += 1
+					cur_frame += 1
+			finally:
+				video_capture.release()
+				# delete content from model and from file system
+				video.content.delete()
+
+	return redirect("/segmentation")
+
+
 def segmentation(response):
 	if response.method == "GET":
 		image = None
@@ -120,7 +192,8 @@ def segmentation(response):
 			'image': image,
 			'project': Directory.objects.all().filter(project_id=1),
 			'project_files': FileInfo.objects.all().filter(dir__project_id=1),
-			'form': UploadImage(),
+			'image_form': UploadImage(),
+			'video_form': UploadVideo(),
 			'segmentation': Segmentation(),
 		}
 
@@ -133,6 +206,10 @@ def segmentation(response):
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, image.content.name)))
 		mask = pickle.loads(_mask.content)
+
+		mask_is_new = (mask == 0).all()
+		if mask_is_new:
+			return render(response, "main/fire_segmentation.html", param)
 
 		# "serialize" the updated mask
 		mask_encoded = pickle.dumps(mask)
@@ -161,7 +238,8 @@ def segmentation(response):
 			'image': None,
 			'project': Directory.objects.all().filter(project_id=1),
 			'project_files': FileInfo.objects.all().filter(dir__project_id=1),
-			'form': UploadImage(),
+			'image_form': UploadImage(),
+			'video_form': UploadVideo(),
 			'segmentation': Segmentation(initial={"pen": False, "eraser": False}),
 		}
 
@@ -258,14 +336,21 @@ def generate_contour(request, file_id):
 	binary = np.float32(mask_32S)  # convert mask to CV_32FC1
 	_, binary = cv2.threshold(binary, 200, 255, cv2.THRESH_BINARY)
 	binary = binary.astype(np.uint8)
+
+	kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+	binary = cv2.dilate(binary, kernel)
+	binary = cv2.erode(binary, kernel)
+
 	_, vertexes, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
 	if len(vertexes) > 1:
-		if request.GET['return_bigger'] and request.GET['return_bigger'] == "1":
-			sizes = [len(pol) for pol in vertexes]
-			vertexes = vertexes[sizes.index(max(sizes))]
-		else:
-			return redirect("/segmentation?id=" + str(file_id))
+		print("More than one polygon were identified")
+		# TODO: add return_bigger to Segmentation form and input on pop up
+		# if 'return_bigger' in request.GET and request.GET['return_bigger'] == "1":
+		sizes = [len(pol) for pol in vertexes]
+		vertexes = vertexes[sizes.index(max(sizes))]
+		#else:
+			#return redirect("/segmentation?id=" + str(file_id)) + "&error=TooManyValues
 	else:
 		vertexes = vertexes[0]
 
