@@ -108,13 +108,19 @@ def video_delete(sender, instance, **kwargs):
 
 def video_frame_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/frames/<video_name>/
-    return 'frames/{}/p{}_{}'.format(instance.video.name, instance.file_info.dir.project.id, filename)
+    if instance.video is not None:
+        return 'frames/{}/p{}_{}'.format(instance.video.name, instance.file_info.dir.project.id, filename)
+    else:
+        return 'images/p{}_{}'.format(instance.file_info.dir.project.id, filename)
 
 
-class Frame(models.Model):
-    video = models.ForeignKey(Video, on_delete=models.CASCADE, blank=False)
+class Frames(models.Model):
     content = models.ImageField(upload_to=video_frame_path, blank=False)
     file_info = models.OneToOneField(FileInfo, on_delete=models.CASCADE, blank=False)
+    mask = models.BinaryField(null=True, blank=True, default=True)
+    polygon = models.CharField(max_length=100, null=True, blank=True, default=None)    # change type to match postGIS
+    # add geoReferenced polygon field
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, blank=True, default=None, null=True)
 
     def __str__(self):
         return "{} - Frame ({})".format(self.id, self.get_filename())
@@ -124,8 +130,9 @@ class Frame(models.Model):
 
 
 # Receive the pre_delete signal and delete the file associated with the model instance.
-@receiver(pre_delete, sender=Frame)
-def video_delete(sender, instance, **kwargs):
+@receiver(pre_delete, sender=Frames)
+def frame_delete(sender, instance, **kwargs):
     # Pass false so FileField doesn't save the model.
     if instance.content is not None:
         instance.content.delete(False)
+

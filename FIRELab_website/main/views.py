@@ -111,6 +111,9 @@ def frontpage(response):
 
 
 def upload(request, project_id):
+	if not request.user.is_authenticated:
+		return redirect("/login")
+
 	try:
 		project = Project.objects.get(id=project_id)
 	except Project.DoesNotExist:
@@ -135,11 +138,13 @@ def upload(request, project_id):
 					dir=Directory.objects.get(name="Images", project_id=project.id)
 				)
 				_file_info.save()
-				_image = Image(
-					file_info= _file_info,
-					content=request.FILES['image']
-				)
-				_image.save()
+
+			_image = Frame(
+				file_info=_file_info,
+				content=request.FILES['image'],
+				mask=None,
+			)
+			_image.save()
 
 			img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _image.content.name)))
 
@@ -147,23 +152,9 @@ def upload(request, project_id):
 			_mask = np.zeros(img.shape[:2], np.uint8)
 			# "serialize" the mask
 			mask_encoded = pickle.dumps(_mask)
-
-			# create mask file
-			mask_file = FileInfo(
-				name=_file_info.name,
-				extension='mask',
-				type_id=FileType.objects.get(type="Mask"),
-				dir=Directory.objects.get(name="Masks", project_id=project.id)
-			)
-			mask_file.save()
-
-			# create mask
-			mask = Mask(
-				file_info=mask_file,
-				content=mask_encoded,
-				image_id=_image
-			)
-			mask.save()
+			# save the mask on the omage object
+			_image.mask = mask_encoded
+			_image.save()
 
 	return redirect("/projects/" + str(project_id) + "/segmentation")
 
@@ -237,6 +228,7 @@ def upload_video(request, project_id):
 				video_capture.release()
 				# delete content from model and from file system
 				video.content.delete()
+				print(video.content)
 
 	return redirect("/projects/" + str(project_id) + "/segmentation")
 
