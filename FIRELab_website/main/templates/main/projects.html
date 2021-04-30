@@ -49,11 +49,12 @@
 						</div>
 						<div class="existing_proj">
 							<table id="all_projects">
+                                {% for project in project_list %}
 								<tr>
-									<td><i class="far fa-folder"></i> Example</td>
+									<td onclick="showInfo('{{ project.id }}', '{{ project.name }}','{{ project.description }}', '{{ project.creation_date|date }}', '{{ project.modification_date|date }}')"><i class="far fa-folder"></i> {{ project.name }}</td>
 								</tr>
-								<tr>
-									<td><i class="far fa-folder"></i> Example 2</td>
+                                {% endfor %}
+
 							</table>
 
 						</div>
@@ -62,17 +63,17 @@
 
 					<div class="right">
 						<div class="information">
-							<h2>Example</h2> 
+							<h2 id="project_name"></h2>
 							<div class="delete">
 								<a href="#" onclick="openCheckDelete()" class="button"><i class="fas fa-trash-alt"></i> Delete</a>
 							</div>
-							<p id="dates">Created on: 15-04-2021</p>
-							<p>Last modified on: 15-04-2021</p>
+							<p id="dates"></p>
+							<p id="modification_date"></p>
 
-							<p>Description: </p>
+							<p id="project_description"></p>
 						</div>
-						<div class="actions">
-							<a href="{% url 'process' %}" class="button primary work">Work</a>
+						<div class="actions" hidden>
+							<a id="workButton" class="button primary work">Work</a>
 						</div>
 					</div>
 				</div>
@@ -121,6 +122,19 @@
 			<script src="{% static 'assets/js/main.js' %}"></script>
             <!-- CUSTOM SCRIPTS-->
 			<script src="{% static 'assets/js/projects.js' %}"></script>
+
+            <!-- SCRIPTS TO BE MOVED TO ASSETS -->
+            <script>
+                function showInfo(id, name, description, creation, modification) {
+                    $("#project_name").text(name);
+                    $("#project_description").text("Description: " + description);
+                    $("#dates").text("Created on: " + creation);
+                    $("#modification_date").text("Last modified on: : " + modification);
+                    $(".actions").show();
+                    $("#workButton").attr('href', 'projects/' + id + '/process');
+                }
+            </script>
+
 
 	</body>
 </html>

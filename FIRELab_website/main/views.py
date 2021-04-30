@@ -30,34 +30,57 @@ def createAccountView(request):
 	else:
 		form = CreateAccountForm()
 		data['form'] = form
-		return render(request, 'main/signup.html', data)
+	return render(request, 'main/signup.html', data)
+
 
 def projects(request):
 	if request.user.is_authenticated:
-		return render(request, "main/projects.html", {})
+		project_list = Project.objects.all().filter(owner=request.user)
+		return render(request, "main/projects.html", {'project_list': project_list})
+
 
 def account(response):
 	return render(response, "main/account.html", {})
 
-def process(response):
+
+def process(response, project_id):
+	try:
+		project = Project.objects.get(id=project_id)
+	except Project.DoesNotExist:
+		return redirect("/projects")
+
 	param = {
-		'project': Directory.objects.all().filter(project_id=1),
-		'project_files': FileInfo.objects.all().filter(dir__project_id=1),
+		'project': project,
+		'project_dirs': Directory.objects.all().filter(project_id=project.id),
+		'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
 	}
 	return render(response, "main/project_process.html", param)
 
-def vegetation(response):
+
+def vegetation(response, project_id):
+	try:
+		project = Project.objects.get(id=project_id)
+	except Project.DoesNotExist:
+		return redirect("/projects")
+
 	param = {
-		'project': Directory.objects.all().filter(project_id=1),
-		'project_files': FileInfo.objects.all().filter(dir__project_id=1),
+		'project': project,
+		'project_dirs': Directory.objects.all().filter(project_id=project.id),
+		'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
 	}
 	return render(response, "main/vegetation_characterization.html", param)
+
 
 def frontpage(response):
 	return render(response, "main/front_page.html", {})
 
 
-def upload(request):
+def upload(request, project_id):
+	try:
+		project = Project.objects.get(id=project_id)
+	except Project.DoesNotExist:
+		return redirect("/projects")
+
 	if request.method == 'POST':
 		form = UploadImage(request.POST, request.FILES)
 		if form.is_valid():
@@ -74,7 +97,7 @@ def upload(request):
 					name=name,
 					extension=extension,
 					type_id=FileType.objects.get(id=2),
-					dir=Directory.objects.get(name="Images", project_id=1)
+					dir=Directory.objects.get(name="Images", project_id=project.id)
 				)
 				_file_info.save()
 				_image = Image(
@@ -95,7 +118,7 @@ def upload(request):
 				name=_file_info.name,
 				extension='mask',
 				type_id=FileType.objects.get(type="Mask"),
-				dir=Directory.objects.get(name="Masks", project_id=1)
+				dir=Directory.objects.get(name="Masks", project_id=project.id)
 			)
 			mask_file.save()
 
@@ -107,11 +130,15 @@ def upload(request):
 			)
 			mask.save()
 
-	return redirect("/segmentation")
+	return redirect("/projects/" + str(project_id) + "/segmentation")
 
 
-def upload_video(request):
-	project_id = 1
+def upload_video(request, project_id):
+	try:
+		project = Project.objects.get(id=project_id)
+	except Project.DoesNotExist:
+		return redirect("/projects")
+
 	if request.method == 'POST':
 		form = UploadVideo(request.POST, request.FILES)
 		if form.is_valid():
@@ -136,8 +163,8 @@ def upload_video(request):
 
 			frames_dir = Directory(
 				name=name,
-				project=Project.objects.get(id=project_id),
-				parent=Directory.objects.get(project__id=project_id, name="Frames")
+				project=project,
+				parent=Directory.objects.get(project__id=project.id, name="Frames")
 			)
 			frames_dir.save()
 
@@ -176,10 +203,15 @@ def upload_video(request):
 				# delete content from model and from file system
 				video.content.delete()
 
-	return redirect("/segmentation")
+	return redirect("/projects/" + str(project_id) + "/segmentation")
 
 
-def segmentation(response):
+def segmentation(response, project_id):
+	try:
+		project = Project.objects.get(id=project_id)
+	except Project.DoesNotExist:
+		return redirect("/projects")
+
 	if response.method == "GET":
 		image = None
 		if 'id' in response.GET:
@@ -190,8 +222,9 @@ def segmentation(response):
 
 		param = {
 			'image': image,
-			'project': Directory.objects.all().filter(project_id=1),
-			'project_files': FileInfo.objects.all().filter(dir__project_id=1),
+			'project': project,
+			'project_dirs': Directory.objects.all().filter(project_id=project.id),
+			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
 			'image_form': UploadImage(),
 			'video_form': UploadVideo(),
 			'segmentation': Segmentation(),
@@ -236,8 +269,9 @@ def segmentation(response):
 	elif response.method == "POST":
 		param = {
 			'image': None,
-			'project': Directory.objects.all().filter(project_id=1),
-			'project_files': FileInfo.objects.all().filter(dir__project_id=1),
+			'project': project,
+			'project_dirs': Directory.objects.all().filter(project_id=project.id),
+			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
 			'image_form': UploadImage(),
 			'video_form': UploadVideo(),
 			'segmentation': Segmentation(initial={"pen": False, "eraser": False}),
@@ -313,7 +347,7 @@ def segmentation(response):
 		return render(response, "main/fire_segmentation.html", param)
 
 
-def generate_contour(request, file_id):
+def generate_contour(request, file_id, project_id):
 	try:
 		file = FileInfo.objects.get(id=file_id)
 	except FileInfo.DoesNotExist:
@@ -360,12 +394,18 @@ def generate_contour(request, file_id):
 	fs_wkt = "POLYGON ((" + fs_wkt[2:] + ", " + str(vertexes[0][0][0]) + " " + str(vertexes[0][0][1]) + "))\n"
 	print(fs_wkt)
 	# TODO: store polygon on db
-	return redirect("/segmentation?id=" + str(file_id))
+	return redirect('/projects/' + str(project_id) + '/segmentation')
 
 
-def progression(response):
+def progression(response, project_id):
+	try:
+		project = Project.objects.get(id=project_id)
+	except Project.DoesNotExist:
+		return redirect("/projects")
+
 	param = {
-		'project': Directory.objects.all().filter(project_id=1),
-		'project_files': FileInfo.objects.all().filter(dir__project_id=1),
+		'project': project,
+		'project_dirs': Directory.objects.all().filter(project_id=project.id),
+		'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
 	}
 	return render(response, "main/fire_progression.html", param)

@@ -8,9 +8,9 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-		<link rel="stylesheet" href="static/assets/css/projects.css"/>
-		<link rel="stylesheet" href="static/viewmodel/css/project_process.css"/>
-		<noscript><link rel="stylesheet" href="static/assets/css/noscript.css" /></noscript>
+		<link rel="stylesheet" href="/static/assets/css/projects.css"/>
+		<link rel="stylesheet" href="/static/viewmodel/css/project_process.css"/>
+		<noscript><link rel="stylesheet" href="/static/assets/css/noscript.css" /></noscript>
 	</head>
 	<body class="is-preload">
 
@@ -23,19 +23,19 @@
 							<div class="options">
 								<table>
 									<tr id="veg">
-										<td><a href="{% url 'vegetation' %}">Vegetation Characterization</a></td>
+										<td><a href="{% url 'vegetation' project.id %}">Vegetation Characterization</a></td>
 									</tr>
 									<tr id="seg">
-										<td><a href="{% url 'segmentation' %}">Fire Segmentation</a></td>
+										<td><a href="{% url 'segmentation' project.id %}">Fire Segmentation</a></td>
 									</tr>
 									<tr id="prog">
-										<td><a href="{% url 'progression' %}">Fire Progression</a></td>
+										<td><a href="{% url 'progression' project.id %}">Fire Progression</a></td>
 									</tr>
 								</table>
 							</div>
                         <div style="color: white">
 
-                        {% recursetree project %}
+                        {% recursetree project_dirs %}
                             <div {% if node.parent is not None %} style="padding-left: 2em" {% endif %}>
                                 {% comment %} show directory name {% endcomment %}
                                 {% if node.parent is None %}
