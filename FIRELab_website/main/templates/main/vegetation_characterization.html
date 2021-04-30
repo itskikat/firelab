@@ -1,6 +1,7 @@
 {% extends 'main/base_projects.html' %}
 
 {% block content %}
+    {% load static %}
 
 	<div class="toolkit">
 		<table>
@@ -54,8 +55,8 @@
 	</div>
 							 
 						
-<!-- CUSTUM SCRIPTS-->
-<script src="static/viewmodel/js/veg_chara.js"></script>
-<link rel="stylesheet" href="static/viewmodel/css/veg_chara.css"/>
+<!-- CUSTOM SCRIPTS-->
+    <script src="{% static 'viewmodel/js/veg_chara.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'viewmodel/css/veg_chara.css' %}"/>
 
 {% endblock %}

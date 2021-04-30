@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'main',
     'django.contrib.staticfiles',
-    'mptt'
+    'mptt',
+
+    'widget_tweaks', #create nice forms :')
 
 ]
 
