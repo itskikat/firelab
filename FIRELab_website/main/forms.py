@@ -49,3 +49,12 @@ class Segmentation(forms.Form):
     image_id = forms.IntegerField()
 
 
+class ProjectCreation(forms.Form):
+    name = forms.CharField(max_length=30, label="Project Name")
+    description = forms.CharField(label="Description", max_length=100, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(ProjectCreation, self).__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs = ({'id': 'project_name', 'placeholder': 'Enter project name', 'name': 'project_name'})
+        self.fields['description'].widget.attrs = ({'id': 'project_description', 'placeholder': 'Add a description to your project (optional)', 'name': 'project_description'})
+

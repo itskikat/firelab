@@ -80,15 +80,18 @@
 
 				<!-- POP WHEN NEW PROJECT-->
                 <div class="form-popup" id="myForm" style="height: fit-content; align-self: center;">
-                    <form action="." class="form-container">
+                    <form method="POST" action="{% url 'projects' %}" class="form-container">
+                        {% csrf_token %}
                         <h1>Create a new Project</h1>
                         <br>
-                        <label for="text"><b>Project Name:</b></label>
-                            <input id="project_name" type="text" placeholder="Enter project name" name="project_name" required>
-                        <label for="text"><b>Description:</b></label>
-                            <input id="project_description" type="text" placeholder="Add a description to your project (optional)" name="project_description">
+                        {{ creation_form.name.label }}
+                        {{ creation_form.name }}
+
+                        {{  creation_form.description.label }}
+                        {{  creation_form.description }}
+
                         <ul class="actions" style="margin-left: 1.5em; margin-bottom: auto;">
-                            <li><a href="#" class="button primary create">Create</a></li>
+                            <input type="submit" class="button primary create" value="Create">
                             <li id="cancel"><a onclick="closeForm()" class="button cancel">Cancel</a></li>
                         </ul>
                   </form>

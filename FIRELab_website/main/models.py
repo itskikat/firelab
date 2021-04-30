@@ -10,6 +10,7 @@ from django.dispatch.dispatcher import receiver
 # FILE STRUCTURE MODELS
 class Project(models.Model):
     name = models.CharField(max_length=30)
+    description = models.CharField(max_length=100, default=None, null=True, blank=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     creation_date = models.DateTimeField(auto_now_add=True)
     modification_date = models.DateTimeField(auto_now=True)
@@ -59,8 +60,13 @@ class FileInfo(models.Model):
         return self.dir.get_path() + "/" + self.name + "." + self.extension
 
 
+def image_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/frames/<video_name>/
+    return 'images/p{}_{}'.format(instance.file_info.dir.project.id, filename)
+
+
 class Image(models.Model):
-    content = models.ImageField(upload_to='images/', blank=False)
+    content = models.ImageField(upload_to=image_path, blank=False)
     file_info = models.OneToOneField(FileInfo, on_delete=models.CASCADE, blank=False)
 
     def __str__(self):
@@ -102,7 +108,7 @@ def video_delete(sender, instance, **kwargs):
 
 def video_frame_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/frames/<video_name>/
-    return 'frames/{}/{}'.format(instance.video.name, filename)
+    return 'frames/{}/p{}_{}'.format(instance.video.name, instance.file_info.dir.project.id, filename)
 
 
 class Frame(models.Model):

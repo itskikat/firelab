@@ -28,7 +28,7 @@
 			<tbody id="toolkit">
 			<tr>
 				<td id="pen" {% if segmentation.pen.value == True %} style="color: #B55B29" {% endif %} onclick="penOn()"><i class="fa fa-fire fa-lg" aria-hidden="true"></i></td>
-				<td onclick="window.location='/segmentation/save/{{ image.file_info.id }}'"><i class="fas fa-save fa-lg"></i></td>
+				<td onclick="window.location='/projects/{{ project.id }}/segmentation/save/{{ image.file_info.id }}'"><i class="fas fa-save fa-lg"></i></td>
 			</tr>
 			<tr>
 				<td id="eraser" {% if segmentation.eraser.value == True %} style="color: #B55B29" {% endif %} onclick="penOff()"><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i></td>

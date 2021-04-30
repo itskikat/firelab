@@ -36,7 +36,42 @@ def createAccountView(request):
 def projects(request):
 	if request.user.is_authenticated:
 		project_list = Project.objects.all().filter(owner=request.user)
-		return render(request, "main/projects.html", {'project_list': project_list})
+
+		if request.method == 'POST':
+			creation_form = ProjectCreation(request.POST)
+			if creation_form.is_valid():
+				new_project = Project(
+					name=creation_form.cleaned_data['name'],
+					description=creation_form.cleaned_data['description'],
+					owner=request.user
+				)
+				new_project.save()
+
+				root = Directory(
+					name='root',
+					project=new_project
+				)
+				root.save()
+
+				for d in ['Images', 'Masks', 'Frames']:
+					_d = Directory(
+						name=d,
+						project=new_project,
+						parent=root
+					)
+					_d.save()
+
+				creation_form = ProjectCreation()
+
+		else:
+			creation_form = ProjectCreation()
+
+		params = {
+			'project_list': project_list,
+			'creation_form': creation_form
+		}
+
+		return render(request, "main/projects.html", params)
 
 
 def account(response):
@@ -88,7 +123,7 @@ def upload(request, project_id):
 
 			try:
 				# file already exists in the server
-				FileInfo.objects.get(name=name, extension=extension)
+				FileInfo.objects.get(name=name, extension=extension, dir__project__id=project.id)
 				return HttpResponse("There is a file with that name already")
 
 			except FileInfo.DoesNotExist:
@@ -394,7 +429,7 @@ def generate_contour(request, file_id, project_id):
 	fs_wkt = "POLYGON ((" + fs_wkt[2:] + ", " + str(vertexes[0][0][0]) + " " + str(vertexes[0][0][1]) + "))\n"
 	print(fs_wkt)
 	# TODO: store polygon on db
-	return redirect('/projects/' + str(project_id) + '/segmentation')
+	return redirect('/projects/' + str(project_id) + '/segmentation?id=' + str(file_id))
 
 
 def progression(response, project_id):
