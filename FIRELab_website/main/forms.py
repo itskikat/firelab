@@ -58,3 +58,18 @@ class ProjectCreation(forms.Form):
         self.fields['name'].widget.attrs = ({'id': 'project_name', 'placeholder': 'Enter project name', 'name': 'project_name'})
         self.fields['description'].widget.attrs = ({'id': 'project_description', 'placeholder': 'Add a description to your project (optional)', 'name': 'project_description'})
 
+
+
+class Georreferencing(forms.Form):
+    marker = forms.BooleanField()
+    eraser = forms.BooleanField()
+    pixels = forms.CharField()
+    geo = forms.CharField()
+    frame_id = forms.IntegerField()
+
+class UploadCoordFile(forms.Form):
+    coords = forms.FileField(label="File with Polygon Coordinates")
+
+    def __init__(self, *args, **kwargs):
+        super(UploadCoordFile, self).__init__(*args, **kwargs)
+        self.fields['coords'].widget.attrs = ({'class': 'file-upload__input', 'name': 'coordsFile', 'id': 'coordsFile'})

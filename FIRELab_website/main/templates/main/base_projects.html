@@ -8,32 +8,37 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-		<link rel="stylesheet" href="/static/assets/css/projects.css"/>
-		<link rel="stylesheet" href="/static/viewmodel/css/project_process.css"/>
-		<noscript><link rel="stylesheet" href="/static/assets/css/noscript.css" /></noscript>
+        <!-- This is necessary for the popUp -->
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+		<link rel="stylesheet" href="{% static 'assets/css/projects.css' %}"/>
+		<link rel="stylesheet" href="{% static 'viewmodel/css/project_process.css' %}"/>
+		<noscript><link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}" /></noscript>
+        {% block extracss %}{% endblock %}
 	</head>
 	<body class="is-preload">
 
 		<!-- Page Wrapper -->
-			<div id="page-wrapper">
-				<!-- Main -->
-				<div class="split">
-					<div class="left">
-							<h2>FIRELab</h2>
-							<div class="options">
-								<table>
-									<tr id="veg">
-										<td><a href="{% url 'vegetation' project.id %}">Vegetation Characterization</a></td>
-									</tr>
-									<tr id="seg">
-										<td><a href="{% url 'segmentation' project.id %}">Fire Segmentation</a></td>
-									</tr>
-									<tr id="prog">
-										<td><a href="{% url 'progression' project.id %}">Fire Progression</a></td>
-									</tr>
-								</table>
-							</div>
-                        <div style="color: white">
+        <div id="page-wrapper">
+            <!-- Main -->
+            <div class="split">
+                <div class="left">
+                    <h2>FIRELab</h2>
+                    <div class="options">
+                        <table>
+                            <tr id="veg">
+                                <td><a href="{% url 'vegetation' project.id %}">Vegetation Characterization</a></td>
+                            </tr>
+                            <tr id="seg">
+                                <td><a href="{% url 'segmentation' project.id %}">Fire Segmentation</a></td>
+                            </tr>
+                            <tr id="prog">
+                                <td><a href="{% url 'progression' project.id %}">Fire Progression</a></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div style="color: white">
 
                         {% recursetree project_dirs %}
                             <div {% if node.parent is not None %} style="padding-left: 2em" {% endif %}>
@@ -60,50 +65,51 @@
                             </div>
                         {% endrecursetree %}
 
+                    </div>
 
-                        </div>
-						<div class="actions">
-							<a href="{% url 'projects' %}" class="leave"><i class="fas fa-arrow-circle-left"></i> Back to Projects</a>
-						</div>
-					</div>
-					<div class="right">
-						{% block content %}{% endblock %}
-					</div>
-				</div>
-					
-			</div>
+                <div class="actions">
+                    <a href="{% url 'projects' %}" class="leave"><i class="fas fa-arrow-circle-left"></i> Back to Projects</a>
+                </div>
+                </div>
+                <div class="right">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
 
-		    <!-- Scripts -->
-			<script src="{% static 'assets/js/jquery.min.js' %}"></script>
-			<script src="{% static 'assets/js/jquery.scrollex.min.js' %}"></script>
-			<script src="{% static 'assets/js/jquery.scrolly.min.js' %}"></script>
-			<script src="{% static 'assets/js/browser.min.js' %}"></script>
-			<script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
-			<script src="{% static 'assets/js/util.js' %}"></script>
-			<script src="{% static 'assets/js/main.js' %}"></script>
-			<script src="{% static 'assets/js/projects.js' %}"></script>
+    </div>
 
-			<!-- MOVE TO STATIC -->
-            <script>
-                function toggleChildren(childrenName) {
-                    let dirId = "#" + childrenName + "_children"
-                    let iconId = "#" + childrenName + "_icon"
-                    let displayType = $(dirId).css("display")
+    <!-- Scripts -->
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/jquery.scrollex.min.js' %}"></script>
+    <script src="{% static 'assets/js/jquery.scrolly.min.js' %}"></script>
+    <script src="{% static 'assets/js/browser.min.js' %}"></script>
+    <script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
+    <script src="{% static 'assets/js/util.js' %}"></script>
+    <script src="{% static 'assets/js/main.js' %}"></script>
+    <script src="{% static 'assets/js/projects.js' %}"></script>
+    {% block extrajs %}{% endblock %}
 
-                    if (displayType === "none") {
-                         $(dirId).css("display", "block")
-                        $(iconId).attr("class", "fas fa-caret-down")
-                    } else {
-                         $(dirId).css("display", "none")
-                        $(iconId).attr("class", "fas fa-caret-right")
-                    }
+    <!-- MOVE TO STATIC -->
+    <script>
+        function toggleChildren(childrenName) {
+            let dirId = "#" + childrenName + "_children"
+            let iconId = "#" + childrenName + "_icon"
+            let displayType = $(dirId).css("display")
 
-                }
-            </script>
+            if (displayType === "none") {
+                 $(dirId).css("display", "block")
+                $(iconId).attr("class", "fas fa-caret-down")
+            } else {
+                 $(dirId).css("display", "none")
+                $(iconId).attr("class", "fas fa-caret-right")
+            }
+
+        }
+    </script>
 
 
-			<!-- CUSTOM SCRIPTS -->
-			<script src="{% static 'viewmodel/js/project_process.js' %}"></script>
-			<script src="{% static 'viewmodel/js/upload.js' %}"></script>
+    <!-- CUSTOM SCRIPTS -->
+    <script src="{% static 'viewmodel/js/project_process.js' %}"></script>
+    <script src="{% static 'viewmodel/js/upload.js' %}"></script>
 	</body>
 </html>

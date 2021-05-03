@@ -424,7 +424,11 @@ def generate_contour(request, file_id, project_id):
 	return redirect('/projects/' + str(project_id) + '/segmentation?id=' + str(file_id))
 
 
-def progression(response, project_id):
+# TODO: Fire Progression Animation and Processing
+"""
+	GEOREFERENCING 
+"""
+def progression(request, project_id):
 	try:
 		project = Project.objects.get(id=project_id)
 	except Project.DoesNotExist:
@@ -435,4 +439,136 @@ def progression(response, project_id):
 		'project_dirs': Directory.objects.all().filter(project_id=project.id),
 		'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
 	}
-	return render(response, "main/fire_progression.html", param)
+
+	if request.method == "GET":
+		frame = None
+		if 'id' in request.GET:
+			try:
+				frame = Frames.objects.get(file_info_id=request.GET['id'])
+			except Frames.DoesNotExist:
+				frame = None
+
+		param = {
+			'frame': frame,
+			'project': project,
+			'project_dirs': Directory.objects.all().filter(project_id=project.id),
+			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
+			'video': Video.objects.all().filter(frames__file_info__dir_id=project.id),
+			'file_form': UploadCoordFile(),
+			'georreferencing': Georreferencing(),
+		}
+
+		# if the frame_id is valid check if it has been georreferenced
+		try:
+			_georreferenced = Frames.objects.get(id=frame, polygon__isnull=False)
+
+		except Frames.DoesNotExist:
+			return render(request, "main/fire_progression.html", param)
+
+		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
+		georreference = pickle.loads(_georreferenced.content)
+
+
+		return render(request, "main/fire_progression.html", param)
+
+	elif request.method == 'POST':
+		param = {
+			'frame': None,
+			'project': project,
+			'project_dirs': Directory.objects.all().filter(project_id=project.id),
+			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
+			'video': Video.objects.all().filter(frames__file_info__dir_id=project.id),
+			'file_form': UploadCoordFile(),
+			'georreferencing': Georreferencing(initial={"marker": False, "eraser": False}),
+		}
+
+		if 'frame_id' not in request.POST or request.POST['frame_id'] == '':
+			return redirect(request.build_absolute_uri())
+
+		mode = None
+		if 'marker' in request.POST:
+			param['georreferencing'] = Georreferencing(initial={'marker': True})
+		if 'eraser' in request.POST:
+			param['georreferencing'] = Georreferencing(initial={"eraser": True})
+			mode = False
+
+		# check if frame exists
+		_id = request.POST['frame_id']
+		try:
+			_frame = Frames.objects.get(file_info_id=_id)
+			_frame_file = _frame.file_info
+			param['frame'] = _frame
+		except Frames.DoesNotExist:
+			return render(request, 'main/fire_progression.html', param)
+
+		if 'pixels' not in request.POST or 'geo' not in request.POST:
+			return render(request, "main/fire_progression.html", param)
+
+		# compute the pairs from the coordinates
+		pixels_json = json.loads(request.POST['pixels'])
+		print(pixels_json)
+		geo_json = json.loads(request.POST['geo'])
+		print(geo_json)
+
+		# if the frame_id is valid check if it has been georreferenced
+		try:
+			_georreferenced = Frames.objects.get(id=_frame, polygon__isnull=False)
+
+		except Frames.DoesNotExist:
+			return render(request, "main/fire_progression.html", param)
+
+		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
+
+		#TODO: Georeference points
+
+
+
+	return render(request, "main/fire_progression.html", param)
+
+
+# TODO: Animate polygons
+'''
+def generate_georreference(request, file_id, project_id):
+	try:
+		file = FileInfo.objects.get(id=file_id)
+	except FileInfo.DoesNotExist:
+		return redirect(request.get_full_path())
+
+
+	img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, Image.objects.get(file_info=file).content.name)))
+
+	# create the final shape
+	mask_32S = mask.astype(np.int32)  # used to convert the mask to CV_32SC1 so it can be accepted by cv2.watershed()
+	blurred = cv2.blur(img, (2, 2))
+	cv2.watershed(blurred, mask_32S)
+
+	# convert shape to polygon
+	binary = np.float32(mask_32S)  # convert mask to CV_32FC1
+	_, binary = cv2.threshold(binary, 200, 255, cv2.THRESH_BINARY)
+	binary = binary.astype(np.uint8)
+
+	kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+	binary = cv2.dilate(binary, kernel)
+	binary = cv2.erode(binary, kernel)
+
+	_, vertexes, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+	if len(vertexes) > 1:
+		print("More than one polygon were identified")
+		# TODO: add return_bigger to Segmentation form and input on pop up
+		# if 'return_bigger' in request.GET and request.GET['return_bigger'] == "1":
+		sizes = [len(pol) for pol in vertexes]
+		vertexes = vertexes[sizes.index(max(sizes))]
+		#else:
+			#return redirect("/segmentation?id=" + str(file_id)) + "&error=TooManyValues
+	else:
+		vertexes = vertexes[0]
+
+	fs_wkt = ""
+	for point in vertexes:
+		fs_wkt += ", " + str(point[0][0]) + " " + str(point[0][1])
+	fs_wkt = "POLYGON ((" + fs_wkt[2:] + ", " + str(vertexes[0][0][0]) + " " + str(vertexes[0][0][1]) + "))\n"
+	print(fs_wkt)
+	# TODO: store polygon on db
+	return redirect('/projects/' + str(project_id) + '/progression?id=' + str(file_id))
+'''
