@@ -23,7 +23,7 @@ function openUpload() {
     var upload = document.getElementById("upload");
     if ( window.getComputedStyle(upload, null).getPropertyValue("display") === 'none') {
         upload.style.display = 'block';
-        img_seg.style.display = 'none';
+        // img_seg.style.display = 'none';
     } else {
         upload.style.display = 'none';
         img_seg.style.display = 'flex';
@@ -58,35 +58,6 @@ else if (x > 1.1) {
 }
 
 }
-
-let workingImage = $("#workingImage")
-let clicking, path;
-let maskOn = true
-
-workingImage.mousedown(function(event) {
-    let selectedFileId = JSON.parse("{{image.file_info.id|escapejs}}");
-    $("#id_image_id").val(selectedFileId);
-
-    clicking = true
-    path = []
-    let x = event.pageX - this.offsetLeft;
-    let y = event.pageY - this.offsetTop;
-    path.push( [x, y])
-});
-
-workingImage.mousemove(function(event) {
-    if (clicking !== true) return
-
-    let x = event.pageX - this.offsetLeft;
-    let y = event.pageY - this.offsetTop;
-    path.push( [x, y])
-});
-
-workingImage.mouseup(function(event) {
-    clicking = false;
-    $("#id_path").val(JSON.stringify(path));
-    document.getElementById("workingImageForm").submit();
-});
 
 function penOn() {
     $("#id_pen").attr('checked', true);
