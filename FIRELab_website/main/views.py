@@ -123,6 +123,8 @@ def upload(request, project_id):
 		form = UploadImage(request.POST, request.FILES)
 		if form.is_valid():
 			name, extension = request.FILES['image'].name.split('.')
+			print(request.FILES)
+			print(name, extension)
 
 			try:
 				# file already exists in the server
@@ -134,25 +136,21 @@ def upload(request, project_id):
 				_file_info = FileInfo(
 					name=name,
 					extension=extension,
-					type_id=FileType.objects.get(id=2),
 					dir=Directory.objects.get(name="Images", project_id=project.id)
 				)
 				_file_info.save()
-
-			_image = Frame(
-				file_info=_file_info,
-				content=request.FILES['image'],
-				mask=None,
-			)
-			_image.save()
+				_image = ImageFrame(
+					file_info=_file_info,
+					content=request.FILES['image'],
+				)
+				_image.save()
 
 			img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _image.content.name)))
 
-			# create empty mask of image's size
+			# create empty mask of image's size ans "serialize" it
 			_mask = np.zeros(img.shape[:2], np.uint8)
-			# "serialize" the mask
 			mask_encoded = pickle.dumps(_mask)
-			# save the mask on the omage object
+			# save mask in the previously created image
 			_image.mask = mask_encoded
 			_image.save()
 
@@ -160,6 +158,9 @@ def upload(request, project_id):
 
 
 def upload_video(request, project_id):
+	if not request.user.is_authenticated:
+		return redirect("/login")
+
 	try:
 		project = Project.objects.get(id=project_id)
 	except Project.DoesNotExist:
@@ -211,17 +212,24 @@ def upload_video(request, project_id):
 						_file_info = FileInfo(
 							name=frame_name,
 							extension='png',
-							type_id=FileType.objects.get(id=2),
 							dir=frames_dir
 						)
 						_file_info.save()
 
-						_frame = Frame(
+						_frame = ImageFrame(
 							video=video,
 							file_info=_file_info,
-							content=_frame
+							content=_frame,
 						)
 						_frame.save()
+
+						# create empty mask of image's size ans "serialize" it
+						_mask = np.zeros(frame.shape[:2], np.uint8)
+						mask_encoded = pickle.dumps(_mask)
+						# save mask in the previously created image
+						_frame.mask = mask_encoded
+						_frame.save()
+
 						frame_index += 1
 					cur_frame += 1
 			finally:
@@ -234,6 +242,9 @@ def upload_video(request, project_id):
 
 
 def segmentation(response, project_id):
+	if not response.user.is_authenticated:
+		return redirect("/login")
+
 	try:
 		project = Project.objects.get(id=project_id)
 	except Project.DoesNotExist:
@@ -243,8 +254,8 @@ def segmentation(response, project_id):
 		image = None
 		if 'id' in response.GET:
 			try:
-				image = Image.objects.get(file_info__id=response.GET['id'])
-			except Image.DoesNotExist:
+				image = ImageFrame.objects.get(file_info__id=response.GET['id'])
+			except ImageFrame.DoesNotExist:
 				image = None
 
 		param = {
@@ -258,14 +269,11 @@ def segmentation(response, project_id):
 		}
 
 		# if the image_id is valid check if it has a mask
-		try:
-			_mask = Mask.objects.get(image_id=image)
-
-		except Mask.DoesNotExist:
+		if image is None or image.mask is None:
 			return render(response, "main/fire_segmentation.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, image.content.name)))
-		mask = pickle.loads(_mask.content)
+		mask = pickle.loads(image.mask	)
 
 		mask_is_new = (mask == 0).all()
 		if mask_is_new:
@@ -274,11 +282,10 @@ def segmentation(response, project_id):
 		# "serialize" the updated mask
 		mask_encoded = pickle.dumps(mask)
 		# update the mask file on db
-		_mask.content = mask_encoded
-		_mask.save()
+		image.mask = mask_encoded
+		image.save()
 
-		mask_32S = mask.astype(
-			np.int32)  # used to convert the mask to CV_32SC1 so it can be accepted by cv2.watershed()
+		mask_32S = mask.astype(np.int32)  # used to convert the mask to CV_32SC1 so it can be accepted by cv2.watershed()
 		blurred = cv2.blur(img, (2, 2))
 		cv2.watershed(blurred, mask_32S)
 
@@ -319,11 +326,11 @@ def segmentation(response, project_id):
 		# check if image exists
 		_id = response.POST['image_id']
 		try:
-			_image = Image.objects.get(file_info__id=_id)
+			_image = ImageFrame.objects.get(file_info__id=_id)
 			_image_file = _image.file_info
 			param['image'] = _image
 
-		except Image.DoesNotExist:
+		except ImageFrame.DoesNotExist:
 			return render(response, "main/fire_segmentation.html", param)
 
 		if 'path' not in response.POST:
@@ -335,14 +342,11 @@ def segmentation(response, project_id):
 		mouse_path = path.astype(np.int)
 
 		# if the image_id is valid check if it has a mask
-		try:
-			_mask = Mask.objects.get(image_id=_image)
-
-		except Mask.DoesNotExist:
+		if _image is None or _image.mask is None:
 			return render(response, "main/fire_segmentation.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _image.content.name)))
-		mask = pickle.loads(_mask.content)
+		mask = pickle.loads(_image.mask)
 
 		# Segmenter_main.cpp implementation ########
 		# drawMask(): adds clicked points as interest points to the image mask
@@ -355,8 +359,8 @@ def segmentation(response, project_id):
 		# "serialize" the updated mask
 		mask_encoded = pickle.dumps(mask)
 		# update the mask file on db
-		_mask.content = mask_encoded
-		_mask.save()
+		_image.mask = mask_encoded
+		_image.save()
 
 		mask_32S = mask.astype(np.int32)  # used to convert the mask to CV_32SC1 so it can be accepted by cv2.watershed()
 		blurred = cv2.blur(img, (2, 2))
@@ -375,18 +379,21 @@ def segmentation(response, project_id):
 
 
 def generate_contour(request, file_id, project_id):
-	try:
-		file = FileInfo.objects.get(id=file_id)
-	except FileInfo.DoesNotExist:
-		return redirect(request.get_full_path())
+	if not request.user.is_authenticated:
+		return redirect("/login")
 
 	try:
-		_mask = Mask.objects.get(image_id__file_info_id=file_id)
-	except Mask.DoesNotExist:
+		project = Project.objects.get(id=project_id)
+	except Project.DoesNotExist:
+		return redirect("/projects")
+
+	try:
+		_image = ImageFrame.objects.get(file_info_id=file_id)
+	except ImageFrame.DoesNotExist:
 		return redirect(request.get_full_path())
 
-	img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, Image.objects.get(file_info=file).content.name)))
-	mask = pickle.loads(_mask.content)
+	img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _image.content.name)))
+	mask = pickle.loads(_image.mask)
 
 	# create the final shape
 	mask_32S = mask.astype(np.int32)  # used to convert the mask to CV_32SC1 so it can be accepted by cv2.watershed()
@@ -526,8 +533,6 @@ def progression(request, project_id):
 	return render(request, "main/fire_progression.html", param)
 
 
-# TODO: Animate polygons
-'''
 def generate_georreference(request, file_id, project_id):
 	try:
 		file = FileInfo.objects.get(id=file_id)
@@ -571,4 +576,3 @@ def generate_georreference(request, file_id, project_id):
 	print(fs_wkt)
 	# TODO: store polygon on db
 	return redirect('/projects/' + str(project_id) + '/progression?id=' + str(file_id))
-'''

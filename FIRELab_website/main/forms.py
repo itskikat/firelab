@@ -59,7 +59,6 @@ class ProjectCreation(forms.Form):
         self.fields['description'].widget.attrs = ({'id': 'project_description', 'placeholder': 'Add a description to your project (optional)', 'name': 'project_description'})
 
 
-
 class Georreferencing(forms.Form):
     marker = forms.BooleanField()
     eraser = forms.BooleanField()

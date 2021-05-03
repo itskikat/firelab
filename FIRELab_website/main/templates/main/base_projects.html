@@ -20,25 +20,25 @@
 	<body class="is-preload">
 
 		<!-- Page Wrapper -->
-        <div id="page-wrapper">
-            <!-- Main -->
-            <div class="split">
-                <div class="left">
-                    <h2>FIRELab</h2>
-                    <div class="options">
-                        <table>
-                            <tr id="veg">
-                                <td><a href="{% url 'vegetation' project.id %}">Vegetation Characterization</a></td>
-                            </tr>
-                            <tr id="seg">
-                                <td><a href="{% url 'segmentation' project.id %}">Fire Segmentation</a></td>
-                            </tr>
-                            <tr id="prog">
-                                <td><a href="{% url 'progression' project.id %}">Fire Progression</a></td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div style="color: white">
+			<div id="page-wrapper">
+				<!-- Main -->
+				<div class="split">
+					<div class="left">
+							<h2>FIRELab</h2>
+							<div class="options">
+								<table>
+									<tr id="veg">
+										<td><a href="{% url 'vegetation' project.id %}">Vegetation Characterization</a></td>
+									</tr>
+									<tr id="seg">
+										<td><a href="{% url 'segmentation' project.id %}">Fire Segmentation</a></td>
+									</tr>
+									<tr id="prog">
+										<td><a href="{% url 'progression' project.id %}">Fire Progression</a></td>
+									</tr>
+								</table>
+							</div>
+                        <div style="color: white">
 
                         {% recursetree project_dirs %}
                             <div {% if node.parent is not None %} style="padding-left: 2em" {% endif %}>
@@ -53,7 +53,7 @@
                                     {% comment %} show files of directory {% endcomment %}
                                     {% for f in project_files %}
                                         {% if f.dir == node %}
-                                            <a title=" {{ f.get_path }}" style="padding-left: 2em; width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" {%  if f.type_id.id == 2 %} href="./segmentation?id={{ f.id }}" {% endif %}> {{ f.name }}.{{ f.extension }}</a>
+                                            <a title=" {{ f.get_path }}" style="padding-left: 2em; width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/segmentation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
                                         {% endif %}
                                     {% endfor %}
 
@@ -65,18 +65,19 @@
                             </div>
                         {% endrecursetree %}
 
-                    </div>
 
-                <div class="actions">
-                    <a href="{% url 'projects' %}" class="leave"><i class="fas fa-arrow-circle-left"></i> Back to Projects</a>
-                </div>
-                </div>
-                <div class="right">
-                    {% block content %}{% endblock %}
-                </div>
-            </div>
+                        </div>
+						<div class="actions">
+							<a href="{% url 'projects' %}" class="leave"><i class="fas fa-arrow-circle-left"></i> Back to Projects</a>
+						</div>
+					</div>
+					<div class="right">
+						{% block content %}{% endblock %}
+					</div>
+				</div>
 
-    </div>
+			</div>
+
 
     <!-- Scripts -->
     <script src="{% static 'assets/js/jquery.min.js' %}"></script>
