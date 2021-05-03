@@ -436,23 +436,20 @@ def generate_contour(request, file_id, project_id):
 	GEOREFERENCING 
 """
 def progression(request, project_id):
+	if not request.user.is_authenticated:
+		return redirect("/login")
+
 	try:
 		project = Project.objects.get(id=project_id)
 	except Project.DoesNotExist:
 		return redirect("/projects")
 
-	param = {
-		'project': project,
-		'project_dirs': Directory.objects.all().filter(project_id=project.id),
-		'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-	}
-
 	if request.method == "GET":
 		frame = None
 		if 'id' in request.GET:
 			try:
-				frame = Frames.objects.get(file_info_id=request.GET['id'])
-			except Frames.DoesNotExist:
+				frame = ImageFrame.objects.get(file_info_id=request.GET['id'])
+			except ImageFrame.DoesNotExist:
 				frame = None
 
 		param = {
@@ -460,20 +457,16 @@ def progression(request, project_id):
 			'project': project,
 			'project_dirs': Directory.objects.all().filter(project_id=project.id),
 			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-			'video': Video.objects.all().filter(frames__file_info__dir_id=project.id),
 			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(),
 		}
 
 		# if the frame_id is valid check if it has been georreferenced
-		try:
-			_georreferenced = Frames.objects.get(id=frame, polygon__isnull=False)
-
-		except Frames.DoesNotExist:
-			return render(request, "main/fire_progression.html", param)
+		if frame is None or frame.polygon is None:
+			return render(request, "main/fire_segmentation.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
-		georreference = pickle.loads(_georreferenced.content)
+		georreference = pickle.loads(frame.polygon)
 
 
 		return render(request, "main/fire_progression.html", param)
@@ -484,7 +477,6 @@ def progression(request, project_id):
 			'project': project,
 			'project_dirs': Directory.objects.all().filter(project_id=project.id),
 			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-			'video': Video.objects.all().filter(frames__file_info__dir_id=project.id),
 			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(initial={"marker": False, "eraser": False}),
 		}
@@ -495,6 +487,8 @@ def progression(request, project_id):
 		mode = None
 		if 'marker' in request.POST:
 			param['georreferencing'] = Georreferencing(initial={'marker': True})
+			mode = True
+
 		if 'eraser' in request.POST:
 			param['georreferencing'] = Georreferencing(initial={"eraser": True})
 			mode = False
@@ -502,10 +496,10 @@ def progression(request, project_id):
 		# check if frame exists
 		_id = request.POST['frame_id']
 		try:
-			_frame = Frames.objects.get(file_info_id=_id)
+			_frame = ImageFrame.objects.get(file_info_id=_id)
 			_frame_file = _frame.file_info
 			param['frame'] = _frame
-		except Frames.DoesNotExist:
+		except ImageFrame.DoesNotExist:
 			return render(request, 'main/fire_progression.html', param)
 
 		if 'pixels' not in request.POST or 'geo' not in request.POST:
@@ -518,11 +512,8 @@ def progression(request, project_id):
 		print(geo_json)
 
 		# if the frame_id is valid check if it has been georreferenced
-		try:
-			_georreferenced = Frames.objects.get(id=_frame, polygon__isnull=False)
-
-		except Frames.DoesNotExist:
-			return render(request, "main/fire_progression.html", param)
+		if _frame is None or _frame.polygon is None:
+			return render(request, "main/fire_segmentation.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
 
@@ -532,15 +523,30 @@ def progression(request, project_id):
 
 	return render(request, "main/fire_progression.html", param)
 
-
+# TODO: Animate Polygons
+'''
 def generate_georreference(request, file_id, project_id):
+		if not request.user.is_authenticated:
+		return redirect("/login")
+
 	try:
-		file = FileInfo.objects.get(id=file_id)
-	except FileInfo.DoesNotExist:
+		project = Project.objects.get(id=project_id)
+	except Project.DoesNotExist:
+		return redirect("/projects")
+		
+	try:
+		_frame = ImageFrame.objects.get(file_info_id=file_id)
+	except ImageFrame.DoesNotExist:
 		return redirect(request.get_full_path())
 
 
-	img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, Image.objects.get(file_info=file).content.name)))
+	img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
+	polygonm = pickle.loads(_frame.polygon)
+	georeference = pickle.loads(_frame.georeference)
+
+	
+
+
 
 	# create the final shape
 	mask_32S = mask.astype(np.int32)  # used to convert the mask to CV_32SC1 so it can be accepted by cv2.watershed()
@@ -574,5 +580,8 @@ def generate_georreference(request, file_id, project_id):
 		fs_wkt += ", " + str(point[0][0]) + " " + str(point[0][1])
 	fs_wkt = "POLYGON ((" + fs_wkt[2:] + ", " + str(vertexes[0][0][0]) + " " + str(vertexes[0][0][1]) + "))\n"
 	print(fs_wkt)
-	# TODO: store polygon on db
+	
+	
+	
 	return redirect('/projects/' + str(project_id) + '/progression?id=' + str(file_id))
+'''
