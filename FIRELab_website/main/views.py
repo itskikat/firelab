@@ -518,9 +518,31 @@ def progression(request, project_id):
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
 
 		#TODO: Georeference points
+		pts_src = np.array(pixels_json)
+		pts_dst = np.array(geo_json)
+				
+		#given reference points from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
+		h, status = cv2.findHomography(pts_src, pts_dst) 
+			
 
-
-
+		#TODO read from file
+		coords = polygon.split("((")[1].split("))")[0].split(",")
+				
+		geo_coords = ""
+		wkt_str = ""
+		for coord in coords:
+			coord_split = coord.strip().split(" ")
+			point_homogenous = h.dot([float(coord_split[0]), float(coord_split[1]), 1])
+			if len(point_homogenous) != 3:
+				geo_coord= [0,0]
+			else:
+				z = point_homogenous[2]
+				geo_coord= [point_homogenous[0]/z, point_homogenous[1]/z]
+			geo_coords = geo_coords + str(geo_coord[0]) + " " + str(geo_coord[1])+ ", "
+			geo_coords = geo_coords[:-2]
+			wkt_str = "POLYGON ((" + geo_coords + "))"
+		print(wkt_str)
+		#TODO save georef polygon
 	return render(request, "main/fire_progression.html", param)
 
 # TODO: Animate Polygons
