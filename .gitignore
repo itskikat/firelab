@@ -187,3 +187,5 @@ Thumbs.db #thumbnail cache on Windows
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/vscode,macos,python
+
+.idea/*
