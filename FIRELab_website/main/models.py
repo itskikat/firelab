@@ -56,6 +56,7 @@ class Video(models.Model):
     frame_number = models.IntegerField(blank=False)
     name = models.CharField(max_length=50)
     extension = models.CharField(max_length=10)
+    extension = models.CharField(max_length=10)
     content = models.FileField(upload_to='videos/', blank=True, null=True, default=None)
 
     def __str__(self):

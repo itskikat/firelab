@@ -236,6 +236,7 @@ def upload_video(request, project_id):
 				video_capture.release()
 				# delete content from model and from file system
 				video.content.delete()
+				print(video.content)
 
 	return redirect("/projects/" + str(project_id) + "/segmentation")
 

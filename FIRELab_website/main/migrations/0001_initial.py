@@ -58,6 +58,16 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
+            name='Video',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('frame_number', models.IntegerField()),
+                ('name', models.CharField(max_length=50)),
+                ('extension', models.CharField(max_length=10)),
+                ('content', models.FileField(blank=True, default=None, null=True, upload_to='videos/')),
+            ],
+        ),
+        migrations.CreateModel(
             name='Project',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -74,6 +84,17 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('content', models.ImageField(upload_to=main.models.image_path)),
                 ('mask', models.BinaryField(blank=True, default=None, null=True)),
+                ('polygon', models.CharField(blank=True, default=None, max_length=100, null=True)),
+                ('file_info', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='main.fileinfo')),
+                ('video', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='main.video')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Frames',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('content', models.ImageField(upload_to=main.models.video_frame_path)),
+                ('mask', models.BinaryField(blank=True, default=True, null=True)),
                 ('polygon', models.CharField(blank=True, default=None, max_length=100, null=True)),
                 ('file_info', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='main.fileinfo')),
                 ('video', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='main.video')),
