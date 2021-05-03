@@ -3,6 +3,11 @@
 {% load static %}
 
 {% block content %}
+
+    {% block extracss %}
+        <link rel="stylesheet" href="{% static 'viewmodel/css/fire_seg.css' %}"/>
+    {% endblock %}
+
     <form id="workingImageForm" action="./segmentation" method="POST">
     {% if image is not None %}
         <div hidden>
@@ -67,7 +72,9 @@
 {#                    <input type="text" name="video-fpm" id="video-fpm" value="5" style="padding-left: 10px" />#}
                     {{ video_form.frames }}
                 </div>
-                <input type="submit" value="Upload video">
+                <div style="padding: 1%;">
+                    <input type="submit" id="submit_vd" value="Upload video">
+                </div>
             </form>
 
 		</div>
@@ -79,13 +86,15 @@
                 {{ image_form.image }} {#	 <input class="file-upload__input" type="file" name="videoFile" id="videoFile"> #}
                 <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
                 <span class="file-upload__label"></span>
-                <input type="submit" value="Upload image">
+                <div style="padding: 1%;">
+                    <input type="submit" id="submit_bt" value="Upload image">
+                </div>
 			</form>
 		</div>
-		
-	</div>
 
-    <div class="fire_timeline">
+	</div>
+    {% if image.video %}
+        <div class="fire_timeline">
          <p style="display: none" id="open">FIRE Timeline <a id="openT" title="Open Timeline" onclick="openTimeline()"><i id="openTimeline" class="fas fa-angle-up"></i></a></p>
         <div id="timeline">
             <div id="title_timeline">
@@ -107,14 +116,13 @@
         </div>
 
     </div>
-	
+    {% endif %}
 
-    <link rel="stylesheet" href="{% static 'viewmodel/css/fire_seg.css' %}"/>
-    <script src="{% static 'viewmodel/js/fire_seg.js' %}"></script>
-    <script>
+    {% block extrajs %}
 
+        <script src="{% static 'viewmodel/js/fire_seg.js' %}"></script>
+        <script>
         let workingImage = $("#workingImage")
-        let staticImage = $("#hiddenWorkingImage")
         let clicking, path;
         let maskOn = true
 
@@ -142,33 +150,7 @@
             $("#id_path").val(JSON.stringify(path));
             document.getElementById("workingImageForm").submit();
         });
-
-        function penOn() {
-            $("#id_pen").attr('checked', true);
-            $("#id_eraser").attr('checked', false);
-            $("#pen").css("color", "#B55B29")
-            $("#eraser").css("color", "")
-        }
-
-        function penOff() {
-            $("#id_pen").attr('checked', false);
-            $("#id_eraser").attr('checked', true);
-            $("#pen").css("color", "")
-            $("#eraser").css("color", "#B55B29")
-        }
-
-        $("#maskToggle").click(function (event) {
-            maskOn = !maskOn;
-            if (maskOn) {
-                workingImage.show()
-                staticImage.hide()
-            } else {
-                workingImage.hide()
-                staticImage.show()
-            }
-        });
-
-
-    </script>
+        </script>
+    {% endblock %}
 
 {% endblock %}
