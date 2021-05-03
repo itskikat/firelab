@@ -74,7 +74,7 @@
 		<br/>
 		<div class="images">
 			<p id="titles">Images:</p>
-			<form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload' project.id %}" enctype="multipart/form-data">
+			<form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload' project.id%}" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ image_form.image }} {#	 <input class="file-upload__input" type="file" name="videoFile" id="videoFile"> #}
                 <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
@@ -84,6 +84,29 @@
 		</div>
 		
 	</div>
+
+        <div class="fire_timeline">
+         <p style="display: none" id="open">FIRE Timeline <a id="openT" title="Open Timeline" onclick="openTimeline()"><i id="openTimeline" class="fas fa-angle-up"></i></a></p>
+        <div id="timeline">
+            <div id="title_timeline">
+                <p>FIRE Timeline <a id="closeT" title="Close Timeline" onclick="closeTimeline()"><i id="closeTimeline" class="fas fa-times"></i></a></p>
+                <hr class="solid">
+            </div>
+            <div class="frames_timeline">
+                <table id="frameTable">
+                  <tr>
+                    <td><img src="{{ image.content.url }}"></td>
+                    <td><img src="{{ image.content.url }}"></td>
+                    <td><img src="{{ image.content.url }}"></td>
+                    <td><img src="{{ image.content.url }}"></td>
+                    <td style="width: auto !important;"></td>
+                  </tr>
+
+                </table>
+            </div>
+        </div>
+
+    </div>
 	
 
     <link rel="stylesheet" href="{% static 'viewmodel/css/fire_seg.css' %}"/>

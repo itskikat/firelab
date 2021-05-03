@@ -48,7 +48,7 @@
                                     {% comment %} show files of directory {% endcomment %}
                                     {% for f in project_files %}
                                         {% if f.dir == node %}
-                                            <a title=" {{ f.get_path }}" style="padding-left: 2em; width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" {%  if f.type_id.id == 2 %} href="./segmentation?id={{ f.id }}" {% endif %}> {{ f.name }}.{{ f.extension }}</a>
+                                            <a title=" {{ f.get_path }}" style="padding-left: 2em; width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/segmentation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
                                         {% endif %}
                                     {% endfor %}
 
