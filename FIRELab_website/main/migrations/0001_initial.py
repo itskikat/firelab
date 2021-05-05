@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='FileInfo',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=50)),
                 ('extension', models.CharField(max_length=10)),
                 ('dir', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.directory')),
@@ -70,6 +70,14 @@ class Migration(migrations.Migration):
                 ('polygon', models.CharField(blank=True, default=None, max_length=100, null=True)),
                 ('file_info', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='main.fileinfo')),
                 ('video', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='main.video')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='CoordsFile',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('file_info', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='main.fileinfo')),
+                ('content', models.FileField(blank=True, default=None, null=True, upload_to='poligonos/')),
             ],
         ),
         migrations.AddField(

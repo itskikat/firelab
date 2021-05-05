@@ -156,6 +156,41 @@ def upload(request, project_id):
 
 	return redirect("/projects/" + str(project_id) + "/segmentation")
 
+def upload_polygon(request, project_id):
+	if not request.user.is_authenticated:
+		return redirect("/login")
+
+	try:
+		project = Project.objects.get(id=project_id)
+	except Project.DoesNotExist:
+		return redirect("/projects")
+
+	if request.method == 'POST':
+		form = UploadCoordFile(request.POST, request.FILES)
+		if form.is_valid():
+			name, extension = request.FILES['coords'].name.split('.')
+
+			try:
+				# file already exists in the server
+				FileInfo.objects.get(name=name, extension=extension, dir__project__id=project.id)
+				return HttpResponse("There is a file with that name already")
+
+			except FileInfo.DoesNotExist:
+				# create file info
+				_file_info = FileInfo(
+					name=name,
+					extension=extension,
+					dir=Directory.objects.get(name="poligonos", project_id=project.id)
+				)
+				_file_info.save()
+				_coords = CoordsFile(
+					file_info=_file_info,
+					content=request.FILES['coords'],
+				)
+				_coords.save()
+		
+	return redirect("/projects/" + str(project_id) + "/progression")
+
 
 def upload_video(request, project_id):
 	if not request.user.is_authenticated:
@@ -408,9 +443,8 @@ def generate_contour(request, file_id, project_id):
 	kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
 	binary = cv2.dilate(binary, kernel)
 	binary = cv2.erode(binary, kernel)
-
-	_, vertexes, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-
+	vertexes,_ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+	
 	if len(vertexes) > 1:
 		print("More than one polygon were identified")
 		# TODO: add return_bigger to Segmentation form and input on pop up
@@ -421,14 +455,14 @@ def generate_contour(request, file_id, project_id):
 			#return redirect("/segmentation?id=" + str(file_id)) + "&error=TooManyValues
 	else:
 		vertexes = vertexes[0]
-
 	fs_wkt = ""
 	for point in vertexes:
 		fs_wkt += ", " + str(point[0][0]) + " " + str(point[0][1])
 	fs_wkt = "POLYGON ((" + fs_wkt[2:] + ", " + str(vertexes[0][0][0]) + " " + str(vertexes[0][0][1]) + "))\n"
-	print(fs_wkt)
+	
+	_image.save()
 	# TODO: store polygon on db
-	return redirect('/projects/' + str(project_id) + '/segmentation?id=' + str(file_id))
+	return redirect('/projects/' + str(project_id) + '/progression?id=' + str(file_id))
 
 
 # TODO: Fire Progression Animation and Processing
@@ -445,13 +479,14 @@ def progression(request, project_id):
 		return redirect("/projects")
 
 	if request.method == "GET":
+		print("get")
 		frame = None
 		if 'id' in request.GET:
 			try:
 				frame = ImageFrame.objects.get(file_info_id=request.GET['id'])
 			except ImageFrame.DoesNotExist:
 				frame = None
-
+		
 		param = {
 			'frame': frame,
 			'project': project,
@@ -460,18 +495,19 @@ def progression(request, project_id):
 			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(),
 		}
-
+		#static polygon for tests
+		#frame.polygon= "POLYGON ((261 277, 260 278, 260 279, 260 280, 260 281, 260 282, 260 283, 260 284, 261 285, 261 286, 262 286, 263 286, 264 286, 265 287, 265 288, 265 289, 265 290, 265 291, 264 292, 263 292, 262 292, 263 293, 264 293, 265 294, 265 295, 265 296, 265 297, 265 298, 264 299, 265 300, 265 301, 265 302, 266 303, 267 304, 268 305, 268 306, 269 307, 269 308, 269 309, 269 310, 269 311, 269 312, 268 313, 268 314, 268 315, 268 316, 268 317, 269 318, 269 319, 270 319, 271 319, 272 319, 273 319, 274 320, 275 321, 276 321, 277 321, 278 322, 278 323, 278 324, 278 325, 279 325, 280 326, 280 325, 280 324, 280 323, 280 322, 281 321, 282 321, 283 321, 284 320, 285 320, 286 319, 286 318, 287 317, 288 316, 288 315, 288 314, 288 313, 288 312, 288 311, 288 310, 288 309, 289 308, 290 307, 290 306, 289 305, 289 304, 288 303, 288 302, 288 301, 288 300, 288 299, 289 298, 288 297, 288 296, 288 295, 288 294, 287 294, 286 293, 285 293, 284 293, 283 293, 282 292, 281 292, 280 291, 279 290, 279 289, 279 288, 279 287, 279 286, 278 286, 277 285, 277 284, 277 283, 276 283, 275 283, 274 283, 273 283, 272 283, 271 283, 270 284, 269 284, 268 284, 267 284, 266 284, 265 284, 264 284, 263 283, 262 282, 262 281, 262 280, 262 279, 262 278, 262 277, 261 277))"
 		# if the frame_id is valid check if it has been georreferenced
 		if frame is None or frame.polygon is None:
-			return render(request, "main/fire_segmentation.html", param)
-
+			return render(request, "main/fire_progression.html", param)
+		
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
-		georreference = pickle.loads(frame.polygon)
-
-
+		
+		print("endget")
 		return render(request, "main/fire_progression.html", param)
 
 	elif request.method == 'POST':
+		print("post")
 		param = {
 			'frame': None,
 			'project': project,
@@ -495,7 +531,7 @@ def progression(request, project_id):
 
 		# check if frame exists
 		_id = request.POST['frame_id']
-		try:
+		try:	
 			_frame = ImageFrame.objects.get(file_info_id=_id)
 			_frame_file = _frame.file_info
 			param['frame'] = _frame
@@ -513,6 +549,7 @@ def progression(request, project_id):
 
 		# if the frame_id is valid check if it has been georreferenced
 		if _frame is None or _frame.polygon is None:
+			print(frame)
 			return render(request, "main/fire_segmentation.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
