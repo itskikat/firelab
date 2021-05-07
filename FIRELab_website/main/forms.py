@@ -61,7 +61,6 @@ class ProjectCreation(forms.Form):
 
 class Georreferencing(forms.Form):
     marker = forms.BooleanField()
-    eraser = forms.BooleanField()
     pixels = forms.CharField()
     geo = forms.CharField()
     frame_id = forms.IntegerField()

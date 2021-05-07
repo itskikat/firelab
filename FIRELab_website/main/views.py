@@ -467,6 +467,9 @@ def progression(request, project_id):
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
 		georreference = pickle.loads(frame.polygon)
+		print(georreference)
+
+		param['georreferenced'] = georreference
 
 
 		return render(request, "main/fire_progression.html", param)
@@ -477,8 +480,8 @@ def progression(request, project_id):
 			'project': project,
 			'project_dirs': Directory.objects.all().filter(project_id=project.id),
 			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-			'file_form': UploadCoordFile(),
-			'georreferencing': Georreferencing(initial={"marker": False, "eraser": False}),
+			# 'file_form': UploadCoordFile(),
+			'georreferencing': Georreferencing(initial={"marker": False}),
 		}
 
 		if 'frame_id' not in request.POST or request.POST['frame_id'] == '':
@@ -488,10 +491,6 @@ def progression(request, project_id):
 		if 'marker' in request.POST:
 			param['georreferencing'] = Georreferencing(initial={'marker': True})
 			mode = True
-
-		if 'eraser' in request.POST:
-			param['georreferencing'] = Georreferencing(initial={"eraser": True})
-			mode = False
 
 		# check if frame exists
 		_id = request.POST['frame_id']
@@ -525,9 +524,9 @@ def progression(request, project_id):
 		h, status = cv2.findHomography(pts_src, pts_dst) 
 			
 
-		#TODO read from file
-		coords = polygon.split("((")[1].split("))")[0].split(",")
-				
+		coords = (_frame.polygon).split("((")[1].split("))")[0].split(",")
+
+
 		geo_coords = ""
 		wkt_str = ""
 		for coord in coords:
@@ -543,12 +542,15 @@ def progression(request, project_id):
 			wkt_str = "POLYGON ((" + geo_coords + "))"
 		print(wkt_str)
 		#TODO save georef polygon
+
+		# Converted polygon WKT, to be analyzed by JS
+		param['geo_polygon'] = wkt_str
 	return render(request, "main/fire_progression.html", param)
 
 # TODO: Animate Polygons
 '''
 def generate_georreference(request, file_id, project_id):
-		if not request.user.is_authenticated:
+	if not request.user.is_authenticated:
 		return redirect("/login")
 
 	try:
@@ -563,45 +565,12 @@ def generate_georreference(request, file_id, project_id):
 
 
 	img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
-	polygonm = pickle.loads(_frame.polygon)
+	polygon = pickle.loads(_frame.polygon)
 	georeference = pickle.loads(_frame.georeference)
-
+	
 	
 
-
-
-	# create the final shape
-	mask_32S = mask.astype(np.int32)  # used to convert the mask to CV_32SC1 so it can be accepted by cv2.watershed()
-	blurred = cv2.blur(img, (2, 2))
-	cv2.watershed(blurred, mask_32S)
-
-	# convert shape to polygon
-	binary = np.float32(mask_32S)  # convert mask to CV_32FC1
-	_, binary = cv2.threshold(binary, 200, 255, cv2.THRESH_BINARY)
-	binary = binary.astype(np.uint8)
-
-	kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-	binary = cv2.dilate(binary, kernel)
-	binary = cv2.erode(binary, kernel)
-
-	_, vertexes, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-
-	if len(vertexes) > 1:
-		print("More than one polygon were identified")
-		# TODO: add return_bigger to Segmentation form and input on pop up
-		# if 'return_bigger' in request.GET and request.GET['return_bigger'] == "1":
-		sizes = [len(pol) for pol in vertexes]
-		vertexes = vertexes[sizes.index(max(sizes))]
-		#else:
-			#return redirect("/segmentation?id=" + str(file_id)) + "&error=TooManyValues
-	else:
-		vertexes = vertexes[0]
-
-	fs_wkt = ""
-	for point in vertexes:
-		fs_wkt += ", " + str(point[0][0]) + " " + str(point[0][1])
-	fs_wkt = "POLYGON ((" + fs_wkt[2:] + ", " + str(vertexes[0][0][0]) + " " + str(vertexes[0][0][1]) + "))\n"
-	print(fs_wkt)
+	
 	
 	
 	

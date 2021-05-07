@@ -21,5 +21,5 @@ urlpatterns = [
     path("projects/<int:project_id>/segmentation/save/<int:file_id>", views.generate_contour, name="upload"),
     path("projects/<int:project_id>/progression", views.progression, name="progression"),
 
-    path("projects/<int:project_id>/progression/save/<int:file_id>", views.generate_georreference, name="upload"),
+    # path("projects/<int:project_id>/progression/play/<int:file_id>", views.play_animation, name="play animation"),
 ]
