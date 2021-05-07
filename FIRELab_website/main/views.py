@@ -544,7 +544,7 @@ def progression(request, project_id):
 		#TODO save georef polygon
 
 		# Converted polygon WKT, to be analyzed by JS
-		param['geo_polygon'] = wkt_str
+		param['georreferenced'] = wkt_str
 	return render(request, "main/fire_progression.html", param)
 
 # TODO: Animate Polygons

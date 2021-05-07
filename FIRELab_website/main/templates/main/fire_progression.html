@@ -31,7 +31,7 @@
         {% csrf_token %}
         <div id="img_prog"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
         {% if georreferenced %}
-            <div id="polygon_georreferenced">
+            <div hidden id="polygon_georreferenced">
             {{ georreferenced }}>
             </div>
             <img hidden draggable="false" id="WorkingImage" src={{ frame.content.url }}>
