@@ -463,7 +463,7 @@ def progression(request, project_id):
 
 		# if the frame_id is valid check if it has been georreferenced
 		if frame is None or frame.polygon is None:
-			return render(request, "main/fire_segmentation.html", param)
+			return render(request, "main/fire_progression.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
 		georreference = pickle.loads(frame.polygon)

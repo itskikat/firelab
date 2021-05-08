@@ -25,6 +25,19 @@ function openUpload() {
 	
 }
 
+function openMap() {
+	var map = document.getElementById("map");
+	var animationButtons = document.getElementById("animationButtons");
+	if ( window.getComputedStyle(map, null).getPropertyValue("display") === 'none' && window.getComputedStyle(animationButtons, null).getPropertyValue("display") === 'none') {
+        map.style.display = 'block';
+        animationButtons.style.display = 'block';
+    } else {
+        map.style.display = 'none';
+        animationButtons.style.display = 'none';
+    }
+
+}
+
 console.log('YEEEET');
 
     let popUp = $('#popUpGEO')
@@ -91,14 +104,14 @@ console.log('YEEEET');
         $("#eraser").css("color", "")
     }
 
-	```
-    function markerOff() {
-        $("#id_marker").attr('checked', false);
-        $("#id_eraser").attr('checked', true);
-        $("#marker").css("color", "")
-        $("#eraser").css("color", "#B55B29")
-    }
-    ```
+
+    // function markerOff() {
+    //    $("#id_marker").attr('checked', false);
+    //    $("#id_eraser").attr('checked', true);
+    //    $("#marker").css("color", "")
+    //    $("#eraser").css("color", "#B55B29")
+    // }
+
 
     function saveCoords() {
         clicking = false;
@@ -109,10 +122,8 @@ console.log('YEEEET');
 
 
 
-	```
-		ANIMAÇÃO QUE TÁ GG PARA OS PROFS MAS É UMA BECS RÚSTICA KSKSKS
-		IT AIN'T MUCH BUT IT'S HONEST WORK <3
-	```
+	// ANIMAÇÃO QUE TÁ GG PARA OS PROFS MAS É UMA BECS RÚSTICA KSKSKS
+	// IT AIN'T MUCH BUT IT'S HONEST WORK <3
 
 
 	// SHOW THE MAP
