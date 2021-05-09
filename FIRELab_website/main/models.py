@@ -1,9 +1,12 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 from mptt.models import MPTTModel, TreeForeignKey
+from django.contrib.gis.db import models as gisModels
 # to delete media on object deletion
 from django.db.models.signals import pre_delete, post_delete
 from django.dispatch.dispatcher import receiver
+from django.contrib.postgres.fields import ArrayField
 
 
 # Create your models here.
@@ -56,7 +59,6 @@ class Video(models.Model):
     frame_number = models.IntegerField(blank=False)
     name = models.CharField(max_length=50)
     extension = models.CharField(max_length=10)
-    extension = models.CharField(max_length=10)
     content = models.FileField(upload_to='videos/', blank=True, null=True, default=None)
 
     def __str__(self):
@@ -84,7 +86,7 @@ class ImageFrame(models.Model):
     content = models.ImageField(upload_to=image_path, blank=False)
     file_info = models.OneToOneField(FileInfo, on_delete=models.CASCADE, blank=False)
     mask = models.BinaryField(blank=True, null=True, default=None)
-    polygon = models.CharField(max_length=100, blank=True, null=True, default=None)  # change to postGis polygon
+    polygon = gisModels.PolygonField(blank=True, default=None, null=True)
     # add geo-referenced polygon field
     video = models.ForeignKey(Video, on_delete=models.CASCADE, blank=True, default=None, null=True)
 
@@ -101,4 +103,40 @@ def video_delete(sender, instance, **kwargs):
     # Pass false so FileField doesn't save the model.
     if instance.content is not None:
         instance.content.delete(False)
+
+
+class Ortophoto(models.Model):
+    content = models.FileField(upload_to='ortophotos/', blank=True, null=True, default=None)
+    thumbnail = models.ImageField(upload_to="ortophotos/thumbnails", blank=True, null=True, default=None)
+    file_info = models.OneToOneField(FileInfo, on_delete=models.CASCADE, blank=False)
+
+
+# Receive the pre_delete signal and delete the file associated with the model instance.
+@receiver(pre_delete, sender=Ortophoto)
+def ortophoto_delete(sender, instance, **kwargs):
+    # Pass false so FileField doesn't save the model.
+    if instance.content is not None:
+        instance.content.delete(False)
+    if instance.thumbnail is not None:
+        instance.thumbnail.delete(False)
+
+
+class Grid(models.Model):
+    topLeftCoordinate = ArrayField(models.IntegerField(blank=False), size=2)
+    bottomRightCoordinate = ArrayField(models.IntegerField(blank=False), size=2)
+    ortophoto = models.ForeignKey(Ortophoto, on_delete=models.CASCADE, blank=False)
+    cell_size = models.PositiveIntegerField(blank=False)
+
+
+class Tile(models.Model):
+    position = ArrayField(models.IntegerField(blank=False), size=2)
+    classification = models.IntegerField(blank=True, default=None, null=True, validators=[MinValueValidator(0), MaxValueValidator(4)])
+    avgColor = ArrayField(
+        models.IntegerField(blank=True, null=True, default=None,
+                            validators=[MinValueValidator(0), MaxValueValidator(255)]),
+        size=3)
+    grid = models.ForeignKey(Grid, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "tile(" + str(self.position) + "), avgColor: " + str(self.avgColor) + ", classification: " + str(self.classification)
 

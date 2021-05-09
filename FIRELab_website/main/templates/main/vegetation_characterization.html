@@ -2,6 +2,27 @@
 
 {% block content %}
     {% load static %}
+    <form id="workingImageForm" action="./vegetation" method="POST">
+        {% csrf_token %}
+        {% if image %}
+            <div hidden>
+                {{ grid_draw.image_id }}
+                {{ grid_draw.p1 }}
+                {{ grid_draw.p2 }}
+                {{ grid_draw.image_size }}
+            </div>
+
+            {% if gridded_image %}
+                <div id="img_ortophoto"  style="display: flex; padding-top: 15vh; justify-content: center; align-items: center; ">
+                    <img style="width: 40%" draggable="false" id="workingImage" src={{ gridded_image }}>
+                </div>
+            {% else %}
+                <div id="img_ortophoto"  style="display: flex; padding-top: 15vh; justify-content: center; align-items: center; ">
+                    <img style="width: 40%" draggable="false" id="workingImage" src={{ image.thumbnail.url }}>
+                </div>
+            {% endif %}
+        {% endif %}
+    </form>
 
 	<div class="toolkit">
 		<table>
@@ -25,7 +46,7 @@
 			</tr>
 			<tr>
 				<td><i class="fa fa-search-minus fa-lg" aria-hidden="true"></i></td>
-				<td></td>
+				<td onclick="drawGrid()">Grid</td>
 			</tr>
 		</tbody>
 		</table>
@@ -35,12 +56,17 @@
 		<h1>Upload Files</h1>
 		<p>If you already have an orthophoto and a grid (shapefile) of the firing area, and only want to classify the vegetation, please use this automatic classification tool. Submit the files below, in the correct places: </p> 
 		<div class="orthophoto">
-			<p id="titles">Orthophoto:</p>
-			<div style="overflow: hidden; padding: 0.1em 0 0 1em;">
-				<input class="file-upload__input" type="file" name="videoFile" id="videoFile">
-                <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
-                <span class="file-upload__label"></span>
-			</div>
+            <form method="POST" action="{% url 'upload_ortophoto' project.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <p id="titles">Orthophoto:</p>
+                {{ ortophoto_form.image }}
+                {% comment %}<div style="overflow: hidden; padding: 0.1em 0 0 1em;">
+                    <input class="file-upload__input" type="file" name="videoFile" id="videoFile">
+                    <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
+                    <span class="file-upload__label"></span>
+                </div>{% endcomment %}
+                <input type="submit" value="Upload Ortophoto" onclick="openLoadingPopUp()">
+            </form>
 		</div>
 		<br/>
 		<div class="shapefile">
@@ -58,5 +84,36 @@
 <!-- CUSTOM SCRIPTS-->
     <script src="{% static 'viewmodel/js/veg_chara.js' %}"></script>
     <link rel="stylesheet" href="{% static 'viewmodel/css/veg_chara.css' %}"/>
+    <script>
+
+        let workingImage = $("#workingImage");
+        let selectedPointsTotal = 0;
+        let gridDrawOn = false;
+
+        function drawGrid() {
+            gridDrawOn = !gridDrawOn;
+            let selectedFileId = JSON.parse("{{image.file_info.id|escapejs}}");
+            $("#id_image_id").val(selectedFileId);
+
+        }
+
+        workingImage.mouseup(function(event) {
+            let image = document.getElementById("workingImage");
+            if (gridDrawOn && selectedPointsTotal < 2) {
+                let x = event.pageX - this.offsetLeft;
+                let y = event.pageY - this.offsetTop;
+                selectedPointsTotal++;
+
+                if (selectedPointsTotal === 1) {
+                    $("#id_p1").val(String(x) + ", " + String(y))
+                } else if (selectedPointsTotal === 2) {
+                    $("#id_p2").val(String(x) + ", " + String(y))
+                    $("#id_image_size").val(String(image.width) + ", " + String(image.height))
+                    document.getElementById("workingImageForm").submit();
+                }
+            }
+        });
+
+    </script>
 
 {% endblock %}

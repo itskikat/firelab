@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'main',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'mptt',
 
     'widget_tweaks', #create nice forms :')
@@ -81,9 +82,10 @@ WSGI_APPLICATION = 'FIRELab_website.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'firlab',
         'USER': 'superuser',
+        'PASSWORD': 'firelabdbpass',
         'HOST': 'localhost',
         'PORT': 5432,
     }

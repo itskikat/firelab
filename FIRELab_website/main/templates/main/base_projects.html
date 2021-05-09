@@ -13,11 +13,11 @@
 		<noscript><link rel="stylesheet" href="/static/assets/css/noscript.css" /></noscript>
 	</head>
 	<body class="is-preload">
-
+        {% include 'main/loading_popup.html' %}
 		<!-- Page Wrapper -->
 			<div id="page-wrapper">
 				<!-- Main -->
-				<div class="split">
+				<div class="split" id="blur">
 					<div class="left">
 							<h2>FIRELab</h2>
 							<div class="options">
@@ -48,7 +48,11 @@
                                     {% comment %} show files of directory {% endcomment %}
                                     {% for f in project_files %}
                                         {% if f.dir == node %}
-                                            <a title=" {{ f.get_path }}" style="padding-left: 2em; width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/segmentation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
+                                            {% if f.extension == 'tif' %}
+                                                <a title=" {{ f.get_path }}" onclick="openLoadingPopUp()" style="padding-left: 2em; width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/vegetation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
+                                            {% else %}
+                                                <a title=" {{ f.get_path }}" style="padding-left: 2em; width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/segmentation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
+                                            {% endif %}
                                         {% endif %}
                                     {% endfor %}
 
@@ -85,6 +89,8 @@
 
 			<!-- MOVE TO STATIC -->
             <script>
+                const waiting = document.getElementById("waiting");
+
                 function toggleChildren(childrenName) {
                     let dirId = "#" + childrenName + "_children"
                     let iconId = "#" + childrenName + "_icon"

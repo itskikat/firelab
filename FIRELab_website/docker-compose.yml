@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   db:
-    image: "postgres:latest"
+    image: "kartoza/postgis:13.0"
     container_name: firelab_db
     environment:
       - POSTGRES_USER=superuser
@@ -10,10 +10,11 @@ services:
       - POSTGRES_DB=firlab
       - POSTGRES_PORT=5432
       - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_MULTIPLE_EXTENSIONS=postgis
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - postgis-data:/var/lib/postgresql
 
 volumes:
-  postgres_data:
+  postgis-data:

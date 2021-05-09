@@ -68,7 +68,7 @@
                     {{ video_form.frames }}
                 </div>
                 <div style="padding: 1%;">
-                    <input type="submit" id="submit_vd" value="Upload video">
+                    <input type="submit" id="submit_vd" value="Upload video" onclick="openLoadingPopUp()">
                 </div>
             </form>
 
@@ -82,35 +82,35 @@
                 <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
                 <span class="file-upload__label"></span>
                 <div style="padding: 1%;">
-                    <input type="submit" id="submit_bt" value="Upload image">
+                    <input type="submit" id="submit_bt" value="Upload image" onclick="openLoadingPopUp()">
                 </div>
 			</form>
 		</div>
 		
 	</div>
-    {% if image.video %}
+    {% if video_frames and video_frames.count != 0 %}
+        <!-- This only appears when there is a video uploaded-->
         <div class="fire_timeline">
-         <p style="display: none" id="open">FIRE Timeline <a id="openT" title="Open Timeline" onclick="openTimeline()"><i id="openTimeline" class="fas fa-angle-up"></i></a></p>
-        <div id="timeline">
-            <div id="title_timeline">
-                <p>FIRE Timeline <a id="closeT" title="Close Timeline" onclick="closeTimeline()"><i id="closeTimeline" class="fas fa-times"></i></a></p>
-                <hr class="solid">
-            </div>
-            <div class="frames_timeline">
-                <table id="frameTable">
-                  <tr>
-                    <td><img src="{{ image.content.url }}"></td>
-                    <td><img src="{{ image.content.url }}"></td>
-                    <td><img src="{{ image.content.url }}"></td>
-                    <td><img src="{{ image.content.url }}"></td>
-                    <td style="width: auto !important;"></td>
-                  </tr>
+             <p style="display: none" id="open">FIRE Timeline <a id="openT" title="Open Timeline" onclick="openTimeline()"><i id="openTimeline" class="fas fa-angle-up"></i></a></p>
+            <div id="timeline">
+                <div id="title_timeline">
+                    <p>FIRE Timeline <a id="closeT" title="Close Timeline" onclick="closeTimeline()"><i id="closeTimeline" class="fas fa-times"></i></a></p>
+                    <hr class="solid">
+                </div>
+                <div class="frames_timeline">
+                    <table id="frameTable">
+                      <tr>
+                          {% for frame in video_frames %}
+                              <td><a title="{{ frame.file_info.name }}.{{ frame.file_info.extension }}" href="/projects/{{ project.id }}/segmentation?id={{ frame.file_info.id }}"><img {% if frame.file_info.id == image.file_info.id %} style="border: 3px solid #771300" {% endif %} src="{{ frame.content.url }}"></a></td>
+                          {% endfor %}
+                          <td style="width: auto !important;"></td>
+                      </tr>
 
-                </table>
+                    </table>
+                </div>
             </div>
+
         </div>
-
-    </div>
     {% endif %}
 	
 
