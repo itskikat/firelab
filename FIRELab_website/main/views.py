@@ -8,6 +8,7 @@ from django.core.files import File
 from django.core.files.images import ImageFile
 from django.shortcuts import render, redirect
 from django.contrib.gis.geos import Polygon, LinearRing
+from django.db.models import Q
 from colormath.color_objects import sRGBColor, LabColor
 from colormath.color_conversions import convert_color
 
@@ -160,6 +161,7 @@ def vegetation(response, project_id):
             # verify if grid exists
             try:
                 _grid = Grid.objects.get(ortophoto=_ortophoto)
+                param['grid'] = _grid
             except Grid.DoesNotExist:
                 return render(response, "main/vegetation_characterization.html", param)
 
@@ -187,34 +189,43 @@ def vegetation(response, project_id):
             gridded_image_base64 = utils.opencv_to_base64(gridded_image, 'png')
             param['gridded_image'] = 'data:image/png;base64,{image}'.format(image=gridded_image_base64.decode())
 
-            if 'filter' in response.GET:
-                # DRAW IMAGE WITH JUST THE WANTED FILTERS
-                return render(response, "main/vegetation_characterization.html", param)
-            else:
+            # DRAW IMAGE WITH JUST THE WANTED FILTERS
+            if 'none' in response.GET and response.GET['none'] == "0":
+                print("removing level 0")
+                tiles = tiles.filter(~Q(classification=0))
+            if 'low' in response.GET and response.GET['low'] == "0":
+                print("removing level 1")
+                tiles = tiles.filter(~Q(classification=1))
+            if 'medium' in response.GET and response.GET['medium'] == "0":
+                print("removing level 2")
+                tiles = tiles.filter(~Q(classification=2))
+            if 'high' in response.GET and response.GET['high'] == "0":
+                print("removing level 3")
+                tiles = tiles.filter(~Q(classification=3))
 
-                to_classify = gridded_image[top_left[1]:bottom_right[1], top_left[0]: bottom_right[0]]
-                mask = np.zeros(to_classify.shape[:2], np.uint8)
-                mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+            to_classify = gridded_image[top_left[1]:bottom_right[1], top_left[0]: bottom_right[0]]
+            mask = np.zeros(to_classify.shape[:2], np.uint8)
+            mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
 
-                for tile in tiles:
-                    test_tile = tile.position
-                    start_point = (test_tile[0] * cell_size, test_tile[1] * cell_size)
-                    end_point = (start_point[0] + cell_size, start_point[1] + cell_size)
+            for tile in tiles:
+                test_tile = tile.position
+                start_point = (test_tile[0] * cell_size, test_tile[1] * cell_size)
+                end_point = (start_point[0] + cell_size, start_point[1] + cell_size)
 
-                    if tile.classification == 0:
-                        mask = cv2.rectangle(mask, start_point, end_point, (20, 20, 255), -1)
-                    elif tile.classification == 1:
-                        mask = cv2.rectangle(mask, start_point, end_point, (122, 209, 240), -1)
-                    elif tile.classification == 2:
-                        mask = cv2.rectangle(mask, start_point, end_point, (150, 240, 100), -1)
-                    elif tile.classification == 3:
-                        mask = cv2.rectangle(mask, start_point, end_point, (45, 80, 20), -1)
+                if tile.classification == 0:
+                    mask = cv2.rectangle(mask, start_point, end_point, (20, 20, 255), -1)
+                elif tile.classification == 1:
+                    mask = cv2.rectangle(mask, start_point, end_point, (122, 209, 240), -1)
+                elif tile.classification == 2:
+                    mask = cv2.rectangle(mask, start_point, end_point, (150, 240, 100), -1)
+                elif tile.classification == 3:
+                    mask = cv2.rectangle(mask, start_point, end_point, (45, 80, 20), -1)
 
-                classified_img = cv2.addWeighted(to_classify, 0.5, mask, 0.5, 0, dtype=cv2.CV_8UC3)
-                gridded_image[top_left[1]:bottom_right[1], top_left[0]: bottom_right[0]] = classified_img
+            classified_img = cv2.addWeighted(to_classify, 0.5, mask, 0.5, 0, dtype=cv2.CV_8UC3)
+            gridded_image[top_left[1]:bottom_right[1], top_left[0]: bottom_right[0]] = classified_img
 
-                gridded_image_base64 = utils.opencv_to_base64(gridded_image, 'png')
-                param['gridded_image'] = 'data:image/png;base64,{image}'.format(image=gridded_image_base64.decode())
+            gridded_image_base64 = utils.opencv_to_base64(gridded_image, 'png')
+            param['gridded_image'] = 'data:image/png;base64,{image}'.format(image=gridded_image_base64.decode())
 
         return render(response, "main/vegetation_characterization.html", param)
 

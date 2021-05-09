@@ -24,6 +24,28 @@
         {% endif %}
     </form>
 
+    {% if grid %}
+    <div class="picker">
+		<table id="pickertable" class="scroll">
+			<caption id="captionPicker">Picker<a id= "closePicker" title="Close Picker" onclick="openClosePicker()"><i id="closeP" class="fas fa-times"></i></a></caption>
+			<tbody style="font-size: 13px" id="pickerBody">
+			<tr>
+				<td>No Vegetation (1-20%)<i id="none_icon" onclick="filter('none')" class="fas fa-eye fa-lg"></i><div class='box red'></div></td>
+			</tr>
+			<tr>
+				<td>Low Vegetation (21-50%)<i id="low_icon" onclick="filter('low')" class="fas fa-eye fa-lg"></i><div class='box yellow'></div></td>
+			</tr>
+			<tr>
+				<td>Medium Vegetation (50-80%)<i id="medium_icon" onclick="filter('medium')" class="fas fa-eye fa-lg"></i><div class='box green'></div></td>
+			</tr>
+			<tr>
+				<td>High Vegetation (81-100%)<i id="high_icon" onclick="filter('high')" class="fas fa-eye fa-lg"></i><div class='box dark-green'></div></td>
+			</tr>
+		</tbody>
+		</table>
+	</div>
+    {% endif %}
+
 	<div class="toolkit">
 		<table>
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
@@ -33,7 +55,7 @@
 				<td><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
 			</tr>
 			<tr>
-				<td><i class="fas fa-tree fa-lg"></i></td>
+				<td><a {% if grid %}href="{% url 'auto_classifier' project.id grid.id %}" {% endif %}><i class="fas fa-tree fa-lg"></i></a></td>
 				<td><i class="fas fa-save fa-lg"></i></td>
 			</tr>
 			<tr>
@@ -89,6 +111,17 @@
         let workingImage = $("#workingImage");
         let selectedPointsTotal = 0;
         let gridDrawOn = false;
+        let queryDict = {};
+
+
+        $(document).ready(function () {
+            location.search.substr(1).split("&").forEach(function(item) {queryDict[item.split("=")[0]] = item.split("=")[1]});
+            for (const [key, value] of Object.entries(queryDict)) {
+                if (value === "0") {
+                    $("#" + key + "_icon").addClass('fa-eye-slash').removeClass('fa-eye');
+                }
+            }
+        });
 
         function drawGrid() {
             gridDrawOn = !gridDrawOn;
@@ -113,6 +146,22 @@
                 }
             }
         });
+
+        function filter(levelType) {
+            let val = queryDict[levelType]
+            if (val === "0") {
+                queryDict[levelType] = "1";
+            } else {
+                queryDict[levelType] = "0";
+            }
+
+            let path = '?'
+            for (const [key, value] of Object.entries(queryDict)) {
+                path += key + '=' + value + '&';
+            }
+            path = path.substr(0, path.length-1)
+            window.location.href = window.location.pathname + path;
+        }
 
     </script>
 
