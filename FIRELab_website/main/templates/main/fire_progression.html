@@ -21,7 +21,7 @@
 
     <form id="georreferencingForm" action="./progression" method="POST">
     {% csrf_token %}
-    {% if image is not None %}
+    {% if frame is not None %}
         <div hidden>
             {{ georreferencing.marker }}
             {{ georreferencing.pixels }}
