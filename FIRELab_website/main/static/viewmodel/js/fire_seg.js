@@ -1,4 +1,4 @@
-var img_seg = document.getElementById("img_seg");
+img_seg = document.getElementById("img_seg");
 var x = 1.1;
 var search_plus = document.getElementById("search_plus");
 
@@ -79,7 +79,7 @@ $("#maskToggle").click(function (event) {
 
 
 //var blur = '#{{ blur }}';
-const saveFile = document.getElementById("saveFile");
+saveFile = document.getElementById("saveFile");
 
 function save() {
   saveFile.style.display = "block";
@@ -92,11 +92,11 @@ function closeSave() {
   saveFile.style.display = "none";
 }
 
-const closeTi = document.getElementById("closeTimeline");
-const closeT = document.getElementById("closeT");
-const timeline = document.getElementById("timeline");
-const frameTable = document.getElementById("frameTable");
-const here = document.getElementById("open");
+closeTi = document.getElementById("closeTimeline");
+closeT = document.getElementById("closeT");
+ timeline = document.getElementById("timeline");
+ frameTable = document.getElementById("frameTable");
+ here = document.getElementById("open");
 
 function closeTimeline() {
     timeline.style.display = 'none';

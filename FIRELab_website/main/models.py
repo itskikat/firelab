@@ -61,12 +61,12 @@ class Video(models.Model):
     def __str__(self):
         return "{} - Video ({}.{})".format(self.id, self.name, self.extension)
 
-class CoordsFile(models.Model):
-    file_info = models.OneToOneField(FileInfo, on_delete=models.CASCADE, blank=False)
-    content = models.FileField(upload_to='poligonos/', blank=True, null=True, default=None)
+# class CoordsFile(models.Model):
+#     file_info = models.OneToOneField(FileInfo, on_delete=models.CASCADE, blank=False)
+#     content = models.FileField(upload_to='poligonos/', blank=True, null=True, default=None)
 
-    def __str__(self):
-        return "{} - CoordsFile ({}.{})".format(self.name, self.extension, self.content)
+#     def __str__(self):
+#         return "{} - CoordsFile ({}.{})".format(self.name, self.extension, self.content)
 
 
 # Receive the pre_delete signal and delete the file associated with the model instance.
@@ -91,7 +91,7 @@ class ImageFrame(models.Model):
     file_info = models.OneToOneField(FileInfo, on_delete=models.CASCADE, blank=False)
     mask = models.BinaryField(blank=True, null=True, default=None)
     polygon = models.TextField(max_length=10000, blank=True, null=True, default=None)  # change to postGis polygon
-    # add geo-referenced polygon field
+    geoRefPolygon = models.TextField(max_length=10000, blank=True, null=True, default=None)  # change to postGis polygon
     video = models.ForeignKey(Video, on_delete=models.CASCADE, blank=True, default=None, null=True)
 
     def __str__(self):

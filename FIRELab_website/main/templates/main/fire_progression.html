@@ -6,11 +6,18 @@
 
     {% block extracss %}
     <link type='text/css' rel="stylesheet" href="{% static 'viewmodel/css/fire_prog.css' %}"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin=""/>
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+ <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+ integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+ crossorigin=""></script>
     {% endblock %}
 
 
     <form id="georreferencingForm" action="./progression" method="POST">
-    {% if image is not None %}
+    {% if frame is not None %}
         <div hidden>
             {{ georreferencing.marker }}
             {{ georreferencing.eraser }}
@@ -20,8 +27,8 @@
         </div>
         {% csrf_token %}
         <div id="img_prog"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
-        {% if georreferenced %}
-            <img draggable="false" id="workingImage" src={{ georreferenced }}>
+        {% if segmented %}
+            <img draggable="false" id="workingImage" src={{ segmented }}>
             <img hidden draggable="false" id="hiddenWorkingImage" src={{ frame.content.url }}>
         {% else %}
             <img draggable="false" id="workingImage" src={{ frame.content.url }}>
@@ -62,12 +69,12 @@
 		<h1>Upload Files</h1>
 		<p>If you have the polygon coordinates, or the file that contains them, please use this tool in order to see how the fire evolved:</p>
 		<input type="text" name="polygon-coord" id="polygon-coord" value="" placeholder="List with polygon coordinates" >
-		<form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload' project.id %}" enctype="multipart/form-data">
+		<form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload_polygon' project.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ file_form.coords }}
                 <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
                 <span class="file-upload__label"></span>
-                <input type="submit" id="submit_bt" value="Upload Coords">
+                <input type="submit" id="submit_pol" value="Upload Coords">
 			</form>
         <button class="button icon solid" type="button" value="Draw" name="drawPolygonButton" id="drawPolygonButton" onclick="drawMap()">DRAW </button><br>
 	</div>
@@ -100,90 +107,117 @@
 
     <!-- TODO: Move this script into viewmodel once it's finished -->
     <script>
-
-        $(function() {
-            console.log('YEEEET');
-
-            let popUp = $('#popUpGEO')
-            let input = $('#coordinates')
-            let workingImage = $('#workingImage');
-            let pixels = []
-            let geocoords = []
-            let marker = $('#marker')
-
-            popUp.dialog({
-                autoOpen: false,
-                show: {
-                    effect: "blind",
-                    duration: 300
-                },
-                draggable: true,
-                hide: "blind",
-                resizable: false,
-                height: "auto",
-                width: 300,
-                modal: true,
-            });
+        var pixels = []
+        var geocoords = []
+        var k =0;
+        let popUp = $('#popUpGEO')
+        let input = $('#coordinates')
+        let workingImage = $('#workingImage');
+        let marker = $('#marker')
+        popUp.dialog({
+            autoOpen: false,
+            show: {
+                effect: "blind",
+                duration: 300
+            },
+            draggable: true,
+            hide: "blind",
+            resizable: false,
+            height: "auto",
+            width: 300,
+            modal: true,
+        });
 
 
-            workingImage.mousedown(function (event) {
-
-                clicking = true
-                let x = event.pageX - this.offsetLeft;
-                let y = event.pageY - this.offsetTop;
-                pixels.push([x, y])
-                console.log("ARRAY PIXELS COORDS", pixels)
-
-                // Move circle here.
-                marker.css('top', event.pageY - 50);
-                marker.css('left', event.pageX - 25);
-                if (marker.css('display') == 'none') {
-                    marker.css('display', 'block');
-                }
-
-
-                var pos = {my: "left top", at: "left bottom", of: event}
-                // console.log("POS: ", pos)
-                input.val('')
-                popUp.dialog("option", "position", pos)
-                    .dialog("open");
-
-            });
-
-            $('#submit').click(function () {
-                coords = input.val()
-                // console.log(coords)
-                var coords = input.val().split(", ")
-                // console.log(coords)
-                geocoords.push([coords[0], coords[1]])
-                console.log("ARRAY GEO COORDS", geocoords);
-                marker.css('display', 'none')
-                popUp.dialog("close");
-
-            });
-
-            function markerOn() {
-                $("#id_marker").attr('checked', true);
-                $("#id_eraser").attr('checked', false);
-                $("#marker").css("color", "#B55B29")
-                $("#eraser").css("color", "")
+        workingImage.mousedown(function (event) {
+            clicking = true;
+            let x = event.pageX - this.offsetLeft;
+            let y = event.pageY - this.offsetTop;
+            pixels.push([x, y]);
+            // Move circle here.
+            marker.css('top', event.pageY - 50);
+            marker.css('left', event.pageX - 25);
+            if (marker.css('display') == 'none') {
+                marker.css('display', 'block');
             }
 
-            function markerOff() {
-                $("#id_marker").attr('checked', false);
-                $("#id_eraser").attr('checked', true);
-                $("#marker").css("color", "")
-                $("#eraser").css("color", "#B55B29")
-            }
 
-            function saveCoords() {
-                clicking = false;
-                $('#id_pixels').val(JSON.stringify(pixels));
-                $('#id_geo').val(JSON.stringify(geocoords));
-                document.getElementById("georreferencingForm").submit();
-            }
+            var pos = {my: "left top", at: "left bottom", of: event}
+            input.val('');
+            popUp.dialog("option", "position", pos)
+                .dialog("open");
 
         });
+
+        
+        $('#submit').click(function () {
+            console.log(k++);
+            coords = input.val()
+            var coords = input.val().split(",");
+            geocoords.push([parseInt(coords[0].trim()), parseInt(coords[1].trim())]);
+            console.log(geocoords);
+            
+            marker.css('display', 'none')
+            popUp.dialog("close");
+        });
+
+
+        function markerOn() {
+            $("#id_marker").attr('checked', true);
+            $("#id_eraser").attr('checked', false);
+            $("#marker").css("color", "#B55B29")
+            $("#eraser").css("color", "")
+        };
+
+        function markerOff() {
+            $("#id_marker").attr('checked', false);
+            $("#id_eraser").attr('checked', true);
+            $("#marker").css("color", "")
+            $("#eraser").css("color", "#B55B29")
+        };
+
+        function saveCoords() {
+            $("#id_frame_id").val(JSON.parse("{{frame.id}}"));
+            clicking = false;
+            $('#id_pixels').val(JSON.stringify(pixels));
+            $('#id_geo').val(JSON.stringify(geocoords));
+            document.getElementById("georreferencingForm").submit();
+        };
+    function drawMap() {
+        document.getElementById("upload").style.display="none";
+        var mapdiv = document.getElementById('map');
+
+        var mymap = L.map(mapdiv).setView([40.6405, -8.6538], 13);
+
+        var osm = new L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/streets-v11',
+            tileSize: 512,
+            zoomOffset: -1,
+            accessToken: 'pk.eyJ1IjoiaXRza2lrYXQiLCJhIjoiY2tubGZyeGR4MGtlNjJxczVkMnc1cGJuMSJ9.AqoknzMtuAATdUKs-gGGTw'
+        });
+        osm.addTo(mymap);
+
+        //var coords =  '[ [40.640957, -8.658695], [40.648772, -8.623848], [40.614901, -8.656635], [40.640957, -8.658695] ]' ;
+        var coords = "{{frame.geoRefPolygon}}" 
+        
+        var a = JSON.parse(coords); // string to json
+
+        var polygon = L.polygon(a, {color: 'red'});
+        polygon.addTo(mymap);
+        polygon.bindPopup("Coordinates: " + coords);
+
+        mymap.fitBounds(polygon.getBounds());
+
+        var popup = L.popup();
+        mymap.on('click', function(e){
+            popup
+                .setLatLng(e.latlng)
+                .setContent("You clicked the map at " + e.latlng.toString())
+                .openOn(mymap);
+        });
+    }
 
     </script>
     {% endblock %}

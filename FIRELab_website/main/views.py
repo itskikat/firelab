@@ -23,7 +23,6 @@ def createAccountView(request):
 	if request.method == 'POST':
 		form = CreateAccountForm(request.POST)
 		if form.is_valid():
-			print(form)
 			user = form.save()
 			user.refresh_from_db()
 			return redirect('login')
@@ -123,9 +122,6 @@ def upload(request, project_id):
 		form = UploadImage(request.POST, request.FILES)
 		if form.is_valid():
 			name, extension = request.FILES['image'].name.split('.')
-			print(request.FILES)
-			print(name, extension)
-
 			try:
 				# file already exists in the server
 				FileInfo.objects.get(name=name, extension=extension, dir__project__id=project.id)
@@ -159,36 +155,16 @@ def upload(request, project_id):
 def upload_polygon(request, project_id):
 	if not request.user.is_authenticated:
 		return redirect("/login")
-
 	try:
 		project = Project.objects.get(id=project_id)
 	except Project.DoesNotExist:
 		return redirect("/projects")
-
 	if request.method == 'POST':
-		form = UploadCoordFile(request.POST, request.FILES)
-		if form.is_valid():
-			name, extension = request.FILES['coords'].name.split('.')
+		polygon=request.FILES['coords'].read()
+	print("images from upload poly")
+	print(request.FILES['image'].name)
 
-			try:
-				# file already exists in the server
-				FileInfo.objects.get(name=name, extension=extension, dir__project__id=project.id)
-				return HttpResponse("There is a file with that name already")
 
-			except FileInfo.DoesNotExist:
-				# create file info
-				_file_info = FileInfo(
-					name=name,
-					extension=extension,
-					dir=Directory.objects.get(name="poligonos", project_id=project.id)
-				)
-				_file_info.save()
-				_coords = CoordsFile(
-					file_info=_file_info,
-					content=request.FILES['coords'],
-				)
-				_coords.save()
-		
 	return redirect("/projects/" + str(project_id) + "/progression")
 
 
@@ -271,7 +247,6 @@ def upload_video(request, project_id):
 				video_capture.release()
 				# delete content from model and from file system
 				video.content.delete()
-				print(video.content)
 
 	return redirect("/projects/" + str(project_id) + "/segmentation")
 
@@ -459,7 +434,7 @@ def generate_contour(request, file_id, project_id):
 	for point in vertexes:
 		fs_wkt += ", " + str(point[0][0]) + " " + str(point[0][1])
 	fs_wkt = "POLYGON ((" + fs_wkt[2:] + ", " + str(vertexes[0][0][0]) + " " + str(vertexes[0][0][1]) + "))\n"
-	
+	_image.polygon =fs_wkt
 	_image.save()
 	# TODO: store polygon on db
 	return redirect('/projects/' + str(project_id) + '/progression?id=' + str(file_id))
@@ -479,13 +454,13 @@ def progression(request, project_id):
 		return redirect("/projects")
 
 	if request.method == "GET":
-		print("get")
 		frame = None
 		if 'id' in request.GET:
 			try:
 				frame = ImageFrame.objects.get(file_info_id=request.GET['id'])
 			except ImageFrame.DoesNotExist:
 				frame = None
+		
 		
 		param = {
 			'frame': frame,
@@ -503,11 +478,9 @@ def progression(request, project_id):
 		
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
 		
-		print("endget")
 		return render(request, "main/fire_progression.html", param)
 
 	elif request.method == 'POST':
-		print("post")
 		param = {
 			'frame': None,
 			'project': project,
@@ -519,7 +492,6 @@ def progression(request, project_id):
 
 		if 'frame_id' not in request.POST or request.POST['frame_id'] == '':
 			return redirect(request.build_absolute_uri())
-
 		mode = None
 		if 'marker' in request.POST:
 			param['georreferencing'] = Georreferencing(initial={'marker': True})
@@ -540,16 +512,14 @@ def progression(request, project_id):
 
 		if 'pixels' not in request.POST or 'geo' not in request.POST:
 			return render(request, "main/fire_progression.html", param)
-
 		# compute the pairs from the coordinates
 		pixels_json = json.loads(request.POST['pixels'])
-		print(pixels_json)
 		geo_json = json.loads(request.POST['geo'])
-		print(geo_json)
 
 		# if the frame_id is valid check if it has been georreferenced
 		if _frame is None or _frame.polygon is None:
-			print(frame)
+			print("frame")
+			print(_frame)
 			return render(request, "main/fire_segmentation.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
@@ -557,13 +527,12 @@ def progression(request, project_id):
 		#TODO: Georeference points
 		pts_src = np.array(pixels_json)
 		pts_dst = np.array(geo_json)
-				
 		#given reference points from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
 		h, status = cv2.findHomography(pts_src, pts_dst) 
 			
 
 		#TODO read from file
-		coords = polygon.split("((")[1].split("))")[0].split(",")
+		coords = _frame.polygon.split("((")[1].split("))")[0].split(",")
 				
 		geo_coords = ""
 		wkt_str = ""
@@ -576,9 +545,10 @@ def progression(request, project_id):
 				z = point_homogenous[2]
 				geo_coord= [point_homogenous[0]/z, point_homogenous[1]/z]
 			geo_coords = geo_coords + str(geo_coord[0]) + " " + str(geo_coord[1])+ ", "
-			geo_coords = geo_coords[:-2]
-			wkt_str = "POLYGON ((" + geo_coords + "))"
-		print(wkt_str)
+		wkt_str = "POLYGON ((" + geo_coords 
+		print(wkt_str[:-2]+"))")
+		_frame.geoRefPolygon =wkt_str
+		_frame.save()
 		#TODO save georef polygon
 	return render(request, "main/fire_progression.html", param)
 

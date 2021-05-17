@@ -19,10 +19,16 @@ $(document).ready(function () {
         hiddenInput.addEventListener('change', function(){
             // console.log(hiddenInput.files);
             const fileName = Array.from(hiddenInput.files).map(function(file) {
-                uploadbutton.style.display = "block";
+                if(uploadbutton){
+                    uploadbutton.style.display = "block";
+                }
                 if(uploadbuttonVideo){
                     uploadbuttonVideo.style.display = "block";
                 }
+                if(uploadbuttonPol){
+                    uploadbuttonPol.style.display = "block";
+                }
+                
                 return file.name;
             });
             console.log(fileName);
