@@ -31,9 +31,9 @@
         </div>
         {% csrf_token %}
         <div id="img_prog"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
-        {% if georreferenced %}
+        {% if segmented %}
             <div hidden id="polygon_georreferenced">
-            {{ georreferenced }}>
+            {{ segmented }}>
             </div>
             <img hidden draggable="false" id="WorkingImage" src={{ frame.content.url }}>
         {% else %}
@@ -75,12 +75,12 @@
 		<h1>Upload Files</h1>
 		<p>If you have the polygon coordinates, or the file that contains them, please use this tool in order to see how the fire evolved:</p>
 		<input type="text" name="polygon-coord" id="polygon-coord" value="" placeholder="List with polygon coordinates" >
-		<form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="." enctype="multipart/form-data">
+            <form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload_polygon' project.id %}" enctype="multipart/form-data">
             {% csrf_token %}
             {{ file_form.coords }}
             <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
             <span class="file-upload__label"></span>
-            <input type="submit" value="Upload image">
+            <input type="submit" id="submit_pol" value="Upload image">
         </form>
 	</div>
 
@@ -91,7 +91,7 @@
     <br>
 
 	<!-- TODO see the best way to view the progression -->
-
+    <span hidden id="span_frameid"> {{ frame.id }}</span>
 	<div id="map" style="height: 600px;" hidden>
 
     </div>

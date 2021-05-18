@@ -123,9 +123,6 @@ def upload(request, project_id):
 		form = UploadImage(request.POST, request.FILES)
 		if form.is_valid():
 			name, extension = request.FILES['image'].name.split('.')
-			print(request.FILES)
-			print(name, extension)
-
 			try:
 				# file already exists in the server
 				FileInfo.objects.get(name=name, extension=extension, dir__project__id=project.id)
@@ -155,6 +152,23 @@ def upload(request, project_id):
 			_image.save()
 
 	return redirect("/projects/" + str(project_id) + "/segmentation")
+
+
+def upload_polygon(request, project_id):
+	if not request.user.is_authenticated:
+		return redirect("/login")
+	try:
+		project = Project.objects.get(id=project_id)
+	except Project.DoesNotExist:
+		return redirect("/projects")
+	if request.method == 'POST':
+		polygon = request.FILES['coords'].read()
+	print("images from upload poly")
+	print(request.FILES['image'].name)
+
+
+	return redirect("/projects/" + str(project_id) + "/progression")
+
 
 
 def upload_video(request, project_id):
@@ -273,7 +287,7 @@ def segmentation(response, project_id):
 			return render(response, "main/fire_segmentation.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, image.content.name)))
-		mask = pickle.loads(image.mask	)
+		mask = pickle.loads(image.mask)
 
 		mask_is_new = (mask == 0).all()
 		if mask_is_new:
@@ -285,7 +299,8 @@ def segmentation(response, project_id):
 		image.mask = mask_encoded
 		image.save()
 
-		mask_32S = mask.astype(np.int32)  # used to convert the mask to CV_32SC1 so it can be accepted by cv2.watershed()
+		mask_32S = mask.astype(
+			np.int32)  # used to convert the mask to CV_32SC1 so it can be accepted by cv2.watershed()
 		blurred = cv2.blur(img, (2, 2))
 		cv2.watershed(blurred, mask_32S)
 
@@ -362,7 +377,8 @@ def segmentation(response, project_id):
 		_image.mask = mask_encoded
 		_image.save()
 
-		mask_32S = mask.astype(np.int32)  # used to convert the mask to CV_32SC1 so it can be accepted by cv2.watershed()
+		mask_32S = mask.astype(
+			np.int32)  # used to convert the mask to CV_32SC1 so it can be accepted by cv2.watershed()
 		blurred = cv2.blur(img, (2, 2))
 		cv2.watershed(blurred, mask_32S)
 
@@ -408,8 +424,7 @@ def generate_contour(request, file_id, project_id):
 	kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
 	binary = cv2.dilate(binary, kernel)
 	binary = cv2.erode(binary, kernel)
-
-	_, vertexes, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+	vertexes, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
 	if len(vertexes) > 1:
 		print("More than one polygon were identified")
@@ -417,18 +432,20 @@ def generate_contour(request, file_id, project_id):
 		# if 'return_bigger' in request.GET and request.GET['return_bigger'] == "1":
 		sizes = [len(pol) for pol in vertexes]
 		vertexes = vertexes[sizes.index(max(sizes))]
-		#else:
-			#return redirect("/segmentation?id=" + str(file_id)) + "&error=TooManyValues
+	# else:
+	# return redirect("/segmentation?id=" + str(file_id)) + "&error=TooManyValues
 	else:
 		vertexes = vertexes[0]
-
 	fs_wkt = ""
 	for point in vertexes:
 		fs_wkt += ", " + str(point[0][0]) + " " + str(point[0][1])
 	fs_wkt = "POLYGON ((" + fs_wkt[2:] + ", " + str(vertexes[0][0][0]) + " " + str(vertexes[0][0][1]) + "))\n"
-	print(fs_wkt)
+	_image.polygon = fs_wkt
+	_image.save()
 	# TODO: store polygon on db
-	return redirect('/projects/' + str(project_id) + '/segmentation?id=' + str(file_id))
+	return redirect('/projects/' + str(project_id) + '/progression?id=' + str(file_id))
+
+
 
 
 # TODO: Fire Progression Animation and Processing
@@ -460,16 +477,17 @@ def progression(request, project_id):
 			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(),
 		}
-
+		print(frame)
+		print(frame.id)
 		# if the frame_id is valid check if it has been georreferenced
 		if frame is None or frame.polygon is None:
 			return render(request, "main/fire_progression.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
-		georreference = pickle.loads(frame.polygon)
-		print(georreference)
+		# georreference = pickle.loads(frame.polygon)
+		print(frame.polygon)
 
-		param['georreferenced'] = georreference
+		param['georreferenced'] = frame.polygon
 
 
 		return render(request, "main/fire_progression.html", param)
@@ -512,6 +530,8 @@ def progression(request, project_id):
 
 		# if the frame_id is valid check if it has been georreferenced
 		if _frame is None or _frame.polygon is None:
+			print("frame")
+			print(_frame)
 			return render(request, "main/fire_segmentation.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
@@ -520,11 +540,11 @@ def progression(request, project_id):
 		pts_src = np.array(pixels_json)
 		pts_dst = np.array(geo_json)
 				
-		#given reference points from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
-		h, status = cv2.findHomography(pts_src, pts_dst) 
-			
+		#given reference points	 from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
+		h, status = cv2.findHomography(pts_src, pts_dst)
 
-		coords = (_frame.polygon).split("((")[1].split("))")[0].split(",")
+		# TODO read from file
+		coords = _frame.polygon.split("((")[1].split("))")[0].split(",")
 
 
 		geo_coords = ""
@@ -538,14 +558,17 @@ def progression(request, project_id):
 				z = point_homogenous[2]
 				geo_coord= [point_homogenous[0]/z, point_homogenous[1]/z]
 			geo_coords = geo_coords + str(geo_coord[0]) + " " + str(geo_coord[1])+ ", "
-			geo_coords = geo_coords[:-2]
-			wkt_str = "POLYGON ((" + geo_coords + "))"
-		print(wkt_str)
-		#TODO save georef polygon
+		wkt_str = "POLYGON ((" + geo_coords
+		print(wkt_str[:-2] + "))")
+		_frame.geoRefPolygon = wkt_str
+		_frame.save()
+		# TODO save georef polygon
 
 		# Converted polygon WKT, to be analyzed by JS
 		param['georreferenced'] = wkt_str
 	return render(request, "main/fire_progression.html", param)
+
+
 
 # TODO: Animate Polygons
 '''

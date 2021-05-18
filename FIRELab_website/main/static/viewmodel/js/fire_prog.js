@@ -1,5 +1,5 @@
-function openCloseToolkit() { 
-	var toolkit = document.getElementById("toolkit"); 
+function openCloseToolkit() {
+	var toolkit = document.getElementById("toolkit");
 	var icon = document.getElementById("close");
 	var cp = document.getElementById("cp");
 
@@ -43,12 +43,14 @@ function openMap() {
 
 console.log('YEEEET');
 
-    let popUp = $('#popUpGEO')
-    let input = $('#coordinates')
+    let popUp = $('#popUpGEO');
+    let input = $('#coordinates');
     let workingImage = $('#workingImage');
     let pixels = []
     let geocoords = []
-    let marker = $('#marker')
+    let marker = $('#marker');
+    var span_frameid = document.getElementById( 'span_frameid' ).textContent;
+    let k = 0;
 
     popUp.dialog({
         autoOpen: false,
@@ -89,11 +91,12 @@ console.log('YEEEET');
     });
 
     $('#submit').click(function () {
+        console.log(k++);
         coords = input.val()
         // console.log(coords)
-        var coords = input.val().split(", ")
+        var coords = input.val().split(",")
         // console.log(coords)
-        geocoords.push([coords[0], coords[1]])
+        geocoords.push([parseInt(coords[0].trim()), parseInt(coords[1].trim())]);
         console.log("ARRAY GEO COORDS", geocoords);
         marker.css('display', 'none')
         popUp.dialog("close");
@@ -117,6 +120,7 @@ console.log('YEEEET');
 
 
     function saveCoords() {
+        $("#id_frame_id").val(JSON.parse(span_frameid));
         clicking = false;
         $('#id_pixels').val(JSON.stringify(pixels));
         $('#id_geo').val(JSON.stringify(geocoords));

@@ -83,8 +83,8 @@ class ImageFrame(models.Model):
     content = models.ImageField(upload_to=image_path, blank=False)
     file_info = models.OneToOneField(FileInfo, on_delete=models.CASCADE, blank=False)
     mask = models.BinaryField(blank=True, null=True, default=None)
-    polygon = models.CharField(max_length=100, blank=True, null=True, default=None)  # change to postGis polygon
-    # add geo-referenced polygon field
+    polygon = models.CharField(max_length=50000, blank=True, null=True, default=None)  # change to postGis polygon
+    geoRefPolygon = models.TextField(max_length=10000, blank=True, null=True, default=None) # change to postGis polygon
     video = models.ForeignKey(Video, on_delete=models.CASCADE, blank=True, default=None, null=True)
 
     def __str__(self):

@@ -17,6 +17,7 @@ urlpatterns = [
     path("projects/<int:project_id>/vegetation", views.vegetation, name="vegetation"),
     path("projects/<int:project_id>/segmentation", views.segmentation, name="segmentation"),
     path("projects/<int:project_id>/segmentation/upload", views.upload, name="upload"),
+    path("projects/<int:project_id>/progression/upload_polygon", views.upload_polygon, name="upload_polygon"),
     path("projects/<int:project_id>/segmentation/uploadVideo", views.upload_video, name="uploadVideo"),
     path("projects/<int:project_id>/segmentation/save/<int:file_id>", views.generate_contour, name="upload"),
     path("projects/<int:project_id>/progression", views.progression, name="progression"),
