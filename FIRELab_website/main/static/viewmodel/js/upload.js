@@ -31,7 +31,6 @@ $(document).ready(function () {
                 
                 return file.name;
             });
-            console.log(fileName);
 
             label.textContent = fileName || defaultLabelText;
             label.title = label.textContent;

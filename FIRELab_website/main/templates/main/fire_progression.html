@@ -42,39 +42,42 @@
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
 			<tr>
-				<td><i class="fas fa-image fa-lg"></i></td>
-				<td><i class="fas fa-search-plus fa-lg"></i></td>
+				<td id="showImage"><i class="fas fa-image fa-lg"></i></td>
+				<td id="zoomIn"><i class="fas fa-search-plus fa-lg"></i></td>
 			</tr>
 			<tr>
-				<td id="marker" {% if georreferencing.marker.value == True %} style="color: #B55B29" {% endif %} onclick="markerOn()"><i class="fas fa-map-marker-alt fa-lg"></i></td>
-				<td><i class="fas fa-search-minus fa-lg"></i></td>
+				<td id="marker" onclick="markerOn()"><i class="fas fa-map-marker-alt fa-lg"></i></td>
+				<td id="zoomOut"><i class="fas fa-search-minus fa-lg"></i></td>
 			</tr>
 			<tr>
-				<td><i class="fas fa-play fa-lg"></i></td>
+				<td id="playAnimation"><i class="fas fa-play fa-lg"></i></td>
 				<td onclick="saveCoords()"><i class="fas fa-save fa-lg" aria-hidden="true"></i></td>
 			</tr>
 			<tr>
-				<td><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td>
+				<td id="stack"><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td>
 				<td><a onclick="openUpload()"><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td>
 			</tr>
 			<tr>
 				<td><i class="fas fa-expand-arrows-alt fa-lg" aria-hidden="true"></i></td>
-				<td><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
+				<td id="help"><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
 			</tr>
 		</tbody>
 		</table>
 	</div>
 
-	<div class="upload" id="upload">
+	<div hidden class="upload" id="upload">
 		<h1>Upload Files</h1>
 		<p>If you have the polygon coordinates, or the file that contains them, please use this tool in order to see how the fire evolved:</p>
 		<input type="text" name="polygon-coord" id="polygon-coord" value="" placeholder="List with polygon coordinates" >
-		<form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload_polygon' project.id %}" enctype="multipart/form-data">
+		<form id="UploadCoordFile" style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload_polygon' project.id %}" enctype="multipart/form-data">
+            <div hidden>
+                {{ file_form.image_id }}
+            </div>
                 {% csrf_token %}
                 {{ file_form.coords }}
                 <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
                 <span class="file-upload__label"></span>
-                <input type="submit" id="submit_pol" value="Upload Coords">
+                <input type="button" id="submit_pol" value="Upload Coords">
 			</form>
         <button class="button icon solid" type="button" value="Draw" name="drawPolygonButton" id="drawPolygonButton" onclick="drawMap()">DRAW </button><br>
 	</div>
@@ -109,11 +112,13 @@
     <script>
         var pixels = []
         var geocoords = []
+        var clicking;
         var k =0;
         let popUp = $('#popUpGEO')
         let input = $('#coordinates')
         let workingImage = $('#workingImage');
         let marker = $('#marker')
+
         popUp.dialog({
             autoOpen: false,
             show: {
@@ -130,51 +135,86 @@
 
 
         workingImage.mousedown(function (event) {
-            clicking = true;
-            let x = event.pageX - this.offsetLeft;
-            let y = event.pageY - this.offsetTop;
-            pixels.push([x, y]);
-            // Move circle here.
-            marker.css('top', event.pageY - 50);
-            marker.css('left', event.pageX - 25);
-            if (marker.css('display') == 'none') {
-                marker.css('display', 'block');
+            if(clicking){
+                let x = event.pageX - this.offsetLeft;
+                let y = event.pageY - this.offsetTop;
+                pixels.push([x, y]);
+                // Move circle here.
+                marker.css('top', event.pageY - 50);
+                marker.css('left', event.pageX - 25);
+            
+                var pos = {my: "left top", at: "left bottom", of: event}
+                input.val('');
+                popUp.dialog("option", "position", pos)
+                    .dialog("open");
             }
-
-
-            var pos = {my: "left top", at: "left bottom", of: event}
-            input.val('');
-            popUp.dialog("option", "position", pos)
-                .dialog("open");
 
         });
 
         
+         $('#showImage').click(function () {
+            if(document.getElementById("workingImage").style.display=="none"){
+                document.getElementById("workingImage").style.display="block";
+            }
+            else{
+                document.getElementById("workingImage").style.display="none";
+            }
+        });
+
         $('#submit').click(function () {
-            console.log(k++);
             coords = input.val()
             var coords = input.val().split(",");
-            geocoords.push([parseInt(coords[0].trim()), parseInt(coords[1].trim())]);
+            geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
             console.log(geocoords);
-            
-            marker.css('display', 'none')
             popUp.dialog("close");
+        });
+       
+      
+
+        function markerOn() {
+            if($("#id_marker").attr('checked')=='checked'){
+                clicking=false;
+                $("#id_marker").attr('checked', false);
+                $("#id_eraser").attr('checked', true);
+                document.getElementById("marker").style.color="";
+                $("#eraser").css("color", "#B55B29");
+            }
+            else{
+                clicking=true;
+                $("#id_marker").attr('checked', true);
+                $("#id_eraser").attr('checked', false);
+                document.getElementById("marker").style.color="#B55B29";
+                $("#eraser").css("color", "");
+            }
+            
+        };
+
+
+        $('#zoomIn').click(function () {
+            var img = document.getElementById("workingImage");
+            let currWidth = img.clientWidth;
+            img.style.width = (currWidth+100)+"px";
+        })
+        
+        $('#zoomOut').click(function () {
+            var img = document.getElementById("workingImage");
+            let currWidth = img.clientWidth;
+            img.style.width = (currWidth-100)+"px";
+        })
+
+          
+        function zoomout() {
+            var GFG = document.getElementById("geeks");
+            var currWidth = GFG.clientWidth;
+            GFG.style.width = (currWidth - 100) + "px";
+        }
+
+        $('#submit_pol').click(function () {
+            $("#id_image_id").val("{{frame.id}}");
+            document.getElementById("UploadCoordFile").submit();
         });
 
 
-        function markerOn() {
-            $("#id_marker").attr('checked', true);
-            $("#id_eraser").attr('checked', false);
-            $("#marker").css("color", "#B55B29")
-            $("#eraser").css("color", "")
-        };
-
-        function markerOff() {
-            $("#id_marker").attr('checked', false);
-            $("#id_eraser").attr('checked', true);
-            $("#marker").css("color", "")
-            $("#eraser").css("color", "#B55B29")
-        };
 
         function saveCoords() {
             $("#id_frame_id").val(JSON.parse("{{frame.id}}"));
@@ -183,8 +223,12 @@
             $('#id_geo').val(JSON.stringify(geocoords));
             document.getElementById("georreferencingForm").submit();
         };
+
+
     function drawMap() {
+        document.getElementById("workingImage").style.display="none";
         document.getElementById("upload").style.display="none";
+
         var mapdiv = document.getElementById('map');
 
         var mymap = L.map(mapdiv).setView([40.6405, -8.6538], 13);
@@ -200,11 +244,18 @@
         osm.addTo(mymap);
 
         //var coords =  '[ [40.640957, -8.658695], [40.648772, -8.623848], [40.614901, -8.656635], [40.640957, -8.658695] ]' ;
-        var coords = "{{frame.geoRefPolygon}}" 
-        
-        var a = JSON.parse(coords); // string to json
-
-        var polygon = L.polygon(a, {color: 'red'});
+        var coords = "{{frame.geoRefPolygon}}";
+        var f_coords=[];
+        coords=coords.split("((")[1];
+        coords=coords.split("))")[0];
+        coords=coords.split(",");
+        for(let i=0; i<coords.length; i++){
+            let c = coords[i].split(" ");
+            f_coords.push([parseFloat(c[1]), parseFloat(c[2])]);
+        }
+        coords=f_coords;
+        coords.pop();
+        var polygon = L.polygon(coords, {color: 'red'});
         polygon.addTo(mymap);
         polygon.bindPopup("Coordinates: " + coords);
 

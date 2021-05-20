@@ -161,11 +161,11 @@ def upload_polygon(request, project_id):
 		return redirect("/projects")
 	if request.method == 'POST':
 		polygon=request.FILES['coords'].read()
-	print("images from upload poly")
-	print(request.FILES['image'].name)
-
-
-	return redirect("/projects/" + str(project_id) + "/progression")
+		image = ImageFrame.objects.get(file_info__id=request.POST['image_id'])
+		image.polygon=polygon
+		image.save()
+	
+	return redirect("/projects/" + str(project_id) + "/progression?id="+request.POST['image_id'])
 
 
 def upload_video(request, project_id):
@@ -470,9 +470,7 @@ def progression(request, project_id):
 			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(),
 		}
-		#static polygon for tests
-		#frame.polygon= "POLYGON ((261 277, 260 278, 260 279, 260 280, 260 281, 260 282, 260 283, 260 284, 261 285, 261 286, 262 286, 263 286, 264 286, 265 287, 265 288, 265 289, 265 290, 265 291, 264 292, 263 292, 262 292, 263 293, 264 293, 265 294, 265 295, 265 296, 265 297, 265 298, 264 299, 265 300, 265 301, 265 302, 266 303, 267 304, 268 305, 268 306, 269 307, 269 308, 269 309, 269 310, 269 311, 269 312, 268 313, 268 314, 268 315, 268 316, 268 317, 269 318, 269 319, 270 319, 271 319, 272 319, 273 319, 274 320, 275 321, 276 321, 277 321, 278 322, 278 323, 278 324, 278 325, 279 325, 280 326, 280 325, 280 324, 280 323, 280 322, 281 321, 282 321, 283 321, 284 320, 285 320, 286 319, 286 318, 287 317, 288 316, 288 315, 288 314, 288 313, 288 312, 288 311, 288 310, 288 309, 289 308, 290 307, 290 306, 289 305, 289 304, 288 303, 288 302, 288 301, 288 300, 288 299, 289 298, 288 297, 288 296, 288 295, 288 294, 287 294, 286 293, 285 293, 284 293, 283 293, 282 292, 281 292, 280 291, 279 290, 279 289, 279 288, 279 287, 279 286, 278 286, 277 285, 277 284, 277 283, 276 283, 275 283, 274 283, 273 283, 272 283, 271 283, 270 284, 269 284, 268 284, 267 284, 266 284, 265 284, 264 284, 263 283, 262 282, 262 281, 262 280, 262 279, 262 278, 262 277, 261 277))"
-		# if the frame_id is valid check if it has been georreferenced
+		
 		if frame is None or frame.polygon is None:
 			return render(request, "main/fire_progression.html", param)
 		
@@ -518,8 +516,7 @@ def progression(request, project_id):
 
 		# if the frame_id is valid check if it has been georreferenced
 		if _frame is None or _frame.polygon is None:
-			print("frame")
-			print(_frame)
+			
 			return render(request, "main/fire_segmentation.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
@@ -545,7 +542,7 @@ def progression(request, project_id):
 				z = point_homogenous[2]
 				geo_coord= [point_homogenous[0]/z, point_homogenous[1]/z]
 			geo_coords = geo_coords + str(geo_coord[0]) + " " + str(geo_coord[1])+ ", "
-		wkt_str = "POLYGON ((" + geo_coords 
+		wkt_str = "POLYGON (( " + geo_coords 
 		print(wkt_str[:-2]+"))")
 		_frame.geoRefPolygon =wkt_str
 		_frame.save()

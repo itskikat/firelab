@@ -68,7 +68,9 @@ class Georreferencing(forms.Form):
 
 class UploadCoordFile(forms.Form):
     coords = forms.FileField(label="File with Polygon Coordinates")
+    image_id = forms.IntegerField()
 
     def __init__(self, *args, **kwargs):
         super(UploadCoordFile, self).__init__(*args, **kwargs)
         self.fields['coords'].widget.attrs = ({'class': 'file-upload__input', 'name': 'coordsFile', 'id': 'coordsFile'})
+        
