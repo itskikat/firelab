@@ -10,7 +10,7 @@ $(document).ready(function () {
         // Set default text for label
         label.textContent = defaultLabelText;
         label.title = defaultLabelText;
-        
+
         button.addEventListener('click', function(){
             hiddenInput.click();
         });

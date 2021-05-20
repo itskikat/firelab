@@ -3,58 +3,122 @@
 {% load static %}
 
 {% block content %}
-    <head>
 
-    </head>
-    <link type='text/css' rel="stylesheet" href="{% static 'viewmodel/css/fire_prog.css' %}"/>
+    {% block extracss %}
+        <link type='text/css' rel="stylesheet" href="{% static 'viewmodel/css/fire_prog.css' %}"/>
+        <!-- Leaflet -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+            integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+            crossorigin=""
+        />
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+            integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+            crossorigin="">
+        </script>
+    {% endblock %}
+
+
+
+    <form id="georreferencingForm" action="./progression" method="POST">
+    {% csrf_token %}
+    {% if frame is not None %}
+        <div hidden>
+            {{ georreferencing.marker }}
+            {{ georreferencing.pixels }}
+            {{ georreferencing.geo }}
+            {{ georreferencing.frame_id }}
+            {{ georreferencing.polygon_wkt }}
+        </div>
+        {% csrf_token %}
+        <div id="img_prog"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
+        {% if georreferenced %}
+            <div hidden id="polygon_georreferenced">
+            {{ georreferenced }}>
+            </div>
+            <img draggable="false" id="WorkingImage" src={{ frame.content.url }}>
+        {% else %}
+            <img draggable="false" id="workingImage" src={{ frame.content.url }}>
+        {% endif %}
+        </div>
+    {% endif %}
+    </form>
+
 	<div class="toolkit">
 		<table>
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
-			<tr>
-				<td><i class="fas fa-image fa-lg"></i></td>
-				<td><i class="fas fa-search-plus fa-lg"></i></td>
-			</tr>
-			<tr>
-				<td><i class="fas fa-map-marker-alt fa-lg"></i></td>
-				<td><i class="fas fa-search-minus fa-lg"></i></td>
-			</tr>
-			<tr>
-				<td><i class="fas fa-play fa-lg"></i></td>
-				<td><i class="fas fa-save fa-lg" aria-hidden="true"></i></td>
-			</tr>
-			<tr>
-				<td><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td>
-				<td><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td>
-			</tr>
-			<tr>
-				<td><i class="fas fa-expand-arrows-alt fa-lg" aria-hidden="true"></i></td>
-				<td><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
-			</tr>
-		</tbody>
+                <tr>
+                    <td><i class="fas fa-image fa-lg"></i></td>
+                    <td><i class="fas fa-search-plus fa-lg"></i></td>
+                </tr>
+                <tr>
+                    <td title="Mark points" id="marker" style="cursor: pointer; {% if georreferencing.marker.value == True %} color: #B55B29 {% endif %}" onclick="markerOn()"><i class="fas fa-map-marker-alt fa-lg"></i></td>
+                    <td><i class="fas fa-search-minus fa-lg"></i></td>
+                </tr>
+                <tr>
+                    <td title="Play Animation" onclick="openMap()" style="cursor: pointer;"><i class="fas fa-play fa-lg"></i></td>
+                    <td title="Save" onclick="saveCoords()" style="cursor: pointer;"><i class="fas fa-save fa-lg" aria-hidden="true"></i></td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td>
+                    <td><a onclick="openUpload()" style="cursor: pointer;"><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></a></td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-expand-arrows-alt fa-lg" aria-hidden="true"></i></td>
+                    <td><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
+                </tr>
+		    </tbody>
 		</table>
 	</div>
 
-	<div class="upload">
+	<div class="upload" id="upload" hidden>
 		<h1>Upload Files</h1>
 		<p>If you have the polygon coordinates, or the file that contains them, please use this tool in order to see how the fire evolved:</p>
-		<input type="text" name="polygon-coord" id="polygon-coord" value="" placeholder="List with polygon coordinates"  />
-		<div style="overflow: hidden; padding: 0.1em 0 0 1em;">
-			<input class="file-upload__input" type="file" name="videoFile" id="videoFile">
+		<input type="text" name="polygon-coord" id="polygon-coord" value="" placeholder="List with polygon coordinates" >
+		<form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="." enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ file_form.coords }}
             <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
             <span class="file-upload__label"></span>
-		</div>
-        <button class="button icon solid" type="button" value="Draw" name="drawPolygonButton" id="drawPolygonButton" onclick="drawMap()">DRAW </button><br>
+            <input type="submit" value="Upload image">
+        </form>
 	</div>
+
+    <div class="col-12" id="animationButtons" hidden>
+        <button type="button" class="button icon solid" name="drawPolygonButton" id="drawPolygonButton">Play Animation</button>
+        <button type="button" class="button icon solid" name="stopDraw" id="stopDraw"/>Stop Animation</button><br>
+    </div>
     <br>
-	<!-- TODO see the best way to view the progression-->
-	<div id="map" style="height: 600px;">
+
+	<!-- TODO see the best way to view the progression -->
+
+	<div id="map" style="height: 600px;" hidden>
 
     </div>
-						
 
 
-    <script src="{% static 'viewmodel/js/map.js' %}"></script>
-    <script src="{% static 'viewmodel/js/fire_prog.js' %}"></script>
+    <div id="popUpGEO">
+        <small>Geographic Coordinates: lat, lon</small>
+        <br>
+        <input id='coordinates' type='text' name='coordinates' class='form-control'>
+        <br>
+        <button class='btn btn-default' id='submit'> SAVE! </button>
+    </div>
+
+    <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/678111-map-marker-512.png" id="marker" style="display: none; position: absolute; width: 50px; height: 50px;" />
+
+    {% block extrajs %}
+        <!-- This is necessary for the popUp -->
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+        <script src="{% static 'viewmodel/js/fire_prog.js' %}"></script>
+    {% endblock %}
+
+    <script>
+        $(document).ready(function () {
+            $("#id_frame_id").val(JSON.parse("{{frame.file_info.id|escapejs}}"))
+        })
+    </script>
+
 
 {% endblock %}

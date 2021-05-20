@@ -2,6 +2,13 @@
 		padding-top: 0em;
 	}
 
+#info {
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding-left: 18%;
+}
 
 .split {
 		-moz-align-items: center;

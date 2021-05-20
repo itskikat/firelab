@@ -43,7 +43,7 @@
 	padding-left: 1em;
 }
 
-.toolkit a {
+a {
 	text-decoration: none;
 	border: none;
 
@@ -198,6 +198,3 @@ table.scroll .box {
 	padding-left: 70%;
 }
 
-a {
-	text-decoration: none
-}

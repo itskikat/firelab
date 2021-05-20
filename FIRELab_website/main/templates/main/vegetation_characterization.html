@@ -30,17 +30,21 @@
 			<caption id="captionPicker">Picker<a id= "closePicker" title="Close Picker" onclick="openClosePicker()"><i id="closeP" class="fas fa-times"></i></a></caption>
 			<tbody style="font-size: 13px" id="pickerBody">
 			<tr>
-				<td>No Vegetation (1-20%)<i id="none_icon" onclick="filter('none')" class="fas fa-eye fa-lg"></i><div class='box red'></div></td>
+				<td colspan="2">No Vegetation (1-20%)<i id="none_icon" onclick="filter('none')" class="fas fa-eye fa-lg"></i><div class='box red'></div></td>
 			</tr>
 			<tr>
-				<td>Low Vegetation (21-50%)<i id="low_icon" onclick="filter('low')" class="fas fa-eye fa-lg"></i><div class='box yellow'></div></td>
+				<td colspan="2">Low Vegetation (21-50%)<i id="low_icon" onclick="filter('low')" class="fas fa-eye fa-lg"></i><div class='box yellow'></div></td>
 			</tr>
 			<tr>
-				<td>Medium Vegetation (50-80%)<i id="medium_icon" onclick="filter('medium')" class="fas fa-eye fa-lg"></i><div class='box green'></div></td>
+				<td colspan="2">Medium Vegetation (50-80%)<i id="medium_icon" onclick="filter('medium')" class="fas fa-eye fa-lg"></i><div class='box green'></div></td>
 			</tr>
 			<tr>
-				<td>High Vegetation (81-100%)<i id="high_icon" onclick="filter('high')" class="fas fa-eye fa-lg"></i><div class='box dark-green'></div></td>
+				<td colspan="2">High Vegetation (81-100%)<i id="high_icon" onclick="filter('high')" class="fas fa-eye fa-lg"></i><div class='box dark-green'></div></td>
 			</tr>
+            <tr>
+                <td style="text-align: center" onclick="showAll()">Show all layers</td>
+                <td style="text-align: center" onclick="hideAll()">Hide all layers</td>
+            </tr>
 		</tbody>
 		</table>
 	</div>
@@ -55,12 +59,12 @@
 				<td><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
 			</tr>
 			<tr>
-				<td><a {% if grid %}href="{% url 'auto_classifier' project.id grid.id %}" {% endif %}><i class="fas fa-tree fa-lg"></i></a></td>
+				<td><a title="Auto classify" style="cursor: pointer" {% if grid %} onclick="openLoadingPopUp()" href="{% url 'auto_classifier' project.id grid.id %}" {% endif %}><i class="fas fa-tree fa-lg"></i></a></td>
 				<td><i class="fas fa-save fa-lg"></i></td>
 			</tr>
 			<tr>
 				<td><i class="fas fa-eraser fa-lg"></i></td>
-				<td><a onclick="openUpload()"><i class="fa fa-folder-open fa-lg"></i></a></td>
+				<td><a title="Upload ortophoto" style="cursor: pointer" onclick="openUpload()"><i class="fa fa-folder-open fa-lg"></i></a></td>
 			</tr>
 			<tr>
 				<td><i class="fa fa-search-plus fa-lg" aria-hidden="true"></i></td>
@@ -68,7 +72,7 @@
 			</tr>
 			<tr>
 				<td><i class="fa fa-search-minus fa-lg" aria-hidden="true"></i></td>
-				<td onclick="drawGrid()">Grid</td>
+                <td title="Draw Grid" onclick="drawGrid()" style="cursor: pointer"><i class="fa fa-border-all fa-lg"></i></td>
 			</tr>
 		</tbody>
 		</table>
@@ -161,6 +165,14 @@
             }
             path = path.substr(0, path.length-1)
             window.location.href = window.location.pathname + path;
+        }
+
+        function showAll() {
+           window.location.href = window.location.pathname + "?id=" + queryDict['id'];
+        }
+
+        function hideAll() {
+            window.location.href = window.location.pathname + "?id=" + queryDict['id'] + "&none=0&low=0&medium=0&high=0";
         }
 
     </script>

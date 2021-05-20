@@ -1,6 +1,6 @@
 /* sidenav */
 .left table #seg td {
-		  background-color:  #ffffff;
+		  background-color:  #ffffff;  
 		}
 
 		.left table #seg a {
@@ -23,11 +23,10 @@
 }
 
 .toolkit table {
-	background-color: #ffffff;
-	border-color: #000000;
+	background-color: #ffffff; 
 	text-align: center;
 	border-collapse: collapse;
-	border-spacing: 0 0px;
+	border-spacing: 0 0;
 	border: 2px solid black;
 	box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
@@ -40,7 +39,7 @@
 
 
 .toolkit table td {
-			background-color: #ffffff;
+			background-color: #ffffff; 
 			color: #000000;
 		}
 
@@ -132,8 +131,8 @@ select:focus,
         color: black;
 }
 
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
   -webkit-appearance: none;
 }
 
@@ -160,18 +159,16 @@ input[type=submit]:focus
 
 #timeline {
 	position: absolute;
-    bottom: 0;
+    bottom: 2px;
     left: 15.1%;
     right: 0;
-    height: 25%;
-    outline: 3px solid black;
+    height: 16%;
+    outline: 2px solid black;
     background-color: white;
-
-
 }
 
 #title_timeline {
-	height: 5%;
+	height: 10%;
 	z-index:1;
 	position: relative;
 }
@@ -183,7 +180,7 @@ input[type=submit]:focus
 }
 
 hr.solid {
-  border-top: 2.5px solid black;
+  border-top: 2px solid black;
   top: 0;
   margin-top: -2%;
 }
@@ -194,8 +191,8 @@ hr.solid {
 
 .frames_timeline {
 	width: 100%;
-	overflow:auto;
-	height: 100%;
+	/*overflow:auto;*/
+	height: 90%;
 	overflow-y: hidden;
 }
 
@@ -210,7 +207,7 @@ hr.solid {
 
 #frameTable {
 
-	padding-top: 0%;
+	padding-top: 0;
 	height: auto;
 	background-color: transparent !important;
 

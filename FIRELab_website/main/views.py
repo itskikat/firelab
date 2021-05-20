@@ -12,7 +12,6 @@ from django.db.models import Q
 from colormath.color_objects import sRGBColor, LabColor
 from colormath.color_conversions import convert_color
 
-
 from FIRELab_website.settings import MEDIA_ROOT
 from main import utils
 from main.forms import *
@@ -290,7 +289,6 @@ def vegetation(response, project_id):
 
 
 def auto_classifier(request, project_id, grid_id):
-
     try:
         project = Project.objects.get(id=project_id)
         grid = Grid.objects.get(id=grid_id, ortophoto__file_info__dir__project_id=project_id)
@@ -343,7 +341,7 @@ def auto_classifier(request, project_id, grid_id):
             tile.classification = utils.numerically_closest(tile, means)
             tile.save()
 
-    return redirect("/projects/" + str(project.id) + "/vegetation?id=" + str(grid.ortophoto.id))
+    return redirect("/projects/" + str(project.id) + "/vegetation?id=" + str(grid.ortophoto.file_info.id))
 
 
 def upload_orthphoto(request, project_id):
@@ -767,15 +765,145 @@ def generate_contour(request, file_id, project_id):
     return redirect('/projects/' + str(project.id) + '/segmentation?id=' + str(file_id))
 
 
-def progression(response, project_id):
+# TODO: Fire Progression Animation and Processing
+"""
+    GEOREFERENCING
+"""
+
+
+def progression(request, project_id):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+
     try:
         project = Project.objects.get(id=project_id)
     except Project.DoesNotExist:
         return redirect("/projects")
 
-    param = {
-        'project': project,
-        'project_dirs': Directory.objects.all().filter(project_id=project.id),
-        'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-    }
-    return render(response, "main/fire_progression.html", param)
+    if request.method == "GET":
+        frame = None
+        if 'id' in request.GET:
+            try:
+                frame = ImageFrame.objects.get(file_info_id=request.GET['id'])
+            except ImageFrame.DoesNotExist:
+                frame = None
+
+        param = {
+            'frame': frame,
+            'project': project,
+            'project_dirs': Directory.objects.all().filter(project_id=project.id),
+            'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
+            'file_form': UploadCoordFile(),
+            'georreferencing': Georreferencing(),
+        }
+
+        # if the frame_id is valid check if it has been georreferenced
+        if frame is None or frame.polygon is None:
+            return render(request, "main/fire_progression.html", param)
+
+        img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
+        # georreference = pickle.loads(frame.polygon)
+        georreference = frame.polygon.wkt
+        print(georreference)
+
+        param['georreferenced'] = georreference
+
+        return render(request, "main/fire_progression.html", param)
+
+    elif request.method == 'POST':
+        param = {
+            'frame': None,
+            'project': project,
+            'project_dirs': Directory.objects.all().filter(project_id=project.id),
+            'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
+            # 'file_form': UploadCoordFile(),
+            'georreferencing': Georreferencing(initial={"marker": False}),
+        }
+
+        if 'frame_id' not in request.POST or request.POST['frame_id'] == '':
+            return redirect(request.build_absolute_uri())
+
+        mode = None
+        if 'marker' in request.POST:
+            param['georreferencing'] = Georreferencing(initial={'marker': True})
+            mode = True
+
+        # check if frame exists
+        _id = int(request.POST['frame_id'])
+        try:
+            _frame = ImageFrame.objects.get(file_info_id=_id)
+            _frame_file = _frame.file_info
+            param['frame'] = _frame
+        except ImageFrame.DoesNotExist:
+            return render(request, 'main/fire_progression.html', param)
+
+        if 'pixels' not in request.POST or 'geo' not in request.POST:
+            return render(request, "main/fire_progression.html", param)
+
+        # compute the pairs from the coordinates
+        pixels_json = json.loads(request.POST['pixels'])
+        print(pixels_json)
+        geo_json = json.loads(request.POST['geo'])
+        print(geo_json)
+
+        # if the frame_id is valid check if it has been georreferenced
+        if _frame is None or _frame.polygon is None:
+            return render(request, "main/fire_segmentation.html", param)
+
+        img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
+
+        # TODO: Georeference points
+        pts_src = np.array(pixels_json)
+        pts_dst = np.array(geo_json).astype(int)
+        print(pts_dst)
+
+        # given reference points from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
+        h, status = cv2.findHomography(pts_src, pts_dst)
+
+        coords = _frame.polygon.wkt.split("((")[1].split("))")[0].split(",")
+
+        geo_coords = ""
+        wkt_str = ""
+        for coord in coords:
+            coord_split = coord.strip().split(" ")
+            point_homogenous = h.dot([float(coord_split[0]), float(coord_split[1]), 1])
+            if len(point_homogenous) != 3:
+                geo_coord = [0, 0]
+            else:
+                z = point_homogenous[2]
+                geo_coord = [point_homogenous[0] / z, point_homogenous[1] / z]
+            geo_coords = geo_coords + str(geo_coord[0]) + " " + str(geo_coord[1]) + ", "
+            geo_coords = geo_coords[:-2]
+            wkt_str = "POLYGON ((" + geo_coords + "))"
+        print(wkt_str)
+        # TODO save georef polygon
+
+        # Converted polygon WKT, to be analyzed by JS
+        param['georreferenced'] = wkt_str
+    return render(request, "main/fire_progression.html", param)
+
+
+# TODO: Animate Polygons
+'''
+def generate_georreference(request, file_id, project_id):
+    if not request.user.is_authenticated:
+    return redirect("/login")
+
+    try:
+        project = Project.objects.get(id=project_id)
+    except Project.DoesNotExist:
+        return redirect("/projects")
+
+    try:
+        _frame = ImageFrame.objects.get(file_info_id=file_id)
+    except ImageFrame.DoesNotExist:
+        return redirect(request.get_full_path())
+
+
+    img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
+    polygon = pickle.loads(_frame.polygon)
+    georeference = pickle.loads(_frame.georeference)
+
+
+    return redirect('/projects/' + str(project_id) + '/progression?id=' + str(file_id))
+'''

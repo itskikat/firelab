@@ -3,6 +3,11 @@
 {% load static %}
 
 {% block content %}
+
+    {% block extracss %}
+        <link rel="stylesheet" href="{% static 'viewmodel/css/fire_seg.css' %}"/>
+    {% endblock %}
+
     <form id="workingImageForm" action="./segmentation" method="POST">
     {% if image is not None %}
         <div hidden>
@@ -12,7 +17,7 @@
             {{ segmentation.image_id }}
         </div>
         {% csrf_token %}
-        <div id="img_seg"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
+        <div id="img_seg"  style="display: flex; padding-top: {% if video_frames %} 6vh {% else %} 20vh {% endif %}; justify-content: center; align-items: center; ">
         {% if segmented %}
             <img draggable="false" id="workingImage" src={{ segmented }}>
             <img hidden draggable="false" id="hiddenWorkingImage" src={{ image.content.url }}>
@@ -22,17 +27,18 @@
         </div>
     {% endif %}
     </form>
+
 	<div class="toolkit">
 		<table>
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
 			<tr>
-				<td id="pen" {% if segmentation.pen.value == True %} style="color: #B55B29" {% endif %} onclick="penOn()"><i class="fa fa-fire fa-lg" aria-hidden="true"></i></td>
-				<td onclick="window.location='/projects/{{ project.id }}/segmentation/save/{{ image.file_info.id }}'"><i class="fas fa-save fa-lg"></i></td>
+				<td title="Segment" id="pen" style="cursor: pointer; {% if segmentation.pen.value == True %} color: #B55B29 {% endif %}" onclick="penOn()"><i class="fa fa-fire fa-lg" aria-hidden="true"></i></td>
+				<td title="Save" style="cursor: pointer" onclick="window.location='/projects/{{ project.id }}/segmentation/save/{{ image.file_info.id }}'"><i class="fas fa-save fa-lg"></i></td>
 			</tr>
 			<tr>
-				<td id="eraser" {% if segmentation.eraser.value == True %} style="color: #B55B29" {% endif %} onclick="penOff()"><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i></td>
-				<td><a onclick="openUpload()"><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></a></td>
+				<td title="Erase" id="eraser" style="cursor: pointer; {% if segmentation.eraser.value == True %} color: #B55B29 {% endif %}" onclick="penOff()"><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i></td>
+				<td><a style="cursor: pointer" title="Upload" onclick="openUpload()"><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></a></td>
 			</tr>
 			<tr>
 				<td><i class="fa fa-search-plus fa-lg" aria-hidden="true"></i></td>
@@ -86,7 +92,7 @@
                 </div>
 			</form>
 		</div>
-		
+
 	</div>
     {% if video_frames and video_frames.count != 0 %}
         <!-- This only appears when there is a video uploaded-->
@@ -120,6 +126,17 @@
     let workingImage = $("#workingImage")
     let clicking, path;
     let maskOn = true
+
+    $("#maskToggle").click(function (event) {
+        maskOn = !maskOn;
+        if (maskOn) {
+            $("#workingImage").show();
+            $("#hiddenWorkingImage").hide();
+        } else {
+            $("#workingImage").hide();
+            $("#hiddenWorkingImage").show();
+        }
+    });
 
     workingImage.mousedown(function(event) {
         let selectedFileId = JSON.parse("{{image.file_info.id|escapejs}}");

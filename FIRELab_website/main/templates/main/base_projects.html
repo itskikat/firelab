@@ -8,9 +8,10 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-		<link rel="stylesheet" href="/static/assets/css/projects.css"/>
-		<link rel="stylesheet" href="/static/viewmodel/css/project_process.css"/>
-		<noscript><link rel="stylesheet" href="/static/assets/css/noscript.css" /></noscript>
+    	<link rel="stylesheet" href="{% static 'assets/css/projects.css' %}"/>
+		<link rel="stylesheet" href="{% static 'viewmodel/css/project_process.css' %}"/>
+		<noscript><link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}" /></noscript>
+        {% block extracss %}{% endblock %}
 	</head>
 	<body class="is-preload">
         {% include 'main/loading_popup.html' %}
@@ -74,18 +75,9 @@
 						{% block content %}{% endblock %}
 					</div>
 				</div>
-					
+
 			</div>
 
-		    <!-- Scripts -->
-			<script src="{% static 'assets/js/jquery.min.js' %}"></script>
-			<script src="{% static 'assets/js/jquery.scrollex.min.js' %}"></script>
-			<script src="{% static 'assets/js/jquery.scrolly.min.js' %}"></script>
-			<script src="{% static 'assets/js/browser.min.js' %}"></script>
-			<script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
-			<script src="{% static 'assets/js/util.js' %}"></script>
-			<script src="{% static 'assets/js/main.js' %}"></script>
-			<script src="{% static 'assets/js/projects.js' %}"></script>
 
 			<!-- MOVE TO STATIC -->
             <script>
@@ -96,20 +88,20 @@
                     let iconId = "#" + childrenName + "_icon"
                     let displayType = $(dirId).css("display")
 
-                    if (displayType === "none") {
-                         $(dirId).css("display", "block")
-                        $(iconId).attr("class", "fas fa-caret-down")
-                    } else {
-                         $(dirId).css("display", "none")
-                        $(iconId).attr("class", "fas fa-caret-right")
-                    }
+            if (displayType === "none") {
+                 $(dirId).css("display", "block")
+                $(iconId).attr("class", "fas fa-caret-down")
+            } else {
+                 $(dirId).css("display", "none")
+                $(iconId).attr("class", "fas fa-caret-right")
+            }
 
-                }
-            </script>
+        }
+    </script>
 
 
-			<!-- CUSTOM SCRIPTS -->
-			<script src="{% static 'viewmodel/js/project_process.js' %}"></script>
-			<script src="{% static 'viewmodel/js/upload.js' %}"></script>
+    <!-- CUSTOM SCRIPTS -->
+    <script src="{% static 'viewmodel/js/project_process.js' %}"></script>
+    <script src="{% static 'viewmodel/js/upload.js' %}"></script>
 	</body>
 </html>
