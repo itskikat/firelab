@@ -727,7 +727,7 @@ def generate_contour(request, file_id, project_id):
 	binary = cv2.dilate(binary, kernel)
 	binary = cv2.erode(binary, kernel)
 
-	_, vertexes, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+	vertexes, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
 	if len(vertexes) > 1:
 		print("More than one polygon were identified")
@@ -757,13 +757,14 @@ def generate_contour(request, file_id, project_id):
 		wkt_list.append((point[0][0], point[0][1]))
 	wkt_list.append((vertexes[0][0][0], vertexes[0][0][1]))
 	wkt = tuple(wkt_list)
+	print("WKT ", wkt)
 
 	polygon = Polygon(LinearRing(wkt))
 	print(polygon)
 	_image.polygon = polygon
 	_image.save()
 
-	return redirect('/projects/' + str(project.id) + '/segmentation?id=' + str(file_id))
+	return redirect('/projects/' + str(project.id) + '/progression?id=' + str(file_id))
 
 
 
@@ -812,17 +813,18 @@ def progression(request, project_id):
 			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(),
 		}
-		print(frame)
-		print(frame.id)
+		print("frame ", frame)
+		print("frame id  ", frame.id)
 		# if the frame_id is valid check if it has been georreferenced
 		if frame is None or frame.polygon is None:
 			return render(request, "main/fire_progression.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
 		# georreference = pickle.loads(frame.polygon)
-		print(frame.polygon)
+		print("frame polygon  ", frame.polygon.wkt )
+		print(frame.polygon.wkt[10:-2])
 
-		param['georreferenced'] = frame.polygon
+		param['georreferenced'] = frame.polygon.wkt[10:-2]
 
 
 		return render(request, "main/fire_progression.html", param)
@@ -859,14 +861,14 @@ def progression(request, project_id):
 
 		# compute the pairs from the coordinates
 		pixels_json = json.loads(request.POST['pixels'])
-		print(pixels_json)
+		print("img-pixels  ", pixels_json)
 		geo_json = json.loads(request.POST['geo'])
-		print(geo_json)
+		print("img-geograph", geo_json)
 
 		# if the frame_id is valid check if it has been georreferenced
 		if _frame is None or _frame.polygon is None:
-			print("frame")
-			print(_frame)
+			print("frame - ", _frame)
+
 			return render(request, "main/fire_segmentation.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
@@ -879,25 +881,43 @@ def progression(request, project_id):
 		h, status = cv2.findHomography(pts_src, pts_dst)
 
 		# TODO read from file
-		coords = _frame.polygon.split("((")[1].split("))")[0].split(",")
+		coords = _frame.polygon.wkt[10:-2]
+
+		# coords = _frame.polygon.split("((")[1].split("))")[0].split(",")
 
 
-		geo_coords = ""
+		geo_coord = None
+		#geo_coords = ""
 		wkt_str = ""
 		for coord in coords:
 			coord_split = coord.strip().split(" ")
 			point_homogenous = h.dot([float(coord_split[0]), float(coord_split[1]), 1])
 			if len(point_homogenous) != 3:
-				geo_coord= [0,0]
+				geo_coord = [0,0]
 			else:
 				z = point_homogenous[2]
-				geo_coord= [point_homogenous[0]/z, point_homogenous[1]/z]
-			geo_coords = geo_coords + str(geo_coord[0]) + " " + str(geo_coord[1])+ ", "
-		wkt_str = "POLYGON ((" + geo_coords
-		print(wkt_str[:-2] + "))")
-		_frame.geoRefPolygon = wkt_str
-		_frame.save()
+				geo_coord = [point_homogenous[0]/z, point_homogenous[1]/z]
+			print("GEO COORDS - ", geo_coord)
+
+			# geo_coords = geo_coords + str(geo_coord[0]) + " " + str(geo_coord[1])+ ", "
+
+		# wkt_str = "POLYGON ((" + geo_coords
+		# print(wkt_str[:-2] + "))")
+		# _frame.geoRefPolygon = wkt_str
+		# _frame.save()
+
 		# TODO save georef polygon
+		# store polygon on db
+		wkt_list = []
+		for point in geo_coord:
+			wkt_list.append((point[0][0], point[0][1]))
+		wkt_list.append((geo_coord[0][0][0], geo_coord[0][0][1]))
+		wkt = tuple(wkt_list)
+
+		geo_polygon = Polygon(LinearRing(wkt))
+		print(geo_polygon)
+		_frame.geoRefPolygon = geo_polygon
+		_frame.save()
 
 		# Converted polygon WKT, to be analyzed by JS
 		param['georreferenced'] = wkt_str

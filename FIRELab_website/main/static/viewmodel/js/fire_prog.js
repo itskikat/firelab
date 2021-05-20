@@ -96,7 +96,7 @@ console.log('YEEEET');
         // console.log(coords)
         var coords = input.val().split(",")
         // console.log(coords)
-        geocoords.push([parseInt(coords[0].trim()), parseInt(coords[1].trim())]);
+        geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
         console.log("ARRAY GEO COORDS", geocoords);
         marker.css('display', 'none')
         popUp.dialog("close");
