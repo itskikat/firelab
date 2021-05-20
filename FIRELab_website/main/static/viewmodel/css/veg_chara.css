@@ -43,14 +43,14 @@
 	padding-left: 1em;
 }
 
-.toolkit a {
+a {
 	text-decoration: none;
 	border: none;
 
 }
 
 .toolkit table td {
-			background-color: #ffffff; 
+			background-color: #ffffff;
 			color: #000000;
 		}
 
@@ -110,5 +110,90 @@ p, input, button{
 	font-weight: bold;
 }
 
+.right .picker {
+	bottom: 0;
+	position: fixed;
+	right: 1%;
+	height: 8%;
+	width: 20%;
+	padding-bottom: 18%;
+}
+
+table.scroll {
+    background-color: #ffffff;
+	border-color: #000000;
+	text-align: left;
+	border-collapse: collapse;
+	border-spacing: 0 0px;
+	border: 2px solid black;
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+
+}
+
+table.scroll tr {
+	outline: thin solid;
+}
+
+table.scroll td {
+	width: 100vh;
+}
 
 
+table.scroll tbody,
+table.scroll thead tr { display: block; }
+
+table.scroll tbody {
+	width: 100%;
+    height: 30vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+tbody td:last-child, thead th:last-child {
+    border-right: none !important;
+    border-bottom: none !important;
+}
+
+table.scroll tbody::-webkit-scrollbar {
+  display: none;
+}
+
+
+table.scroll .box {
+	border: none;
+	padding: 0;
+	box-sizing: border-box !important;
+	float: right;
+	width: 25px !important;
+	height: 25px !important;
+	border-radius: 0 !important;
+	margin: 0 !important;
+}
+
+.red {
+  background-color: #FF1414;
+}
+
+.green {
+	background-color: #58d383;
+}
+
+.dark-green {
+	background-color: #14502D;
+}
+
+.yellow {
+	background-color: #F0DE7A;
+}
+
+
+#pickertable tr i {
+	float: right;
+	padding-top: 3%;
+	padding-right: 1%;
+	padding-left: 5%;
+}
+
+#pickertable caption i {
+	padding-left: 70%;
+}

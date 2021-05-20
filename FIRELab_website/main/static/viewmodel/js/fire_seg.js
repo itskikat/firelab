@@ -73,10 +73,6 @@ function penOff() {
     $("#eraser").css("color", "#B55B29")
 }
 
-$("#maskToggle").click(function (event) {
-    maskOn = !maskOn;
-});
-
 
 //var blur = '#{{ blur }}';
 const saveFile = document.getElementById("saveFile");
@@ -101,10 +97,12 @@ const here = document.getElementById("open");
 function closeTimeline() {
     timeline.style.display = 'none';
     here.style.display = 'flex';
+    $("#img_seg").css("padding-top", "14vh")
 
 }
 
 function openTimeline() {
     timeline.style.display = 'block';
     here.style.display = 'none';
+    $("#img_seg").css("padding-top", "6vh")
 }

@@ -1,46 +1,99 @@
 {% extends 'main/base_projects.html' %}
 
 {% block content %}
-    {% load static %}
+{% load static %}
+
+    <form id="workingImageForm" action="./vegetation" method="POST">
+        {% csrf_token %}
+        {% if image %}
+            <div hidden>
+                {{ grid_draw.image_id }}
+                {{ grid_draw.p1 }}
+                {{ grid_draw.p2 }}
+                {{ grid_draw.image_size }}
+            </div>
+
+            {% if gridded_image %}
+                <div id="img_ortophoto"  style="display: flex; padding-top: 15vh; justify-content: center; align-items: center; ">
+                    <img style="width: 40%" draggable="false" id="workingImage" src={{ gridded_image }}>
+                </div>
+            {% else %}
+                <div id="img_ortophoto"  style="display: flex; padding-top: 15vh; justify-content: center; align-items: center; ">
+                    <img style="width: 40%" draggable="false" id="workingImage" src={{ image.thumbnail.url }}>
+                </div>
+            {% endif %}
+        {% endif %}
+    </form>
+
+    {% if grid %}
+    <div class="picker">
+		<table id="pickertable" class="scroll">
+			<caption id="captionPicker">Picker<a id= "closePicker" title="Close Picker" onclick="openClosePicker()"><i id="closeP" class="fas fa-times"></i></a></caption>
+			<tbody style="font-size: 13px" id="pickerBody">
+                <tr>
+                    <td colspan="2">No Vegetation (1-20%)<i id="none_icon" onclick="filter('none')" class="fas fa-eye fa-lg"></i><div class='box red'></div></td>
+                </tr>
+                <tr>
+                    <td colspan="2">Low Vegetation (21-50%)<i id="low_icon" onclick="filter('low')" class="fas fa-eye fa-lg"></i><div class='box yellow'></div></td>
+                </tr>
+                <tr>
+                    <td colspan="2">Medium Vegetation (50-80%)<i id="medium_icon" onclick="filter('medium')" class="fas fa-eye fa-lg"></i><div class='box green'></div></td>
+                </tr>
+                <tr>
+                    <td colspan="2">High Vegetation (81-100%)<i id="high_icon" onclick="filter('high')" class="fas fa-eye fa-lg"></i><div class='box dark-green'></div></td>
+                </tr>
+                <tr>
+                    <td style="text-align: center" onclick="showAll()">Show all layers</td>
+                    <td style="text-align: center" onclick="hideAll()">Hide all layers</td>
+                </tr>
+		    </tbody>
+		</table>
+	</div>
+    {% endif %}
 
 	<div class="toolkit">
 		<table>
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
-			<tr>
-				<td><i class="fas fa-leaf fa-lg"></i></td>
-				<td><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
-			</tr>
-			<tr>
-				<td><i class="fas fa-tree fa-lg"></i></td>
-				<td><i class="fas fa-save fa-lg"></i></td>
-			</tr>
-			<tr>
-				<td><i class="fas fa-eraser fa-lg"></i></td>
-				<td><a onclick="openUpload()"><i class="fa fa-folder-open fa-lg"></i></a></td>
-			</tr>
-			<tr>
-				<td><i class="fa fa-search-plus fa-lg" aria-hidden="true"></i></td>
-				<td><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
-			</tr>
-			<tr>
-				<td><i class="fa fa-search-minus fa-lg" aria-hidden="true"></i></td>
-				<td></td>
-			</tr>
-		</tbody>
+                <tr>
+                    <td><i class="fas fa-leaf fa-lg"></i></td>
+                    <td><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
+                </tr>
+                <tr>
+                    <td><a title="Auto classify" style="cursor: pointer" {% if grid %} onclick="openLoadingPopUp()" href="{% url 'auto_classifier' project.id grid.id %}" {% endif %}><i class="fas fa-tree fa-lg"></i></a></td>
+                    <td><i class="fas fa-save fa-lg"></i></td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-eraser fa-lg"></i></td>
+                    <td><a title="Upload ortophoto" style="cursor: pointer" onclick="openUpload()"><i class="fa fa-folder-open fa-lg"></i></a></td>
+                </tr>
+                <tr>
+                    <td><i class="fa fa-search-plus fa-lg" aria-hidden="true"></i></td>
+                    <td><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
+                </tr>
+                <tr>
+                    <td><i class="fa fa-search-minus fa-lg" aria-hidden="true"></i></td>
+                    <td title="Draw Grid" onclick="drawGrid()" style="cursor: pointer"><i class="fa fa-border-all fa-lg"></i></td>
+                </tr>
+		    </tbody>
 		</table>
 	</div>
 
 	<div class="upload" id="upload">
 		<h1>Upload Files</h1>
-		<p>If you already have an orthophoto and a grid (shapefile) of the firing area, and only want to classify the vegetation, please use this automatic classification tool. Submit the files below, in the correct places: </p> 
+		<p>If you already have an orthophoto and a grid (shapefile) of the firing area, and only want to classify the vegetation, please use this automatic classification tool. Submit the files below, in the correct places: </p>
 		<div class="orthophoto">
-			<p id="titles">Orthophoto:</p>
-			<div style="overflow: hidden; padding: 0.1em 0 0 1em;">
-				<input class="file-upload__input" type="file" name="videoFile" id="videoFile">
-                <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
-                <span class="file-upload__label"></span>
-			</div>
+            <form method="POST" action="{% url 'upload_ortophoto' project.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <p id="titles">Orthophoto:</p>
+                {{ ortophoto_form.image }}
+                {% comment %}<div style="overflow: hidden; padding: 0.1em 0 0 1em;">
+                    <input class="file-upload__input" type="file" name="videoFile" id="videoFile">
+                    <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
+                    <span class="file-upload__label"></span>
+                </div>{% endcomment %}
+                <input type="submit" value="Upload Ortophoto" onclick="openLoadingPopUp()">
+            </form>
 		</div>
 		<br/>
 		<div class="shapefile">
@@ -51,12 +104,76 @@
                 <span class="file-upload__label"></span>
 			</div>
 		</div>
-		
 	</div>
-							 
-						
-<!-- CUSTOM SCRIPTS-->
+
+
+    <!-- CUSTOM SCRIPTS-->
     <script src="{% static 'viewmodel/js/veg_chara.js' %}"></script>
     <link rel="stylesheet" href="{% static 'viewmodel/css/veg_chara.css' %}"/>
+    <script>
+
+        let workingImage = $("#workingImage");
+        let selectedPointsTotal = 0;
+        let gridDrawOn = false;
+        let queryDict = {};
+
+
+        $(document).ready(function () {
+            location.search.substr(1).split("&").forEach(function(item) {queryDict[item.split("=")[0]] = item.split("=")[1]});
+            for (const [key, value] of Object.entries(queryDict)) {
+                if (value === "0") {
+                    $("#" + key + "_icon").addClass('fa-eye-slash').removeClass('fa-eye');
+                }
+            }
+        });
+
+        function drawGrid() {
+            gridDrawOn = !gridDrawOn;
+            let selectedFileId = JSON.parse("{{image.file_info.id|escapejs}}");
+            $("#id_image_id").val(selectedFileId);
+        }
+
+        workingImage.mouseup(function(event) {
+            let image = document.getElementById("workingImage");
+            if (gridDrawOn && selectedPointsTotal < 2) {
+                let x = event.pageX - this.offsetLeft;
+                let y = event.pageY - this.offsetTop;
+                selectedPointsTotal++;
+
+                if (selectedPointsTotal === 1) {
+                    $("#id_p1").val(String(x) + ", " + String(y))
+                } else if (selectedPointsTotal === 2) {
+                    $("#id_p2").val(String(x) + ", " + String(y))
+                    $("#id_image_size").val(String(image.width) + ", " + String(image.height))
+                    document.getElementById("workingImageForm").submit();
+                }
+            }
+        });
+
+        function filter(levelType) {
+            let val = queryDict[levelType]
+            if (val === "0") {
+                queryDict[levelType] = "1";
+            } else {
+                queryDict[levelType] = "0";
+            }
+
+            let path = '?'
+            for (const [key, value] of Object.entries(queryDict)) {
+                path += key + '=' + value + '&';
+            }
+            path = path.substr(0, path.length-1)
+            window.location.href = window.location.pathname + path;
+        }
+
+        function showAll() {
+           window.location.href = window.location.pathname + "?id=" + queryDict['id'];
+        }
+
+        function hideAll() {
+            window.location.href = window.location.pathname + "?id=" + queryDict['id'] + "&none=0&low=0&medium=0&high=0";
+        }
+
+    </script>
 
 {% endblock %}

@@ -31,4 +31,14 @@ $(document).ready(function () {
 
     });
 
+
+
 });
+
+const loadingPopUp = document.getElementById("waiting");
+const blur = document.getElementById("blur");
+
+function openLoadingPopUp() {
+    loadingPopUp.style.display = "flex";
+    blur.style.filter = "blur(2px)"
+}

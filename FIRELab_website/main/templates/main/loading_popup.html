@@ -1,0 +1,11 @@
+{% load static %}
+{% block popup %}
+    <!-- POP UP WAITING-->
+   <div id="waiting" style="position: absolute;
+                              left: 50%;
+                              top: 50%;
+                              transform: translate(-50%, -50%);
+                              z-index: 9; display: none;" >
+        <img src="{% static 'images/flame_loading.gif' %}" alt="Loading..."  width="350px" />
+    </div>
+{% endblock %}
