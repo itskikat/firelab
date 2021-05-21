@@ -37,7 +37,7 @@
             </div>
             <img hidden draggable="false" id="WorkingImage" src={{ frame.content.url }}>
         {% else %}
-            <img draggable="false" id="workingImage" src={{ frame.content.url }}>
+            <img hidden draggable="false" id="workingImage" src={{ frame.content.url }}>
         {% endif %}
         </div>
     {% endif %}
@@ -48,15 +48,15 @@
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
                 <tr>
-                    <td><i class="fas fa-image fa-lg"></i></td>
+                    <td id="image_tk" style="cursor: pointer;" onclick="imageOn()"><i class="fas fa-image fa-lg"></i></td>
                     <td><i class="fas fa-search-plus fa-lg"></i></td>
                 </tr>
                 <tr>
-                    <td id="marker" {% if georreferencing.marker.value == True %} style="color: #B55B29" {% endif %} onclick="markerOn()"><i class="fas fa-map-marker-alt fa-lg"></i></td>
+                    <td id="marker" {% if georreferencing.marker.value == True %} style="color: #B55B29; cursor: pointer;" {% endif %} onclick="markerOn()"><i class="fas fa-map-marker-alt fa-lg"></i></td>
                     <td><i class="fas fa-search-minus fa-lg"></i></td>
                 </tr>
                 <tr>
-                    <td onclick="openMap()" style="cursor: pointer;"><i class="fas fa-play fa-lg"></i></td>
+                    <td id="play_tk" onclick="openMap()" style="cursor: pointer;"><i class="fas fa-play fa-lg"></i></td>
                     <td onclick="saveCoords()" style="cursor: pointer;"><i class="fas fa-save fa-lg" aria-hidden="true"></i></td>
                 </tr>
                 <tr>
@@ -92,7 +92,7 @@
 
 	<!-- TODO see the best way to view the progression -->
     <span hidden id="span_frameid"> {{ frame.id }}</span>
-	<div id="map" style="height: 600px;" hidden>
+	<div id="map" style="height: 750px;" hidden>
 
     </div>
 
@@ -105,7 +105,7 @@
         <button class='btn btn-default'id='submit'> SAVE! </button>
     </div>
 
-    <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/678111-map-marker-512.png" id="marker" style="display: none; position: absolute; width: 50px; height: 50px;" />
+    <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/678111-map-marker-512.png" id="georef_marker" style="display: none; position: absolute; width: 50px; height: 50px;" />
 
     {% block extrajs %}
         <!-- This is necessary for the popUp -->
