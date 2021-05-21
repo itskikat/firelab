@@ -39,7 +39,7 @@
 
 	<div class="toolkit">
 		<table>
-			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
+			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
 			<tr>
 				<td id="showImage"><i class="fas fa-image fa-lg"></i></td>
@@ -55,7 +55,7 @@
 			</tr>
 			<tr>
 				<td id="stack"><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td>
-				<td><a onclick="openUpload()"><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td>
+				<td onClick="openUpload()"><a ><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td>
 			</tr>
 			<tr>
 				<td><i class="fas fa-expand-arrows-alt fa-lg" aria-hidden="true"></i></td>
@@ -68,7 +68,6 @@
 	<div hidden class="upload" id="upload">
 		<h1>Upload Files</h1>
 		<p>If you have the polygon coordinates, or the file that contains them, please use this tool in order to see how the fire evolved:</p>
-		<input type="text" name="polygon-coord" id="polygon-coord" value="" placeholder="List with polygon coordinates" >
 		<form id="UploadCoordFile" style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload_polygon' project.id %}" enctype="multipart/form-data">
             <div hidden>
                 {{ file_form.image_id }}
@@ -114,12 +113,11 @@
         var geocoords = []
         var clicking;
         var k =0;
-        let popUp = $('#popUpGEO')
-        let input = $('#coordinates')
+        var CoordPopUp = $('#popUpGEO');
+        var input = $('#coordinates');
         let workingImage = $('#workingImage');
-        let marker = $('#marker')
-
-        popUp.dialog({
+        var marker = $('#marker');
+        CoordPopUp.dialog({
             autoOpen: false,
             show: {
                 effect: "blind",
@@ -133,6 +131,15 @@
             modal: true,
         });
 
+        $('#showImage').click(function () {
+            workingImage.toggle();
+        });
+
+        $('#cp').click(function () {
+            $('#toolkit').toggle();
+        });
+
+      
 
         workingImage.mousedown(function (event) {
             if(clicking){
@@ -145,28 +152,21 @@
             
                 var pos = {my: "left top", at: "left bottom", of: event}
                 input.val('');
-                popUp.dialog("option", "position", pos)
+                CoordPopUp.dialog("option", "position", pos)
                     .dialog("open");
             }
 
         });
 
         
-         $('#showImage').click(function () {
-            if(document.getElementById("workingImage").style.display=="none"){
-                document.getElementById("workingImage").style.display="block";
-            }
-            else{
-                document.getElementById("workingImage").style.display="none";
-            }
-        });
+        
 
         $('#submit').click(function () {
             coords = input.val()
             var coords = input.val().split(",");
             geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
             console.log(geocoords);
-            popUp.dialog("close");
+            CoordPopUp.dialog("close");
         });
        
       
@@ -191,23 +191,19 @@
 
 
         $('#zoomIn').click(function () {
-            var img = document.getElementById("workingImage");
+            let img = document.getElementById("workingImage");
             let currWidth = img.clientWidth;
             img.style.width = (currWidth+100)+"px";
         })
         
         $('#zoomOut').click(function () {
-            var img = document.getElementById("workingImage");
+            let img = document.getElementById("workingImage");
             let currWidth = img.clientWidth;
             img.style.width = (currWidth-100)+"px";
         })
 
           
-        function zoomout() {
-            var GFG = document.getElementById("geeks");
-            var currWidth = GFG.clientWidth;
-            GFG.style.width = (currWidth - 100) + "px";
-        }
+
 
         $('#submit_pol').click(function () {
             $("#id_image_id").val("{{frame.id}}");
@@ -226,9 +222,9 @@
 
 
     function drawMap() {
-        document.getElementById("workingImage").style.display="none";
-        document.getElementById("upload").style.display="none";
-
+        workingImage.hide();
+        $('#upload').hide();
+      
         var mapdiv = document.getElementById('map');
 
         var mymap = L.map(mapdiv).setView([40.6405, -8.6538], 13);
@@ -261,9 +257,9 @@
 
         mymap.fitBounds(polygon.getBounds());
 
-        var popup = L.popup();
+        var popupMap = L.popupMap();
         mymap.on('click', function(e){
-            popup
+            popupMap
                 .setLatLng(e.latlng)
                 .setContent("You clicked the map at " + e.latlng.toString())
                 .openOn(mymap);
