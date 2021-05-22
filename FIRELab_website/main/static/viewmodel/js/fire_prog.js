@@ -65,9 +65,9 @@ function imageOn() {
     }
 }
 
-console.log('YEEEET');
 
-let popUp = $('#popUpGEO');
+
+let coordsPopUp = $('#popUpGEO');
 let input = $('#coordinates');
 let workingImage = $('#workingImage');
 let pixels = []
@@ -77,7 +77,7 @@ var span_frameid = document.getElementById( 'span_frameid' ).textContent;
 let k = 0;
 let clicking;
 
-popUp.dialog({
+coordsPopUp.dialog({
     autoOpen: false,
     show: {
         effect: "blind",
@@ -108,7 +108,7 @@ workingImage.mousedown(function (event) {
 
     var pos = {my: "left top", at: "left bottom", of: event}
     input.val('')
-    popUp.dialog("option", "position", pos)
+    coordsPopUp.dialog("option", "position", pos)
         .dialog("open");
 
 });
@@ -116,23 +116,18 @@ workingImage.mousedown(function (event) {
 $('#submit').click(function () {
     console.log(k++);
     var coords = input.val().split(",")
-    console.log("COORDS ", coords)
+    // console.log("COORDS ", coords)
     geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
-    console.log("ARRAY GEO COORDS", geocoords);
+    // console.log("ARRAY GEO COORDS", geocoords);
     georef_marker.css('display', 'none')
-    popUp.dialog("close");
+    coordsPopUp.dialog("close");
 
 });
 
-
-
-
-// function markerOff() {
-//    $("#id_marker").attr('checked', false);
-//    $("#id_eraser").attr('checked', true);
-//    $("#marker").css("color", "")
-//    $("#eraser").css("color", "#B55B29")
-// }
+$('#submit_pol').click(function () {
+    $("#id_image_id").val("{{frame.id}}");
+    document.getElementById("UploadCoordFile").submit();
+});
 
 
 function saveCoords() {
@@ -163,12 +158,12 @@ var osm = new L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{
     accessToken: 'pk.eyJ1IjoiaXRza2lrYXQiLCJhIjoiY2tubGZyeGR4MGtlNjJxczVkMnc1cGJuMSJ9.AqoknzMtuAATdUKs-gGGTw'
 });
 osm.addTo(mymap);
-var assetLayerGroup = new L.LayerGroup();
 
+var assetLayerGroup = new L.LayerGroup();
+// TODO - STILL STATIC
 var coords1 =  '[ [40.640957, -8.658695], [40.648772, -8.623848], [40.614901, -8.656635], [40.640957, -8.658695] ]' ;
 var a = JSON.parse(coords1); // string to json
 var polygon1 = L.polygon(a, {color: 'red'}).bindPopup("Coordinates: " + coords1);
-
 var coords2 =  '[ [40.640957, -8.658695], [40.646764, -8.621168], [40.630807, -8.623571], [40.614133, -8.648682], [40.640957, -8.658695] ]' ;
 var b = JSON.parse(coords2); // string to json
 var polygon2 = L.polygon(b, {color: 'blue'}).bindPopup("Coordinates: " + coords2);
@@ -193,11 +188,9 @@ function displayPolygons(){
 }
 
 let count;
-
 function start() {
     count = setInterval(displayPolygons, 4000)
 }
-
 function stop() {
     clearInterval(count)
 }

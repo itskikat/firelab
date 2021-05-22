@@ -757,10 +757,10 @@ def generate_contour(request, file_id, project_id):
 		wkt_list.append((point[0][0], point[0][1]))
 	wkt_list.append((vertexes[0][0][0], vertexes[0][0][1]))
 	wkt = tuple(wkt_list)
-	print("WKT ", wkt)
+	# print("WKT ", wkt)
 
 	polygon = Polygon(LinearRing(wkt))
-	print(polygon)
+	# print(polygon)
 	_image.polygon = polygon
 	_image.save()
 
@@ -769,7 +769,6 @@ def generate_contour(request, file_id, project_id):
 
 
 
-# TODO: Fire Progression Animation and Processing
 """
 	GEOREFERENCING 
 """
@@ -782,11 +781,12 @@ def upload_polygon(request, project_id):
 		return redirect("/projects")
 	if request.method == 'POST':
 		polygon = request.FILES['coords'].read()
-	print("images from upload poly")
-	print(request.FILES['image'].name)
+		image = ImageFrame.objects.get(file_info__id=request.POST['image_id'])
+		image.polygon = polygon
+		image.save()
 
 
-	return redirect("/projects/" + str(project_id) + "/progression")
+	return redirect("/projects/" + str(project_id) + "/progression?id=" + request.POST['image_id'])
 
 def progression(request, project_id):
 	if not request.user.is_authenticated:
@@ -813,16 +813,15 @@ def progression(request, project_id):
 			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(),
 		}
-		print("frame ", frame)
-		print("frame id  ", frame.id)
+		# print("frame ", frame)
+		# print("frame id  ", frame.id)
 		# if the frame_id is valid check if it has been georreferenced
 		if frame is None or frame.polygon is None:
 			return render(request, "main/fire_progression.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
-		# georreference = pickle.loads(frame.polygon)
-		print("frame polygon  ", frame.polygon.wkt )
-		print(frame.polygon.wkt[10:-2])
+		# print("frame polygon  ", frame.polygon.wkt )
+		# print(frame.polygon.wkt[10:-2])
 
 		param['georreferenced'] = frame.polygon.wkt[10:-2]
 
@@ -861,33 +860,29 @@ def progression(request, project_id):
 
 		# compute the pairs from the coordinates
 		pixels_json = json.loads(request.POST['pixels'])
-		print("img-pixels  ", pixels_json)
+		# print("img-pixels  ", pixels_json)
 		geo_json = json.loads(request.POST['geo'])
-		print("img-geograph", geo_json)
+		# print("img-geograph", geo_json)
 
 		# if the frame_id is valid check if it has been georreferenced
 		if _frame is None or _frame.polygon is None:
-			print("frame - ", _frame)
-
+			# print("frame - ", _frame)
+			# TODO: Error Message, tell the user the frame needs to be segmented
 			return render(request, "main/fire_segmentation.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
 
-		#TODO: Georeference points
 		pts_src = np.array(pixels_json)
 		pts_dst = np.array(geo_json)
 				
 		#given reference points	 from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
 		h, status = cv2.findHomography(pts_src, pts_dst)
 
-		# TODO read from file
-		coords = _frame.polygon.wkt[10:-2]
+		coords = _frame.polygon.wkt
+		coords = coords.split("((")[1].split("))")[0].split(",")
+		print("coords polygon: ", coords)
 
-		# coords = _frame.polygon.split("((")[1].split("))")[0].split(",")
-
-
-		geo_coord = None
-		#geo_coords = ""
+		geo_coord = []
 		wkt_str = ""
 		for coord in coords:
 			coord_split = coord.strip().split(" ")
@@ -897,29 +892,22 @@ def progression(request, project_id):
 			else:
 				z = point_homogenous[2]
 				geo_coord = [point_homogenous[0]/z, point_homogenous[1]/z]
-			print("GEO COORDS - ", geo_coord)
+			# print("GEO COORDS - ", geo_coord)
 
-			# geo_coords = geo_coords + str(geo_coord[0]) + " " + str(geo_coord[1])+ ", "
-
-		# wkt_str = "POLYGON ((" + geo_coords
-		# print(wkt_str[:-2] + "))")
-		# _frame.geoRefPolygon = wkt_str
-		# _frame.save()
-
-		# TODO save georef polygon
 		# store polygon on db
 		wkt_list = []
+		last = geo_coord[0]
 		for point in geo_coord:
-			wkt_list.append((point[0][0], point[0][1]))
-		wkt_list.append((geo_coord[0][0][0], geo_coord[0][0][1]))
+			wkt_list.append(point)
+		wkt_list.append(last)
 		wkt = tuple(wkt_list)
 
 		geo_polygon = Polygon(LinearRing(wkt))
-		print(geo_polygon)
+		# print("Georef Polygo - ", geo_polygon)
 		_frame.geoRefPolygon = geo_polygon
 		_frame.save()
 
-		# Converted polygon WKT, to be analyzed by JS
+		# TODO - FIND BEST WAY TO ANALYZE WKT IN JS!!
 		param['georreferenced'] = wkt_str
 	return render(request, "main/fire_progression.html", param)
 
@@ -945,11 +933,6 @@ def generate_georreference(request, file_id, project_id):
 	img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
 	polygon = pickle.loads(_frame.polygon)
 	georeference = pickle.loads(_frame.georeference)
-	
-	
-
-	
-	
 	
 	
 	return redirect('/projects/' + str(project_id) + '/progression?id=' + str(file_id))

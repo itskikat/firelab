@@ -71,16 +71,18 @@
 		</table>
 	</div>
 
-	<div class="upload" id="upload" hidden>
+	<div hidden class="upload" id="upload">
 		<h1>Upload Files</h1>
 		<p>If you have the polygon coordinates, or the file that contains them, please use this tool in order to see how the fire evolved:</p>
-		<input type="text" name="polygon-coord" id="polygon-coord" value="" placeholder="List with polygon coordinates" >
-            <form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload_polygon' project.id %}" enctype="multipart/form-data">
+		<form id="UploadCoordFile" style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload_polygon' project.id %}" enctype="multipart/form-data">
+            <div hidden>
+                {{ file_form.image_id }}
+            </div>
             {% csrf_token %}
             {{ file_form.coords }}
             <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
             <span class="file-upload__label"></span>
-            <input type="submit" id="submit_pol" value="Upload image">
+            <input type="button" id="submit_pol" value="Upload Coords">
         </form>
 	</div>
 
