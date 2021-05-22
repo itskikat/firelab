@@ -64,6 +64,13 @@ class Video(models.Model):
     def __str__(self):
         return "{} - Video ({}.{})".format(self.id, self.name, self.extension)
 
+# class CoordsFile(models.Model):
+#     file_info = models.OneToOneField(FileInfo, on_delete=models.CASCADE, blank=False)
+#     content = models.FileField(upload_to='poligonos/', blank=True, null=True, default=None)
+
+#     def __str__(self):
+#         return "{} - CoordsFile ({}.{})".format(self.name, self.extension, self.content)
+
 
 # Receive the pre_delete signal and delete the file associated with the model instance.
 @receiver(pre_delete, sender=Video)

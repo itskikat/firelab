@@ -6,6 +6,7 @@ $(document).ready(function () {
         const defaultLabelText = 'No file selected';
         const uploadbutton = document.getElementById("submit_bt")
         const uploadbuttonVideo = document.getElementById("submit_vd")
+        const uploadbuttonPol = document.getElementById("submit_pol")
 
         // Set default text for label
         label.textContent = defaultLabelText;
@@ -18,11 +19,18 @@ $(document).ready(function () {
         hiddenInput.addEventListener('change', function(){
             // console.log(hiddenInput.files);
             const fileName = Array.from(hiddenInput.files).map(function(file) {
-                uploadbutton.style.display = "block";
-                uploadbuttonVideo.style.display = "block";
+                if(uploadbutton){
+                    uploadbutton.style.display = "block";
+                }
+                if(uploadbuttonVideo){
+                    uploadbuttonVideo.style.display = "block";
+                }
+                if(uploadbuttonPol){
+                    uploadbuttonPol.style.display = "block";
+                }
+                
                 return file.name;
             });
-            // console.log(fileName);
 
             label.textContent = fileName || defaultLabelText;
             label.title = label.textContent;

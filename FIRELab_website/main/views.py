@@ -33,7 +33,6 @@ def createAccountView(request):
 	if request.method == 'POST':
 		form = CreateAccountForm(request.POST)
 		if form.is_valid():
-			#print(form)
 			user = form.save()
 			user.refresh_from_db()
 			return redirect('login')
@@ -430,9 +429,6 @@ def upload(request, project_id):
 		form = UploadImage(request.POST, request.FILES)
 		if form.is_valid():
 			name, extension = request.FILES['image'].name.split('.')
-			#print(request.FILES)
-			#print(name, extension)
-
 			try:
 				# file already exists in the server
 				FileInfo.objects.get(name=name, extension=extension, dir__project__id=project.id)
@@ -462,6 +458,21 @@ def upload(request, project_id):
 			_image.save()
 
 	return redirect("/projects/" + str(project_id) + "/segmentation")
+
+def upload_polygon(request, project_id):
+	if not request.user.is_authenticated:
+		return redirect("/login")
+	try:
+		project = Project.objects.get(id=project_id)
+	except Project.DoesNotExist:
+		return redirect("/projects")
+	if request.method == 'POST':
+		polygon=request.FILES['coords'].read()
+		image = ImageFrame.objects.get(file_info__id=request.POST['image_id'])
+		image.polygon=polygon
+		image.save()
+	
+	return redirect("/projects/" + str(project_id) + "/progression?id="+request.POST['image_id'])
 
 
 def upload_video(request, project_id):
@@ -543,7 +554,6 @@ def upload_video(request, project_id):
 				video_capture.release()
 				# delete content from model and from file system
 				video.content.delete()
-				#print(video.content)
 
 	return redirect("/projects/" + str(project_id) + "/segmentation")
 
@@ -726,9 +736,8 @@ def generate_contour(request, file_id, project_id):
 	kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
 	binary = cv2.dilate(binary, kernel)
 	binary = cv2.erode(binary, kernel)
-
-	vertexes, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-
+	vertexes,_ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+	
 	if len(vertexes) > 1:
 		#print("More than one polygon were identified")
 		# TODO: add return_bigger to Segmentation form and input on pop up
@@ -843,7 +852,6 @@ def progression(request, project_id):
 
 		if 'frame_id' not in request.POST or request.POST['frame_id'] == '':
 			return redirect(request.build_absolute_uri())
-
 		mode = None
 		if 'marker' in request.POST:
 			param['georreferencing'] = Georreferencing(initial={'marker': True})
@@ -851,7 +859,7 @@ def progression(request, project_id):
 
 		# check if frame exists
 		_id = request.POST['frame_id']
-		try:
+		try:	
 			_frame = ImageFrame.objects.get(file_info_id=_id)
 			_frame_file = _frame.file_info
 			param['frame'] = _frame
@@ -860,7 +868,6 @@ def progression(request, project_id):
 
 		if 'pixels' not in request.POST or 'geo' not in request.POST:
 			return render(request, "main/fire_progression.html", param)
-
 		# compute the pairs from the coordinates
 		pixels_json = json.loads(request.POST['pixels'])
 		#print("img-pixels  ", pixels_json)
@@ -878,6 +885,9 @@ def progression(request, project_id):
 		#TODO: Georeference points
 		pts_src = np.array(pixels_json)
 		pts_dst = np.array(geo_json)
+		try:
+			#given reference points from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
+			h, status = cv2.findHomography(pts_src, pts_dst) 
 				
 		#given reference points	 from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
 		h, status = cv2.findHomography(pts_src, pts_dst)
