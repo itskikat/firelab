@@ -512,10 +512,6 @@ def upload_video(request, project_id):
 						frame_bytes = frame_arr.tobytes()
 						_frame = ImageFile(io.BytesIO(frame_bytes), name='{}.png'.format(frame_name))
 
-						# cv2.imshow('{}.png'.format(frame_name), frame)
-						# cv2.waitKey(0)  # waits until a key is pressed
-						# cv2.destroyAllWindows()  # destroys the window showing image
-
 						_file_info = FileInfo(
 							name=frame_name,
 							extension='png',
@@ -740,27 +736,14 @@ def generate_contour(request, file_id, project_id):
 	else:
 		vertexes = vertexes[0]
 
-	# cv2.drawContours(img, vertexes, -1, (0, 255, 0), 3)
-	# cv2.imshow("Contours", img)
-	# cv2.waitKey(0)
-	# cv2.destroyAllWindows()
-
-	# fs_wkt = ""
-	# for point in vertexes:
-	#     fs_wkt += ", " + str(point[0][0]) + " " + str(point[0][1])
-	# fs_wkt = "POLYGON ((" + fs_wkt[2:] + ", " + str(vertexes[0][0][0]) + " " + str(vertexes[0][0][1]) + "))\n"
-	# print(fs_wkt)
-
 	# store polygon on db
 	wkt_list = []
 	for point in vertexes:
 		wkt_list.append((point[0][0], point[0][1]))
 	wkt_list.append((vertexes[0][0][0], vertexes[0][0][1]))
 	wkt = tuple(wkt_list)
-	# print("WKT ", wkt)
 
 	polygon = Polygon(LinearRing(wkt))
-	# print(polygon)
 	_image.polygon = polygon
 	_image.save()
 
@@ -813,18 +796,14 @@ def progression(request, project_id):
 			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(),
 		}
-		# print("frame ", frame)
-		# print("frame id  ", frame.id)
+
 		# if the frame_id is valid check if it has been georreferenced
 		if frame is None or frame.polygon is None:
 			return render(request, "main/fire_progression.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
-		# print("frame polygon  ", frame.polygon.wkt )
-		# print(frame.polygon.wkt[10:-2])
 
 		param['georreferenced'] = frame.polygon.wkt[10:-2]
-
 
 		return render(request, "main/fire_progression.html", param)
 
@@ -860,9 +839,7 @@ def progression(request, project_id):
 
 		# compute the pairs from the coordinates
 		pixels_json = json.loads(request.POST['pixels'])
-		# print("img-pixels  ", pixels_json)
 		geo_json = json.loads(request.POST['geo'])
-		# print("img-geograph", geo_json)
 
 		# if the frame_id is valid check if it has been georreferenced
 		if _frame is None or _frame.polygon is None:
@@ -880,7 +857,6 @@ def progression(request, project_id):
 
 		coords = _frame.polygon.wkt
 		coords = coords.split("((")[1].split("))")[0].split(",")
-		print("coords polygon: ", coords)
 
 		geo_coord = []
 		wkt_str = ""
@@ -892,7 +868,6 @@ def progression(request, project_id):
 			else:
 				z = point_homogenous[2]
 				geo_coord = [point_homogenous[0]/z, point_homogenous[1]/z]
-			# print("GEO COORDS - ", geo_coord)
 
 		# store polygon on db
 		wkt_list = []
@@ -903,7 +878,6 @@ def progression(request, project_id):
 		wkt = tuple(wkt_list)
 
 		geo_polygon = Polygon(LinearRing(wkt))
-		# print("Georef Polygo - ", geo_polygon)
 		_frame.geoRefPolygon = geo_polygon
 		_frame.save()
 
@@ -914,26 +888,3 @@ def progression(request, project_id):
 
 
 # TODO: Animate Polygons
-'''
-def generate_georreference(request, file_id, project_id):
-	if not request.user.is_authenticated:
-		return redirect("/login")
-
-	try:
-		project = Project.objects.get(id=project_id)
-	except Project.DoesNotExist:
-		return redirect("/projects")
-		
-	try:
-		_frame = ImageFrame.objects.get(file_info_id=file_id)
-	except ImageFrame.DoesNotExist:
-		return redirect(request.get_full_path())
-
-
-	img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
-	polygon = pickle.loads(_frame.polygon)
-	georeference = pickle.loads(_frame.georeference)
-	
-	
-	return redirect('/projects/' + str(project_id) + '/progression?id=' + str(file_id))
-'''
