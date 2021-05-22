@@ -884,11 +884,7 @@ def progression(request, project_id):
 
 		#TODO: Georeference points
 		pts_src = np.array(pixels_json)
-		pts_dst = np.array(geo_json)
-		try:
-			#given reference points from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
-			h, status = cv2.findHomography(pts_src, pts_dst) 
-				
+		pts_dst = np.array(geo_json)		
 		#given reference points	 from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
 		h, status = cv2.findHomography(pts_src, pts_dst)
 

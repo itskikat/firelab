@@ -102,7 +102,7 @@ var pixels = []
 
 
         function saveCoords() {
-            $("#id_frame_id").val(JSON.parse("{{frame.id}}"));
+            $("#id_frame_id").val("{{frame.id}}");
             clicking = false;
             $('#id_pixels').val(JSON.stringify(pixels));
             $('#id_geo').val(JSON.stringify(geocoords));
@@ -120,12 +120,12 @@ function openMap() {
         $("#play_tk").css("color", "#B55B29");
 	    map.style.display = 'block';
         animationButtons.style.display = 'block';
-        img_prog.style.display = 'none';
+        workingImage.hide();
     } else {
 	    $("#play_tk").css("color", "");
         map.style.display = 'none';
         animationButtons.style.display = 'none';
-        img_prog.style.display = 'flex';
+        workingImage.show();
     }
 
 }
