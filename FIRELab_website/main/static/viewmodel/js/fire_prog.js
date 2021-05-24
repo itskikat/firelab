@@ -1,4 +1,6 @@
-var pixels = []
+        
+        var span_frameid = document.getElementById( 'span_frameid' ).textContent;
+        var pixels = []
         var geocoords = []
         var clicking;
         var k =0;
@@ -102,8 +104,9 @@ var pixels = []
 
 
         function saveCoords() {
-            $("#id_frame_id").val("{{frame.id}}");
+            $("#id_frame_id").val(JSON.parse(span_frameid));
             clicking = false;
+            console.log($("#id_frame_id").val());
             $('#id_pixels').val(JSON.stringify(pixels));
             $('#id_geo').val(JSON.stringify(geocoords));
             document.getElementById("georreferencingForm").submit();

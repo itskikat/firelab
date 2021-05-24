@@ -126,11 +126,11 @@ def vegetation(response, project_id):
 				return redirect("/projects/" + str(project_id) + "/vegetation")
 
 			if _ortophoto.thumbnail:
-				#print("Image exists")
+				print("Image exists")
 				param['image'] = _ortophoto
 
 			else:
-				#print("Image doesn't exist -- creating thumbnail")
+				print("Image doesn't exist -- creating thumbnail")
 				ortophoto = gdal.Open(os.path.abspath(os.path.join(MEDIA_ROOT, _ortophoto.content.name)))
 
 				options_list = [
@@ -167,12 +167,12 @@ def vegetation(response, project_id):
 			_top_left = _grid.topLeftCoordinate
 			_bottom_right = _grid.bottomRightCoordinate
 
-			#print("Corner pixels in ortophoto:", _top_left, _bottom_right)
+			print("Corner pixels in ortophoto:", _top_left, _bottom_right)
 
 			top_left = [int(e * 0.10) for e in _top_left]
 			bottom_right = [int(e * 0.10) for e in _bottom_right]
 
-			#print("Corner pixels in thumbnail:", top_left, bottom_right)
+			print("Corner pixels in thumbnail:", top_left, bottom_right)
 
 			img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _ortophoto.thumbnail.name)))
 			tiles = Tile.objects.all().filter(grid_id=_grid.id)
@@ -189,16 +189,16 @@ def vegetation(response, project_id):
 
 			# DRAW IMAGE WITH JUST THE WANTED FILTERS
 			if 'none' in response.GET and response.GET['none'] == "0":
-				#print("removing level 0")
+				print("removing level 0")
 				tiles = tiles.filter(~Q(classification=0))
 			if 'low' in response.GET and response.GET['low'] == "0":
-				#print("removing level 1")
+				print("removing level 1")
 				tiles = tiles.filter(~Q(classification=1))
 			if 'medium' in response.GET and response.GET['medium'] == "0":
-				#print("removing level 2")
+				print("removing level 2")
 				tiles = tiles.filter(~Q(classification=2))
 			if 'high' in response.GET and response.GET['high'] == "0":
-				#print("removing level 3")
+				print("removing level 3")
 				tiles = tiles.filter(~Q(classification=3))
 
 			to_classify = gridded_image[top_left[1]:bottom_right[1], top_left[0]: bottom_right[0]]
@@ -375,7 +375,7 @@ def upload_orthphoto(request, project_id):
 				_image.save()
 
 				ortophoto = gdal.Open(os.path.abspath(os.path.join(MEDIA_ROOT, _image.content.name)))
-				#print("Number of channels:", ortophoto.RasterCount)  # 4
+				print("Number of channels:", ortophoto.RasterCount)  # 4
 
 				options_list = [
 					'-co COMPRESS=JPEG',
@@ -395,8 +395,8 @@ def upload_orthphoto(request, project_id):
 				os.remove(
 					os.path.abspath(os.path.join(MEDIA_ROOT, "ortophotos/{}_compressed.{}".format(name, extension))))
 
-				#print("Uploaded tiff ortophoto {}.{}".format(name, extension))
-				#print("Ellapsed time: {}s".format(time.time() - start))
+				print("Uploaded tiff ortophoto {}.{}".format(name, extension))
+				print("Ellapsed time: {}s".format(time.time() - start))
 				return redirect("/projects/" + str(project_id) + "/vegetation")
 
 	else:
@@ -500,7 +500,7 @@ def upload_video(request, project_id):
 			video_capture = cv2.VideoCapture()
 			video_capture.open(os.path.abspath(os.path.join(MEDIA_ROOT, video.content.name)))
 			max_frames = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
-			#print("Successfully loaded {}.{} with {} frames".format(video.name, video.extension, max_frames))
+			print("Successfully loaded {}.{} with {} frames".format(video.name, video.extension, max_frames))
 
 			step = math.floor(max_frames / int(frame_number))
 			cur_frame = 0
@@ -739,7 +739,7 @@ def generate_contour(request, file_id, project_id):
 	vertexes,_ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 	
 	if len(vertexes) > 1:
-		#print("More than one polygon were identified")
+		print("More than one polygon were identified")
 		# TODO: add return_bigger to Segmentation form and input on pop up
 		# if 'return_bigger' in request.GET and request.GET['return_bigger'] == "1":
 		sizes = [len(pol) for pol in vertexes]
@@ -749,28 +749,14 @@ def generate_contour(request, file_id, project_id):
 	else:
 		vertexes = vertexes[0]
 
-	# cv2.drawContours(img, vertexes, -1, (0, 255, 0), 3)
-	# cv2.imshow("Contours", img)
-	# cv2.waitKey(0)
-	# cv2.destroyAllWindows()
-
-	# fs_wkt = ""
-	# for point in vertexes:
-	#     fs_wkt += ", " + str(point[0][0]) + " " + str(point[0][1])
-	# fs_wkt = "POLYGON ((" + fs_wkt[2:] + ", " + str(vertexes[0][0][0]) + " " + str(vertexes[0][0][1]) + "))\n"
-	# #print(fs_wkt)
-
-	# store polygon on db
+	
 	wkt_list = []
 	for point in vertexes:
 		wkt_list+=[(point[0][0],point[0][1])]
 	wkt_list.append((vertexes[0][0][0],vertexes[0][0][1]))
 	wkt = tuple(wkt_list)
-	print(wkt_list)
-	#print("WKT ", wkt)
 
 	polygon = Polygon(LinearRing(wkt))
-	#print(polygon)
 	_image.polygon = polygon
 	_image.save()
 
@@ -792,8 +778,6 @@ def upload_polygon(request, project_id):
 		return redirect("/projects")
 	if request.method == 'POST':
 		polygon = request.FILES['coords'].read()
-	#print("images from upload poly")
-	#print(request.FILES['image'].name)
 
 
 	return redirect("/projects/" + str(project_id) + "/progression")
@@ -824,17 +808,12 @@ def progression(request, project_id):
 			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(),
 		}
-		#print("frame ", frame)
-		#print("frame id  ", frame.id)
 		# if the frame_id is valid check if it has been georreferenced
 		if frame is None or frame.polygon is None:
 			return render(request, "main/fire_progression.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
-		# georreference = pickle.loads(frame.polygon)
-		#print("frame polygon  ", frame.polygon.wkt )
-		#print(frame.polygon.wkt[10:-2])
-
+	
 		param['georreferenced'] = frame.polygon.wkt[10:-2]
 
 
@@ -846,7 +825,7 @@ def progression(request, project_id):
 			'project': project,
 			'project_dirs': Directory.objects.all().filter(project_id=project.id),
 			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-			# 'file_form': UploadCoordFile(),
+			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(initial={"marker": False}),
 		}
 
@@ -870,14 +849,10 @@ def progression(request, project_id):
 			return render(request, "main/fire_progression.html", param)
 		# compute the pairs from the coordinates
 		pixels_json = json.loads(request.POST['pixels'])
-		#print("img-pixels  ", pixels_json)
 		geo_json = json.loads(request.POST['geo'])
-		#print("img-geograph", geo_json)
-
+	
 		# if the frame_id is valid check if it has been georreferenced
 		if _frame is None or _frame.polygon is None:
-			#print("frame - ", _frame)
-
 			return render(request, "main/fire_segmentation.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
@@ -895,7 +870,6 @@ def progression(request, project_id):
 
 		geo_coord = []
 		wkt_str = ""
-		#print(coords)
 		for coord in coords:
 			coord_split = coord.strip().split(" ")
 			point_homogenous = h.dot([float(coord_split[0]), float(coord_split[1]), 1])
@@ -904,24 +878,13 @@ def progression(request, project_id):
 			else:
 				z = point_homogenous[2]
 				geo_coord += [(point_homogenous[0]/z, point_homogenous[1]/z)]
-			#print("GEO COORDS - ", geo_coord)
-
-			# geo_coords = geo_coords + str(geo_coord[0]) + " " + str(geo_coord[1])+ ", "
-
-		# wkt_str = "POLYGON ((" + geo_coords
-		# #print(wkt_str[:-2] + "))")
-		# _frame.geoRefPolygon = wkt_str
-		# _frame.save()
-
-		# TODO save georef polygon
-		# store polygon on db
+			
 		wkt_list = []
 		last=geo_coord[0]
 		for point in geo_coord:
 			wkt_list.append(point)
 		wkt_list.append(last)
 		wkt = tuple(wkt_list)
-
 		geo_polygon = Polygon(LinearRing(wkt))
 		_frame.geoRefPolygon = geo_polygon
 		_frame.save()
