@@ -767,9 +767,8 @@ def upload_polygon(request, project_id):
 		image = ImageFrame.objects.get(file_info__id=request.POST['image_id'])
 		image.polygon = polygon
 		image.save()
-
-
 	return redirect("/projects/" + str(project_id) + "/progression?id=" + request.POST['image_id'])
+
 
 def progression(request, project_id):
 	if not request.user.is_authenticated:
@@ -782,11 +781,38 @@ def progression(request, project_id):
 
 	if request.method == "GET":
 		frame = None
+		wkts = None
 		if 'id' in request.GET:
 			try:
 				frame = ImageFrame.objects.get(file_info_id=request.GET['id'])
 			except ImageFrame.DoesNotExist:
 				frame = None
+
+		if 'animation' in request.GET:
+			print("HERE")
+			try:
+				_frames = ImageFrame.objects.filter(file_info__dir__project_id=project_id).order_by('id')
+				# for every frame, check if it has been segmented and georreferenced
+				frames = {}  # Key = Frame ID ; Value = Frame
+				for frame in _frames:
+					if frame.polygon is None or frame.geoRefPolygon is None:
+						print("NO POLYGON OR NO GEOREF DUNNO")
+					# TODO: Error Message, tell the user the frame needs to be segmented
+					else:
+						frames[frame.id] = frame
+			except ImageFrame.DoesNotExist:
+				return redirect(request.get_full_path())
+
+			try:
+				wkts = {}
+				for frame in frames.values():
+					wkt = frame.geoRefPolygon.wkt
+					wkts[frame.id] = wkt
+			except Exception:
+				print("ERROR IDK WHYYYY")
+				redirect(request.get_full_path())
+
+
 
 		param = {
 			'frame': frame,
@@ -796,14 +822,18 @@ def progression(request, project_id):
 			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(),
 		}
+		if wkts:
+			param['wkts'] = wkts
+			print("WKTS ", wkts)
 
 		# if the frame_id is valid check if it has been georreferenced
 		if frame is None or frame.polygon is None:
 			return render(request, "main/fire_progression.html", param)
 
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
-
 		param['georreferenced'] = frame.polygon.wkt[10:-2]
+
+		# print(frame.polygon.geojson)
 
 		return render(request, "main/fire_progression.html", param)
 
@@ -813,7 +843,6 @@ def progression(request, project_id):
 			'project': project,
 			'project_dirs': Directory.objects.all().filter(project_id=project.id),
 			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-			# 'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(initial={"marker": False}),
 		}
 
@@ -843,7 +872,6 @@ def progression(request, project_id):
 
 		# if the frame_id is valid check if it has been georreferenced
 		if _frame is None or _frame.polygon is None:
-			# print("frame - ", _frame)
 			# TODO: Error Message, tell the user the frame needs to be segmented
 			return render(request, "main/fire_segmentation.html", param)
 
@@ -864,10 +892,11 @@ def progression(request, project_id):
 			coord_split = coord.strip().split(" ")
 			point_homogenous = h.dot([float(coord_split[0]), float(coord_split[1]), 1])
 			if len(point_homogenous) != 3:
-				geo_coord = [0,0]
+				geo_coord = [0, 0]
 			else:
 				z = point_homogenous[2]
-				geo_coord = [point_homogenous[0]/z, point_homogenous[1]/z]
+				# Longitude, Latitude
+				geo_coord += [ (point_homogenous[1]/z, point_homogenous[0]/z) ]
 
 		# store polygon on db
 		wkt_list = []
@@ -886,5 +915,7 @@ def progression(request, project_id):
 	return render(request, "main/fire_progression.html", param)
 
 
-
 # TODO: Animate Polygons
+def generate_animation(request, project_id):
+	print("ENTROU ANIMACAO")
+	return redirect('/projects/' + str(project_id) + '/progression?animation')

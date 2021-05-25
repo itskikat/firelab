@@ -11,7 +11,6 @@ function openCloseToolkit() {
 		toolkit.style.display = "none";
 		icon.className = "fas fa-angle-down";
 		cp.title = "Open Toolkit";
-
 	}
 }
 
@@ -25,7 +24,6 @@ function openUpload() {
         upload.style.display = 'none';
         img_prog.style.display = 'block';
     }
-	
 }
 
 function openMap() {
@@ -43,7 +41,6 @@ function openMap() {
         animationButtons.style.display = 'none';
         img_prog.style.display = 'flex';
     }
-
 }
 
 function markerOn() {
@@ -98,14 +95,12 @@ workingImage.mousedown(function (event) {
     let y = event.pageY - this.offsetTop;
     pixels.push([x, y])
     console.log("ARRAY PIXELS COORDS", pixels)
-
     // Move position marker here.
     georef_marker.css('top', event.pageY - 50);
     georef_marker.css('left', event.pageX - 25);
     if (georef_marker.css('display') == 'none') {
         georef_marker.css('display', 'block');
     }
-
     var pos = {my: "left top", at: "left bottom", of: event}
     input.val('')
     coordsPopUp.dialog("option", "position", pos)
@@ -113,23 +108,23 @@ workingImage.mousedown(function (event) {
 
 });
 
-$('#submit').click(function () {
+// Place coordinates (Pixels + Geo) in array
+$('#submit_geo').click(function () {
     console.log(k++);
     var coords = input.val().split(",")
-    // console.log("COORDS ", coords)
     geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
-    // console.log("ARRAY GEO COORDS", geocoords);
+    console.log("ARRAY COORDS", geocoords)
     georef_marker.css('display', 'none')
     coordsPopUp.dialog("close");
-
 });
 
+// Submit Polygon File
 $('#submit_pol').click(function () {
     $("#id_image_id").val("{{frame.id}}");
     document.getElementById("UploadCoordFile").submit();
 });
 
-
+// POST form with Coordinates (Pixels + Geo)
 function saveCoords() {
     $("#id_frame_id").val(JSON.parse(span_frameid));
     clicking = false;
@@ -138,16 +133,13 @@ function saveCoords() {
     document.getElementById("georreferencingForm").submit();
 }
 
-
-
 // ANIMAÇÃO QUE TÁ GG PARA OS PROFS MAS É UMA BECS RÚSTICA KSKSKS
 // IT AIN'T MUCH BUT IT'S HONEST WORK <3
-
 
 // SHOW THE MAP
 var mapdiv = document.getElementById('map');
 
-var mymap = L.map(mapdiv).setView([40.6405, -8.6538], 13);
+var mymap = L.map(mapdiv).setView([40.6405, -8.6538], 13); // Aveiro, might change this
 
 var osm = new L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -168,7 +160,7 @@ var coords2 =  '[ [40.640957, -8.658695], [40.646764, -8.621168], [40.630807, -8
 var b = JSON.parse(coords2); // string to json
 var polygon2 = L.polygon(b, {color: 'blue'}).bindPopup("Coordinates: " + coords2);
 
-
+// TODO - Make a for cycle for all polygons
 function displayPolygons(){
 
     if(!assetLayerGroup.hasLayer(polygon1) || !assetLayerGroup.hasLayer(polygon2)) {
@@ -184,7 +176,6 @@ function displayPolygons(){
         assetLayerGroup.clearLayers()
         window.clearTimeout()
     }
-
 }
 
 let count;
@@ -194,11 +185,10 @@ function start() {
 function stop() {
     clearInterval(count)
 }
-
 $("#drawPolygonButton").on('click', (start));
 $("#stopDraw").on('click', (stop))
 
-
+// Clicking the map at X displays the coordinates
 var popup = L.popup();
 mymap.on('click', function(e){
     popup
