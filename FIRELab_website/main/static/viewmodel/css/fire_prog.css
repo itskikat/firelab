@@ -18,6 +18,24 @@
 	padding-top: 1em;
 }
 
+.pixel_table table tr {
+   font-size: 12px;
+   font-weight:normal;
+   margin: 0;
+   padding: 0;
+   border: 0;
+}
+#head_Of_Coord_Table {
+    font-size: 12px;
+    font-weight:bold;
+}
+
+
+.pixel_table table tr td {
+    border:1px solid black;
+    text-align:center;
+}
+
 
 
 .toolkit table {

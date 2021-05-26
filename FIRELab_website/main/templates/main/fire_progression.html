@@ -60,7 +60,8 @@
 			</tr>
 			<tr>
 				<td id="stack"><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td>
-				<td onClick="openUpload()"><a ><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td>
+				<!-- <td onClick="openUpload()"><a ><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td> -->
+                <td id="undo"><a ><i class="fa fa-undo" aria-hidden="true"></i></td>
 			</tr>
 			<tr>
 				<td><i class="fas fa-expand-arrows-alt fa-lg" aria-hidden="true"></i></td>
@@ -69,7 +70,19 @@
 		</tbody>
 		</table>
 	</div>
-
+    <div class="pixel_table">
+        <table hidden id="pixel_table_coords">
+            <tr id="head_Of_Coord_Table">
+                <td>
+                    Pixel coords
+                </td>
+                <td>
+                    Geo Coords
+                </td>
+            </tr>
+        </table>
+    </div>
+    
 	<div hidden class="upload" id="upload">
 		<h1>Upload Files</h1>
 		<p>If you have the polygon coordinates, or the file that contains them, please use this tool in order to see how the fire evolved:</p>

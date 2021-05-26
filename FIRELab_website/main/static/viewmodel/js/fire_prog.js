@@ -37,10 +37,9 @@
                 let x = event.pageX - this.offsetLeft;
                 let y = event.pageY - this.offsetTop;
                 pixels.push([x, y]);
-                // Move circle here.
+                 // Move circle here.
                 marker.css('top', event.pageY - 50);
                 marker.css('left', event.pageX - 25);
-            
                 var pos = {my: "left top", at: "left bottom", of: event}
                 input.val('');
                 CoordPopUp.dialog("option", "position", pos)
@@ -48,15 +47,32 @@
             }
 
         });
-
+        $('#undo').click(function () {
+            if(pixels.length ==0){
+                $("#pixel_table_coords").attr('hidden', true);
+            }
+            if(pixels.length>0){
+                pixels.pop();
+                let pix_table =document.getElementById("pixel_table_coords").children;
+                console.log(pix_table[pix_table.length-1].remove(pix_table[pix_table.length-1].children));
+            }
+            if(geocoords.length>0){
+                geocoords.pop();
+            }
+        });
         
         
 
         $('#submit').click(function () {
+            $("#pixel_table_coords").attr('hidden', false);
             coords = input.val()
             var coords = input.val().split(",");
             geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
-            console.log(geocoords);
+            table_pixel_coord=pixels[pixels.length-1];
+            table_geo_coord=geocoords[geocoords.length-1];
+            var tr = "<tr>";
+            tr += "<td>"+table_pixel_coord+"</td>"+"<td>"+table_geo_coord+"</td>"+"</tr>";
+            document.getElementById("pixel_table_coords").innerHTML += tr;
             CoordPopUp.dialog("close");
         });
        

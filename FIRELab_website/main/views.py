@@ -863,7 +863,6 @@ def progression(request, project_id):
 		#given reference points	 from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
 		h, status = cv2.findHomography(pts_src, pts_dst)
 
-		# TODO read from file
 		coords = _frame.polygon.wkt
 
 		coords = coords.split("((")[1].split("))")[0].split(",")
