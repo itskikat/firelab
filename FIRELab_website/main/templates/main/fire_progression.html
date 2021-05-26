@@ -52,8 +52,7 @@
                     <td><i class="fas fa-search-minus fa-lg"></i></td>
                 </tr>
                 <tr>
-                    <!-- TODO - Change window location + new view with GET -->
-                    <td id="play_tk" onclick="window.location='/projects/{{ project.id }}/progression/play_animation'" style="cursor: pointer;"><i class="fas fa-play fa-lg"></i></td>
+                    <td id="play_tk" onclick="window.location.replace('/projects/{{ project.id }}/progression?animation');" style="cursor: pointer;"><i class="fas fa-play fa-lg"></i></td>
                     <td onclick="saveCoords()" style="cursor: pointer;"><i class="fas fa-save fa-lg" aria-hidden="true"></i></td>
                 </tr>
                 <tr>
@@ -90,9 +89,10 @@
 
 	<!-- TODO see the best way to view the progression -->
     <span hidden id="span_frameid"> {{ frame.id }}</span>
+    <span hidden id="span_projectid"> {{ project.id }}</span>
 	<div id="map" style="height: 750px;" hidden></div>
 
-    <div id="popUpGEO">
+    <div id="popUpGEO" >
         <small>Geographic Coordinates: lat, lon</small>
         <br>
         <input id='coordinates' type='text' name='coordinates' class='form-control'>

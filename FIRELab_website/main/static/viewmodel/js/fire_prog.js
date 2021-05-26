@@ -14,6 +14,7 @@ function openCloseToolkit() {
 	}
 }
 
+var img_prog = document.getElementById("img_prog");
 function openUpload() {
 	var upload = document.getElementById("upload");
 	var img_prog = document.getElementById("img_prog");
@@ -26,22 +27,37 @@ function openUpload() {
     }
 }
 
+var map = document.getElementById("map");
+var animationButtons = document.getElementById("animationButtons");
+var span_projectid = document.getElementById('span_projectid').textContent.trim();
+var span_frameid = document.getElementById('span_frameid').textContent.trim()
+
+$(document).ready(function() {
+    if(window.location.href.indexOf("animation") > -1) {
+        openMap();
+    }
+})
 function openMap() {
-	var map = document.getElementById("map");
-	var animationButtons = document.getElementById("animationButtons");
-	var img_prog = document.getElementById("img_prog");
 	if ( window.getComputedStyle(map, null).getPropertyValue("display") === 'none' && window.getComputedStyle(animationButtons, null).getPropertyValue("display") === 'none') {
         $("#play_tk").css("color", "#B55B29");
+        document.getElementById( "play_tk" ).setAttribute( "onClick", "javascript: openMap();" );
 	    map.style.display = 'block';
         animationButtons.style.display = 'block';
         img_prog.style.display = 'none';
     } else {
-	    $("#play_tk").css("color", "");
-        map.style.display = 'none';
-        animationButtons.style.display = 'none';
-        img_prog.style.display = 'flex';
+	    var url = 'javascript: window.location.replace(\'/projects/'+span_projectid+'/progression?animation);'
+	    document.getElementById( "play_tk" ).setAttribute( "onClick", url);
+	    closeMap();
+	    window.location.replace('/projects/'+span_projectid+'/progression?id='+span_frameid);
     }
 }
+function closeMap() {
+    $("#play_tk").css("color", "");
+    map.style.display = 'none';
+    animationButtons.style.display = 'none';
+    img_prog.style.display = 'flex';
+}
+
 
 function markerOn() {
     $("#id_marker").attr('checked', true);
@@ -70,7 +86,6 @@ let workingImage = $('#workingImage');
 let pixels = []
 let geocoords = []
 let georef_marker = $('#georef_marker');
-var span_frameid = document.getElementById( 'span_frameid' ).textContent;
 let k = 0;
 let clicking;
 
