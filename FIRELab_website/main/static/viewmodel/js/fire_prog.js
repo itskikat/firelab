@@ -17,7 +17,6 @@ function openCloseToolkit() {
 var img_prog = document.getElementById("img_prog");
 function openUpload() {
 	var upload = document.getElementById("upload");
-	var img_prog = document.getElementById("img_prog");
 	if ( window.getComputedStyle(upload, null).getPropertyValue("display") === 'none') {
         upload.style.display = 'block';
         img_prog.style.display = 'none';
@@ -32,12 +31,15 @@ var animationButtons = document.getElementById("animationButtons");
 var span_projectid = document.getElementById('span_projectid').textContent.trim();
 var span_frameid = document.getElementById('span_frameid').textContent.trim()
 
+// BUÉ RÚSTICO MAS TÁ A DAR SORRY
 $(document).ready(function() {
     if(window.location.href.indexOf("animation") > -1) {
         openMap();
     }
 })
 function openMap() {
+    console.log("O JSON FILHA - ", document.getElementById('WKTS_HIDDEN').textContent);
+    console.log(JSON.parse(document.getElementById('WKTS_HIDDEN').textContent))
 	if ( window.getComputedStyle(map, null).getPropertyValue("display") === 'none' && window.getComputedStyle(animationButtons, null).getPropertyValue("display") === 'none') {
         $("#play_tk").css("color", "#B55B29");
         document.getElementById( "play_tk" ).setAttribute( "onClick", "javascript: openMap();" );
