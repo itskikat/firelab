@@ -13,14 +13,6 @@ let span_frameid = document.getElementById('span_frameid').textContent.trim();
 let wkts_fromdjango;
 let wkts = [];
 
-let coordsPopUp = $('#popUpGEO');
-let input = $('#coordinates');
-let workingImage = $('#workingImage');
-let pixels = []
-let geocoords = []
-let georef_marker = $('#georef_marker');
-let k = 0;
-let clicking;
 
 
 /* FUNCTIONS */
@@ -40,6 +32,7 @@ function openCloseToolkit() {
 
 // Show the Image
 function imageOn() {
+    var workingImage = document.getElementById('workingImage');
     if (window.getComputedStyle(workingImage, null).getPropertyValue("display") === 'none') {
         workingImage.style.display = 'block';
         $("#image_tk").css("color", "#B55B29");
@@ -70,21 +63,27 @@ $(document).ready(function() {
 })
 
 // Open and Show the Map, where the animation plays
+
 function openMap() {
-    console.log("O JSON FILHA - ", document.getElementById('WKTS_HIDDEN').textContent); // mano ignora isto pf sou é burra
+    // console.log("O JSON FILHA - ", document.getElementById('WKTS_HIDDEN').textContent); // mano ignora isto pf sou é burra
     wkts_fromdjango = JSON.parse(document.getElementById('WKTS_HIDDEN').textContent);
     Object.entries(wkts_fromdjango).forEach((entry) => {
+        var size = Object.keys.length;
+        // console.log(size);
         const [key, value] = entry; // STRING, STRING
         // console.log(`${key}: ${value}`);
         for (var n=0; n<size; n++) {
             var wkt = new Wkt.Wkt();
             wkt.read(value);
+            // TODO - Random select color
             var feature = { "type": "Feature", 'properties': {}, "geometry": wkt.toJson() };
             var geojson_item = L.geoJSON(feature, {color: 'green'});
             wkts[parseInt(key)] = geojson_item;
         }
     });
-	if ( window.getComputedStyle(map, null).getPropertyValue("display") === 'none' && window.getComputedStyle(animationButtons, null).getPropertyValue("display") === 'none') {
+	if ( window.getComputedStyle(map, null).getPropertyValue("display") === 'none'
+        && window.getComputedStyle(animationButtons, null).getPropertyValue("display") === 'none')
+	{
         $("#play_tk").css("color", "#B55B29");
         document.getElementById( "play_tk" ).setAttribute( "onClick", "javascript: openMap();" );
 	    map.style.display = 'block';
@@ -113,6 +112,14 @@ function markerOn() {
 }
 
 
+let coordsPopUp = $('#popUpGEO');
+let input = $('#coordinates');
+let workingImage = $('#workingImage');
+let pixels = []
+let geocoords = []
+let georef_marker = $('#georef_marker');
+let k = 0;
+let clicking;
 
 
 // User input for Geographic Coordinates
@@ -180,7 +187,7 @@ function saveCoords() {
 
 // SHOW THE MAP
 let mapdiv = document.getElementById('map');
-let mymap = L.map(mapdiv).setView([40.6405, -8.6538], 13); // Aveiro, might change this
+let mymap = L.map(mapdiv).setView([41.179, -8.609], 13); // Porto
 let osm = new L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     maxZoom: 18,
