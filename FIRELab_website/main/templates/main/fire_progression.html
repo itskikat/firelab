@@ -87,7 +87,6 @@
     </div>
     <br>
 
-	<!-- TODO see the best way to view the progression -->
     <span hidden id="span_frameid"> {{ frame.id }}</span>
     <span hidden id="span_projectid"> {{ project.id }}</span>
 	<div id="map" style="height: 750px;" hidden></div>
@@ -100,12 +99,16 @@
         <button class='btn btn-default'id='submit_geo'> SAVE! </button>
     </div>
 
+    {% if warning %}
+    <div class="alert alert-warning" role="alert">
+        {{ warning }}
+    </div>
+    {% endif %}
+
     <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/678111-map-marker-512.png" id="georef_marker" style="display: none; position: absolute; width: 50px; height: 50px;" />
 
     {% if wkts is not None %}
-    <p hidden id="WKTS_HIDDEN">
-            {{ wkts }}
-    </p>
+    <p hidden id="WKTS_HIDDEN"> {{ wkts }} </p>
     {% endif %}
 
     {% block extrajs %}

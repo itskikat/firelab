@@ -1,9 +1,33 @@
-function openCloseToolkit() {
-	var toolkit = document.getElementById("toolkit");
-	var icon = document.getElementById("close");
-	var cp = document.getElementById("cp");
+/* VARIABLES */
+let toolkit = document.getElementById("toolkit");
+let icon = document.getElementById("close");
+let cp = document.getElementById("cp");
 
-	if (toolkit.style.display == "none") {
+let img_prog = document.getElementById("img_prog");
+let upload = document.getElementById("upload");
+
+let map = document.getElementById("map");
+let animationButtons = document.getElementById("animationButtons");
+let span_projectid = document.getElementById('span_projectid').textContent.trim();
+let span_frameid = document.getElementById('span_frameid').textContent.trim();
+let wkts_fromdjango;
+let wkts = [];
+
+let coordsPopUp = $('#popUpGEO');
+let input = $('#coordinates');
+let workingImage = $('#workingImage');
+let pixels = []
+let geocoords = []
+let georef_marker = $('#georef_marker');
+let k = 0;
+let clicking;
+
+
+/* FUNCTIONS */
+
+// Open and Close the Toolkit
+function openCloseToolkit() {
+	if (toolkit.style.display === "none") {
 		icon.className = "fas fa-times";
 		toolkit.style.display = "block";
 	}
@@ -14,10 +38,21 @@ function openCloseToolkit() {
 	}
 }
 
-var img_prog = document.getElementById("img_prog");
+// Show the Image
+function imageOn() {
+    if (window.getComputedStyle(workingImage, null).getPropertyValue("display") === 'none') {
+        workingImage.style.display = 'block';
+        $("#image_tk").css("color", "#B55B29");
+    }
+    else {
+        workingImage.style.display = 'none';
+        $("#image_tk").css("color", "");
+    }
+}
+
+// Open Upload Form (for user input of polygon-coordinates file)
 function openUpload() {
-	var upload = document.getElementById("upload");
-	if ( window.getComputedStyle(upload, null).getPropertyValue("display") === 'none') {
+	if (window.getComputedStyle(upload, null).getPropertyValue("display") === 'none') {
         upload.style.display = 'block';
         img_prog.style.display = 'none';
     } else {
@@ -26,20 +61,29 @@ function openUpload() {
     }
 }
 
-var map = document.getElementById("map");
-var animationButtons = document.getElementById("animationButtons");
-var span_projectid = document.getElementById('span_projectid').textContent.trim();
-var span_frameid = document.getElementById('span_frameid').textContent.trim()
-
 // BUÉ RÚSTICO MAS TÁ A DAR SORRY
 $(document).ready(function() {
+    // Ave maria deus abençoe que se o Zagalo vê isto tem um AVC
     if(window.location.href.indexOf("animation") > -1) {
         openMap();
     }
 })
+
+// Open and Show the Map, where the animation plays
 function openMap() {
-    console.log("O JSON FILHA - ", document.getElementById('WKTS_HIDDEN').textContent);
-    console.log(JSON.parse(document.getElementById('WKTS_HIDDEN').textContent))
+    console.log("O JSON FILHA - ", document.getElementById('WKTS_HIDDEN').textContent); // mano ignora isto pf sou é burra
+    wkts_fromdjango = JSON.parse(document.getElementById('WKTS_HIDDEN').textContent);
+    Object.entries(wkts_fromdjango).forEach((entry) => {
+        const [key, value] = entry; // STRING, STRING
+        // console.log(`${key}: ${value}`);
+        for (var n=0; n<size; n++) {
+            var wkt = new Wkt.Wkt();
+            wkt.read(value);
+            var feature = { "type": "Feature", 'properties': {}, "geometry": wkt.toJson() };
+            var geojson_item = L.geoJSON(feature, {color: 'green'});
+            wkts[parseInt(key)] = geojson_item;
+        }
+    });
 	if ( window.getComputedStyle(map, null).getPropertyValue("display") === 'none' && window.getComputedStyle(animationButtons, null).getPropertyValue("display") === 'none') {
         $("#play_tk").css("color", "#B55B29");
         document.getElementById( "play_tk" ).setAttribute( "onClick", "javascript: openMap();" );
@@ -60,7 +104,7 @@ function closeMap() {
     img_prog.style.display = 'flex';
 }
 
-
+// Display that the geo-marker is on
 function markerOn() {
     $("#id_marker").attr('checked', true);
     $("#id_eraser").attr('checked', false);
@@ -68,29 +112,10 @@ function markerOn() {
     $("#eraser").css("color", "")
 }
 
-function imageOn() {
-    var workingImage = document.getElementById("workingImage");
-    if (window.getComputedStyle(workingImage, null).getPropertyValue("display") === 'none') {
-        workingImage.style.display = 'block';
-        $("#image_tk").css("color", "#B55B29");
-    }
-    else {
-        workingImage.style.display = 'none';
-        $("#image_tk").css("color", "");
-    }
-}
 
 
 
-let coordsPopUp = $('#popUpGEO');
-let input = $('#coordinates');
-let workingImage = $('#workingImage');
-let pixels = []
-let geocoords = []
-let georef_marker = $('#georef_marker');
-let k = 0;
-let clicking;
-
+// User input for Geographic Coordinates
 coordsPopUp.dialog({
     autoOpen: false,
     show: {
@@ -106,7 +131,6 @@ coordsPopUp.dialog({
 });
 
 workingImage.mousedown(function (event) {
-
     clicking = true
     let x = event.pageX - this.offsetLeft;
     let y = event.pageY - this.offsetTop;
@@ -115,14 +139,13 @@ workingImage.mousedown(function (event) {
     // Move position marker here.
     georef_marker.css('top', event.pageY - 50);
     georef_marker.css('left', event.pageX - 25);
-    if (georef_marker.css('display') == 'none') {
+    if (georef_marker.css('display') === 'none') {
         georef_marker.css('display', 'block');
     }
     var pos = {my: "left top", at: "left bottom", of: event}
     input.val('')
     coordsPopUp.dialog("option", "position", pos)
         .dialog("open");
-
 });
 
 // Place coordinates (Pixels + Geo) in array
@@ -150,15 +173,15 @@ function saveCoords() {
     document.getElementById("georreferencingForm").submit();
 }
 
+
+
 // ANIMAÇÃO QUE TÁ GG PARA OS PROFS MAS É UMA BECS RÚSTICA KSKSKS
 // IT AIN'T MUCH BUT IT'S HONEST WORK <3
 
 // SHOW THE MAP
-var mapdiv = document.getElementById('map');
-
-var mymap = L.map(mapdiv).setView([40.6405, -8.6538], 13); // Aveiro, might change this
-
-var osm = new L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+let mapdiv = document.getElementById('map');
+let mymap = L.map(mapdiv).setView([40.6405, -8.6538], 13); // Aveiro, might change this
+let osm = new L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     maxZoom: 18,
     id: 'mapbox/streets-v11',
@@ -168,33 +191,33 @@ var osm = new L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{
 });
 osm.addTo(mymap);
 
-var assetLayerGroup = new L.LayerGroup();
-// TODO - STILL STATIC
-var coords1 =  '[ [40.640957, -8.658695], [40.648772, -8.623848], [40.614901, -8.656635], [40.640957, -8.658695] ]' ;
-var a = JSON.parse(coords1); // string to json
-var polygon1 = L.polygon(a, {color: 'red'}).bindPopup("Coordinates: " + coords1);
-var coords2 =  '[ [40.640957, -8.658695], [40.646764, -8.621168], [40.630807, -8.623571], [40.614133, -8.648682], [40.640957, -8.658695] ]' ;
-var b = JSON.parse(coords2); // string to json
-var polygon2 = L.polygon(b, {color: 'blue'}).bindPopup("Coordinates: " + coords2);
-
-// TODO - Make a for cycle for all polygons
+let assetLayerGroup = new L.LayerGroup();
+// AVE MARIA 2.0
 function displayPolygons(){
-
-    if(!assetLayerGroup.hasLayer(polygon1) || !assetLayerGroup.hasLayer(polygon2)) {
-        assetLayerGroup.addLayer(polygon1);
-        assetLayerGroup.addTo(mymap);
-
-        setTimeout(function(){
-            assetLayerGroup.addLayer(polygon2);
-        }, 2000)
-        mymap.fitBounds(polygon1.getBounds()).fitBounds(polygon2.getBounds());
-    }
-    else {
-        assetLayerGroup.clearLayers()
-        window.clearTimeout()
-    }
+    var idx = 0;
+    wkts.forEach(function (item, indice, array) {
+        // ITEM - GEOJSON
+        // console.log(item, indice);
+        if (!assetLayerGroup.hasLayer(item) && idx === 0) {
+            console.log(idx)
+            assetLayerGroup.addLayer(item);
+            idx+=1;
+            console.log(idx)
+            assetLayerGroup.addTo(mymap);
+            mymap.fitBounds(item.getBounds());
+        }
+        else if (idx !== 0) {
+            setTimeout(function(){
+                assetLayerGroup.addLayer(item);
+            }, 2000)
+            mymap.fitBounds(item.getBounds());
+        }
+        else {
+            assetLayerGroup.clearLayers()
+            window.clearTimeout()
+        }
+    });
 }
-
 let count;
 function start() {
     count = setInterval(displayPolygons, 4000)

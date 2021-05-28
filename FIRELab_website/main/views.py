@@ -787,7 +787,6 @@ def progression(request, project_id):
 			except ImageFrame.DoesNotExist:
 				frame = None
 
-		# TODO: Animate Polygons
 		wkts = None
 		if 'animation' in request.GET:
 			print("Entrou animação")
@@ -823,6 +822,8 @@ def progression(request, project_id):
 		}
 
 		if wkts:
+			if len(wkts) == 1:
+				param['warning'] = "WARNING - Only one frame detected"
 			param['wkts'] = json.dumps(wkts)
 			print("WKTS ", json.dumps(wkts) )
 
@@ -869,7 +870,7 @@ def progression(request, project_id):
 
 		# if the frame_id is valid check if it has been georreferenced
 		if _frame is None or _frame.polygon is None:
-			# TODO: Error Message, tell the user the frame needs to be segmented
+			param['error'] = "PROGRESSION ERROR - The frame needs to be segmented first!!"
 			return render(request, "main/fire_segmentation.html", param)
 
 		pts_src = np.array(pixels_json)
@@ -904,7 +905,6 @@ def progression(request, project_id):
 		_frame.geoRefPolygon = geo_polygon
 		_frame.save()
 
-		# TODO - FIND BEST WAY TO ANALYZE WKT IN JS!!
 		param['georreferenced'] = geo_polygon
 	return render(request, "main/fire_progression.html", param)
 
