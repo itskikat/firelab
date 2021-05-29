@@ -63,28 +63,23 @@ $(document).ready(function() {
 })
 
 // Open and Show the Map, where the animation plays
-
 function openMap() {
-    // console.log("O JSON FILHA - ", document.getElementById('WKTS_HIDDEN').textContent); // mano ignora isto pf sou é burra
     wkts_fromdjango = JSON.parse(document.getElementById('WKTS_HIDDEN').textContent);
     Object.entries(wkts_fromdjango).forEach((entry) => {
         var size = Object.keys.length;
-        // console.log(size);
         const [key, value] = entry; // STRING, STRING
-        // console.log(`${key}: ${value}`);
         for (var n=0; n<size; n++) {
             var wkt = new Wkt.Wkt();
             wkt.read(value);
-            // TODO - Random select color
             var feature = { "type": "Feature", 'properties': {}, "geometry": wkt.toJson() };
-            var geojson_item = L.geoJSON(feature, {color: 'green'});
+            var geojson_item = L.geoJSON(feature, {color: pickAColor()});
             wkts[parseInt(key)] = geojson_item;
         }
     });
 	if ( window.getComputedStyle(map, null).getPropertyValue("display") === 'none'
         && window.getComputedStyle(animationButtons, null).getPropertyValue("display") === 'none')
 	{
-        $("#play_tk").css("color", "#B55B29");
+        $("#play_tk").css("color", "#b55b29");
         document.getElementById( "play_tk" ).setAttribute( "onClick", "javascript: openMap();" );
 	    map.style.display = 'block';
         animationButtons.style.display = 'block';
@@ -102,6 +97,11 @@ function closeMap() {
     animationButtons.style.display = 'none';
     img_prog.style.display = 'flex';
 }
+function pickAColor() {
+    let available_colors = ['blue', 'cadetblue', 'coral', 'cyan', 'grey', 'green', 'orange', 'khaki', 'magenta', 'pink', 'violet', 'gold', 'maroon', 'olive', 'yellow'];
+    var random_color = available_colors[Math.floor(Math.random() * available_colors.length)];
+    return random_color;
+}
 
 // Display that the geo-marker is on
 function markerOn() {
@@ -111,6 +111,7 @@ function markerOn() {
     $("#eraser").css("color", "")
 }
 
+/* ANYGAYS, MORE VARIABLES */
 
 let coordsPopUp = $('#popUpGEO');
 let input = $('#coordinates');
@@ -142,7 +143,6 @@ workingImage.mousedown(function (event) {
     let x = event.pageX - this.offsetLeft;
     let y = event.pageY - this.offsetTop;
     pixels.push([x, y])
-    console.log("ARRAY PIXELS COORDS", pixels)
     // Move position marker here.
     georef_marker.css('top', event.pageY - 50);
     georef_marker.css('left', event.pageX - 25);
@@ -157,10 +157,8 @@ workingImage.mousedown(function (event) {
 
 // Place coordinates (Pixels + Geo) in array
 $('#submit_geo').click(function () {
-    console.log(k++);
     var coords = input.val().split(",")
     geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
-    console.log("ARRAY COORDS", geocoords)
     georef_marker.css('display', 'none')
     coordsPopUp.dialog("close");
 });
@@ -183,8 +181,6 @@ function saveCoords() {
 
 
 // ANIMAÇÃO QUE TÁ GG PARA OS PROFS MAS É UMA BECS RÚSTICA KSKSKS
-// IT AIN'T MUCH BUT IT'S HONEST WORK <3
-
 // SHOW THE MAP
 let mapdiv = document.getElementById('map');
 let mymap = L.map(mapdiv).setView([41.179, -8.609], 13); // Porto
@@ -203,13 +199,10 @@ let assetLayerGroup = new L.LayerGroup();
 function displayPolygons(){
     var idx = 0;
     wkts.forEach(function (item, indice, array) {
-        // ITEM - GEOJSON
-        // console.log(item, indice);
+        // ITEM == GEOJSON
         if (!assetLayerGroup.hasLayer(item) && idx === 0) {
-            console.log(idx)
             assetLayerGroup.addLayer(item);
             idx+=1;
-            console.log(idx)
             assetLayerGroup.addTo(mymap);
             mymap.fitBounds(item.getBounds());
         }
