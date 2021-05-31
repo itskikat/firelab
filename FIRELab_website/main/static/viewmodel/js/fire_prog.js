@@ -1,14 +1,35 @@
         
         var span_frameid = document.getElementById( 'span_frameid' ).textContent;
-        var pixels = []
-        var geocoords = []
+        var pixels = [];
+        var geoRefPolys=[];
+        var geocoords = [];
         var clicking;
         var k =0;
+        var currPixelPoint;
         var CoordPopUp = $('#popUpGEO');
-        var input = $('#coordinates');
+        var inputForCoords = $('#coordinates');
+        var inputForLocName = $('#coordLocName');
         let workingImage = $('#workingImage');
+        var loadPointPopUpDialog = $('#loadPointPopUp');
+        var pointNameToSearch = $('#coordNameToSearch');
         var marker = $('#marker');
+        var ptNames=[];
         CoordPopUp.dialog({
+            autoOpen: false,
+            show: {
+                effect: "blind",
+                duration: 300
+            },
+            draggable: true,
+            hide: "blind",
+            resizable: false,
+            height: "auto",
+            width: 300,
+            modal: true,
+        });
+
+
+        loadPointPopUpDialog.dialog({
             autoOpen: false,
             show: {
                 effect: "blind",
@@ -36,17 +57,41 @@
             if(clicking){
                 let x = event.pageX - this.offsetLeft;
                 let y = event.pageY - this.offsetTop;
-                pixels.push([x, y]);
+                currPixelPoint=[x, y];
                  // Move circle here.
                 marker.css('top', event.pageY - 50);
                 marker.css('left', event.pageX - 25);
-                var pos = {my: "left top", at: "left bottom", of: event}
-                input.val('');
+                var pos = {my: "left top", at: "left bottom", of: event};
+                inputForCoords.val('');
+                inputForLocName.val('');
                 CoordPopUp.dialog("option", "position", pos)
                     .dialog("open");
             }
 
         });
+        
+        function saveCoords() {
+            $("#id_frame_id").val(JSON.parse(span_frameid));
+            clicking = false;
+            $('#id_pixels').val(JSON.stringify(pixels));
+            $('#ptNames').val(JSON.stringify(ptNames));
+            $('#id_geo').val(JSON.stringify(geocoords));
+            document.getElementById("georreferencingForm").submit();
+        };
+         
+        $('#loadPoint').click(function () {
+            pointNameToSearch.val('');
+            loadPointPopUpDialog.dialog("open");
+        });
+
+
+        $('#SearchPointBtn').click(function () {
+            $('#searchPoint').val(JSON.stringify(pointNameToSearch.val()));
+            document.getElementById("searchPointForm").submit();
+        });
+       
+
+
         $('#undo').click(function () {
             if(pixels.length ==0){
                 $("#pixel_table_coords").attr('hidden', true);
@@ -54,10 +99,13 @@
             if(pixels.length>0){
                 pixels.pop();
                 let pix_table =document.getElementById("pixel_table_coords").children;
-                console.log(pix_table[pix_table.length-1].remove(pix_table[pix_table.length-1].children));
+                pix_table[pix_table.length-1].remove(pix_table[pix_table.length-1].children);
             }
             if(geocoords.length>0){
                 geocoords.pop();
+            }
+            if(ptNames.length>0){
+                ptNames.pop();
             }
         });
         
@@ -65,13 +113,17 @@
 
         $('#submit').click(function () {
             $("#pixel_table_coords").attr('hidden', false);
-            coords = input.val()
-            var coords = input.val().split(",");
+            ptNames.push(inputForLocName.val());
+            console.log(ptNames);
+            coords = inputForCoords.val();
+            pixels.push(currPixelPoint);
+            var pointName = inputForLocName.val();
+            var coords = inputForCoords.val().split(",");
             geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
             table_pixel_coord=pixels[pixels.length-1];
             table_geo_coord=geocoords[geocoords.length-1];
             var tr = "<tr>";
-            tr += "<td>"+table_pixel_coord+"</td>"+"<td>"+table_geo_coord+"</td>"+"</tr>";
+            tr += "<td>"+pointName+"</td>"+"<td>"+table_pixel_coord+"</td>"+"<td>"+table_geo_coord+"</td>"+"</tr>";
             document.getElementById("pixel_table_coords").innerHTML += tr;
             CoordPopUp.dialog("close");
         });
@@ -107,26 +159,17 @@
             let img = document.getElementById("workingImage");
             let currWidth = img.clientWidth;
             img.style.width = (currWidth-100)+"px";
+            console.log("{{_point}}");
+
         })
 
           
 
 
-        $('#submit_pol').click(function () {
-            $("#id_image_id").val("{{frame.id}}");
-            document.getElementById("UploadCoordFile").submit();
-        });
-
-
-
-        function saveCoords() {
-            $("#id_frame_id").val(JSON.parse(span_frameid));
-            clicking = false;
-            console.log($("#id_frame_id").val());
-            $('#id_pixels').val(JSON.stringify(pixels));
-            $('#id_geo').val(JSON.stringify(geocoords));
-            document.getElementById("georreferencingForm").submit();
-        };
+        // $('#submit_pol').click(function () {
+        //     $("#id_image_id").val("{{frame.id}}");
+        //     document.getElementById("UploadCoordFile").submit();
+        // });
 
 
 
@@ -135,6 +178,7 @@ function openMap() {
 	var map = document.getElementById("map");
 	var animationButtons = document.getElementById("animationButtons");
 	var img_prog = document.getElementById("img_prog");
+    img_prog.style.display="none";
 	if ( window.getComputedStyle(map, null).getPropertyValue("display") === 'none' && window.getComputedStyle(animationButtons, null).getPropertyValue("display") === 'none') {
         $("#play_tk").css("color", "#B55B29");
 	    map.style.display = 'block';
@@ -162,7 +206,6 @@ var osm = new L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{
 });
 osm.addTo(mymap);
 var assetLayerGroup = new L.LayerGroup();
-
 var coords1 =  '[ [40.640957, -8.658695], [40.648772, -8.623848], [40.614901, -8.656635], [40.640957, -8.658695] ]' ;
 var a = JSON.parse(coords1); // string to json
 var polygon1 = L.polygon(a, {color: 'red'}).bindPopup("Coordinates: " + coords1);

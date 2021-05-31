@@ -16,7 +16,12 @@
             crossorigin="">
         </script>
     {% endblock %}
-
+    <form id="searchPointForm" action="./progression/searchPoint" method="POST">
+        <div hidden>
+            <input class="form-field" name="name" id="searchPoint" >
+        </div>
+        {% csrf_token %}
+    </form>
 
 
     <form id="georreferencingForm" action="./progression" method="POST">
@@ -26,7 +31,8 @@
             {{ georreferencing.pixels }}
             {{ georreferencing.geo }}
             {{ georreferencing.frame_id }}
-            {{ georreferencing.polygon_wkt }}
+            <input class="form-field" name="names" id="ptNames" >
+            
         </div>
         {% csrf_token %}
         <div id="img_prog"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
@@ -59,9 +65,10 @@
                 <td onclick="saveCoords()"><i class="fas fa-save fa-lg" aria-hidden="true"></i></td>
 			</tr>
 			<tr>
-				<td id="stack"><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td>
-				<!-- <td onClick="openUpload()"><a ><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td> -->
+				<!-- <td id="stack"><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td>
+				<td onClick="openUpload()"><a ><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td> -->
                 <td id="undo"><a ><i class="fa fa-undo" aria-hidden="true"></i></td>
+                <td id="loadPoint"><i class="fa fa-crosshairs" aria-hidden="true"></i></td>
 			</tr>
 			<tr>
 				<td><i class="fas fa-expand-arrows-alt fa-lg" aria-hidden="true"></i></td>
@@ -73,6 +80,9 @@
     <div class="pixel_table">
         <table hidden id="pixel_table_coords">
             <tr id="head_Of_Coord_Table">
+                <td>
+                    Location Name
+                </td>
                 <td>
                     Pixel coords
                 </td>
@@ -91,6 +101,7 @@
                 {{ file_form.image_id }}
             </div>
                 {% csrf_token %}
+                
                 {{ file_form.coords }}
                 <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
                 <span class="file-upload__label"></span>
@@ -104,14 +115,17 @@
         <button type="button" class="button icon solid" name="stopDraw" id="stopDraw"/>Stop Animation</button><br>
     </div>
     <br>
-
 	<!-- TODO see the best way to view the progression -->
     <span hidden id="span_frameid"> {{ frame.id }}</span>
 	<div id="map" style="height: 750px;" hidden>
 
     </div>
 
-    <div id="popUpGEO">
+    <div id="popUpGEO" title="Geo Coord Input">
+        <small>Location Name:</small>
+        <br>
+        <input id='coordLocName' type='text' name='LocName' class='form-control'>
+        <br>
         <small>Geographic Coordinates: lat, lon</small>
         <br>
         <input id='coordinates' type='text' name='coordinates' class='form-control'>
@@ -119,6 +133,14 @@
         <button class='btn btn-default'id='submit'> SAVE! </button>
     </div>
 
+    
+
+    <div id="loadPointPopUp" title="Point Finder" style="display:none" role="dialog" class="ui-dialog ui-corner-all ui-widget ui-widget-content ui-front ui-draggable">
+        <small>Location Name:</small>
+        <input id='coordNameToSearch' type='text' name='coordinates' class='form-control'>
+        <br>
+        <button class='btn btn-default'id='SearchPointBtn'> SEARCH! </button>
+    </div>
     <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/678111-map-marker-512.png" id="georef_marker" style="display: none; position: absolute; width: 50px; height: 50px;" />
 
     {% block extrajs %}

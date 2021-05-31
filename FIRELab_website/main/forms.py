@@ -68,6 +68,10 @@ class DrawGridForm(forms.Form):
     image_size = forms.CharField()
     image_id = forms.IntegerField()
 
+class PointNames(forms.Form):
+    ptNames = forms.CharField()
+
+
 class Georreferencing(forms.Form):
     marker = forms.BooleanField()
     pixels = forms.CharField()

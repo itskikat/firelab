@@ -4,9 +4,11 @@ import math
 import pickle
 import time
 
+from .models import PointModel
 from django.core.files import File
 from django.core.files.images import ImageFile
 from django.shortcuts import render, redirect
+from django.contrib.gis.geos.point import Point
 from django.contrib.gis.geos import Polygon, LinearRing
 from django.db.models import Q
 from colormath.color_objects import sRGBColor, LabColor
@@ -782,6 +784,8 @@ def upload_polygon(request, project_id):
 
 	return redirect("/projects/" + str(project_id) + "/progression")
 
+
+
 def progression(request, project_id):
 	if not request.user.is_authenticated:
 		return redirect("/login")
@@ -792,20 +796,18 @@ def progression(request, project_id):
 		return redirect("/projects")
 
 	if request.method == "GET":
-		frame = None
 		if 'id' in request.GET:
+			frame = None
 			try:
 				frame = ImageFrame.objects.get(file_info_id=request.GET['id'])
 			except ImageFrame.DoesNotExist:
 				frame = None
-
 
 		param = {
 			'frame': frame,
 			'project': project,
 			'project_dirs': Directory.objects.all().filter(project_id=project.id),
 			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(),
 		}
 		# if the frame_id is valid check if it has been georreferenced
@@ -820,12 +822,12 @@ def progression(request, project_id):
 		return render(request, "main/fire_progression.html", param)
 
 	elif request.method == 'POST':
+		print(request.POST)
 		param = {
 			'frame': None,
 			'project': project,
 			'project_dirs': Directory.objects.all().filter(project_id=project.id),
 			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(initial={"marker": False}),
 		}
 
@@ -850,7 +852,8 @@ def progression(request, project_id):
 		# compute the pairs from the coordinates
 		pixels_json = json.loads(request.POST['pixels'])
 		geo_json = json.loads(request.POST['geo'])
-	
+		names_json = json.loads(request.POST['names'])
+
 		# if the frame_id is valid check if it has been georreferenced
 		if _frame is None or _frame.polygon is None:
 			return render(request, "main/fire_segmentation.html", param)
@@ -858,15 +861,22 @@ def progression(request, project_id):
 		img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
 
 		#TODO: Georeference points
+		
 		pts_src = np.array(pixels_json)
-		pts_dst = np.array(geo_json)		
+		pts_names = np.array(names_json)
+		pts_dst = np.array(geo_json)
+		for i in range(len(pts_src)):
+			_point = PointModel(name=pts_names[i],geo=Point(tuple(pts_dst[i])),pix=Point(tuple(pts_src[i])))
+			print(PointModel)
+			_point.save()
+		
 		#given reference points	 from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
 		h, status = cv2.findHomography(pts_src, pts_dst)
-
+		
 		coords = _frame.polygon.wkt
 
 		coords = coords.split("((")[1].split("))")[0].split(",")
-
+		
 		geo_coord = []
 		wkt_str = ""
 		for coord in coords:
@@ -889,7 +899,29 @@ def progression(request, project_id):
 		_frame.save()
 
 		# Converted polygon WKT, to be analyzed by JS
-		param['georreferenced'] = wkt_str
+		param['georreferenced'] = wkt_list
+		
+	return render(request, "main/fire_progression.html", param)
+
+
+def searchPoint(request,project_id):
+	if not request.user.is_authenticated:
+		return redirect("/login")
+
+	try:
+		project = Project.objects.get(id=project_id)
+	except Project.DoesNotExist:
+		return redirect("/projects")
+
+	try:
+		_point = PointModel.objects.filter(name=request.POST['name'])
+	except PointModel.DoesNotExist:
+		PointModel = None
+	print(_point)
+	param = {
+		'Point': _point,
+	}
+	
 	return render(request, "main/fire_progression.html", param)
 
 

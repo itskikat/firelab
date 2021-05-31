@@ -23,7 +23,7 @@ class Project(models.Model):
 
 
 class Directory(MPTTModel):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, null=False)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     parent = TreeForeignKey('self', on_delete=models.CASCADE, default=None, null=True, blank=True, related_name='subdirectories')
 
@@ -134,6 +134,11 @@ class Grid(models.Model):
     ortophoto = models.ForeignKey(Ortophoto, on_delete=models.CASCADE, blank=False)
     cell_size = models.PositiveIntegerField(blank=False)
 
+
+class PointModel(models.Model):
+    name = models.CharField(max_length=50, null=False,unique=True)
+    pix = gisModels.PointField(blank=True, default=None, null=True)
+    geo = gisModels.PointField(blank=True, default=None, null=True)
 
 class Tile(models.Model):
     position = ArrayField(models.IntegerField(blank=False), size=2)

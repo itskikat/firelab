@@ -6,8 +6,7 @@ $(document).ready(function () {
         const defaultLabelText = 'No file selected';
         const uploadbutton = document.getElementById("submit_bt")
         const uploadbuttonVideo = document.getElementById("submit_vd")
-        const uploadbuttonPol = document.getElementById("submit_pol")
-
+   
         // Set default text for label
         label.textContent = defaultLabelText;
         label.title = defaultLabelText;
@@ -25,10 +24,7 @@ $(document).ready(function () {
                 if(uploadbuttonVideo){
                     uploadbuttonVideo.style.display = "block";
                 }
-                if(uploadbuttonPol){
-                    uploadbuttonPol.style.display = "block";
-                }
-                
+             
                 return file.name;
             });
 

@@ -8,6 +8,18 @@
 		}
 
 
+
+#undo, #loadPoint{
+   font-weight: bold;
+   font-size:27px;
+}
+
+
+#loadPointPopUp {
+    display: none;
+}
+
+
 /* Toolkit */
 .right .toolkit {
 	width: 8%;
