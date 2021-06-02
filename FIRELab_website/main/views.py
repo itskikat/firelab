@@ -4,7 +4,7 @@ import math
 import pickle
 import time
 
-from .models import PointModel
+
 from django.core.files import File
 from django.core.files.images import ImageFile
 from django.shortcuts import render, redirect
@@ -796,8 +796,8 @@ def progression(request, project_id):
 		return redirect("/projects")
 
 	if request.method == "GET":
+		frame = None
 		if 'id' in request.GET:
-			frame = None
 			try:
 				frame = ImageFrame.objects.get(file_info_id=request.GET['id'])
 			except ImageFrame.DoesNotExist:
@@ -822,7 +822,6 @@ def progression(request, project_id):
 		return render(request, "main/fire_progression.html", param)
 
 	elif request.method == 'POST':
-		print(request.POST)
 		param = {
 			'frame': None,
 			'project': project,
@@ -867,7 +866,7 @@ def progression(request, project_id):
 		pts_dst = np.array(geo_json)
 		for i in range(len(pts_src)):
 			_point = PointModel(name=pts_names[i],geo=Point(tuple(pts_dst[i])),pix=Point(tuple(pts_src[i])))
-			print(PointModel)
+			_point.frame = _frame
 			_point.save()
 		
 		#given reference points	 from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
@@ -897,33 +896,20 @@ def progression(request, project_id):
 		geo_polygon = Polygon(LinearRing(wkt))
 		_frame.geoRefPolygon = geo_polygon
 		_frame.save()
+		pts=""
+		points = PointModel.objects.all().filter(frame=_frame)
 
+		for p in points:
+			pts+= p.name+','+str(p.pix).split(';')[1].split('(')[1].split(')')[0]+','+str(p.geo).split(';')[1].split('(')[1].split(')')[0]+';'
+		
+		pts=pts[:-1]
+		param['points']=pts
 		# Converted polygon WKT, to be analyzed by JS
 		param['georreferenced'] = wkt_list
 		
 	return render(request, "main/fire_progression.html", param)
 
-
-def searchPoint(request,project_id):
-	if not request.user.is_authenticated:
-		return redirect("/login")
-
-	try:
-		project = Project.objects.get(id=project_id)
-	except Project.DoesNotExist:
-		return redirect("/projects")
-
-	try:
-		_point = PointModel.objects.filter(name=request.POST['name'])
-	except PointModel.DoesNotExist:
-		PointModel = None
-	print(_point)
-	param = {
-		'Point': _point,
-	}
 	
-	return render(request, "main/fire_progression.html", param)
-
 
 
 # TODO: Animate Polygons

@@ -16,10 +16,6 @@
             crossorigin="">
         </script>
     {% endblock %}
-    <form id="searchPointForm" action="./progression/searchPoint" method="POST">
-        <div hidden>
-            <input class="form-field" name="name" id="searchPoint" >
-        </div>
         {% csrf_token %}
     </form>
 
@@ -92,8 +88,11 @@
             </tr>
         </table>
     </div>
-    
-	<div hidden class="upload" id="upload">
+    {%if points is not None %}
+    <span hidden id="frame_points">{{points}}</span>
+    {% endif %}
+   
+	<!-- <div hidden class="upload" id="upload">
 		<h1>Upload Files</h1>
 		<p>If you have the polygon coordinates, or the file that contains them, please use this tool in order to see how the fire evolved:</p>
 		<form id="UploadCoordFile" style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload_polygon' project.id %}" enctype="multipart/form-data">
@@ -108,11 +107,11 @@
                 <input type="button" id="submit_pol" value="Upload Coords">
 			</form>
         <button class="button icon solid" type="button" value="Draw" name="drawPolygonButton" id="drawPolygonButton" onclick="drawMap()">DRAW </button><br>
-	</div>
+	</div> -->
 
     <div class="col-12" id="animationButtons" hidden>
         <button type="button" class="button icon solid" name="drawPolygonButton" id="drawPolygonButton">Play Animation</button>
-        <button type="button" class="button icon solid" name="stopDraw" id="stopDraw"/>Stop Animation</button><br>
+        <button type="button" class="button icon solid" name="stopDraw" id="stopDraw">Stop Animation</button><br>
     </div>
     <br>
 	<!-- TODO see the best way to view the progression -->

@@ -69,7 +69,8 @@
             }
 
         });
-        
+    
+
         function saveCoords() {
             $("#id_frame_id").val(JSON.parse(span_frameid));
             clicking = false;
@@ -86,17 +87,28 @@
 
 
         $('#SearchPointBtn').click(function () {
-            $('#searchPoint').val(JSON.stringify(pointNameToSearch.val()));
-            document.getElementById("searchPointForm").submit();
+            var imagePointsAsString = document.getElementById('frame_points').textContent;
+            var imagePointsArray =imagePointsAsString.split(";"); //each element of the array is like : "a,POINT (2 7),POINT (0 0)"
+            for(let i=0; i<imagePointsArray.length;i++){
+                let namePixGeo = imagePointsArray[i].split(',');  //split to access name, pix, geo
+                if(namePixGeo[0]==pointNameToSearch.val() && !ptNames.includes(namePixGeo[0])){
+                    let pixAux=namePixGeo[1].split(' ');
+                    pixels.push([parseFloat(pixAux[0]),parseFloat(pixAux[1])]);
+                    let geoAux=namePixGeo[2].split(' ');
+                    geocoords.push([parseFloat(geoAux[0]),parseFloat(geoAux[1])]);
+                    ptNames.push(namePixGeo[0]);
+                    var tr = "<tr>";
+                    tr += "<td>"+namePixGeo[0]+"</td>"+"<td>"+pixAux+"</td>"+"<td>"+geoAux+"</td>"+"</tr>";
+                    document.getElementById("pixel_table_coords").innerHTML += tr;  
+                }
+            }
+            loadPointPopUpDialog.dialog("close");
         });
        
 
 
         $('#undo').click(function () {
-            if(pixels.length ==0){
-                $("#pixel_table_coords").attr('hidden', true);
-            }
-            if(pixels.length>0){
+           if(pixels.length>0){
                 pixels.pop();
                 let pix_table =document.getElementById("pixel_table_coords").children;
                 pix_table[pix_table.length-1].remove(pix_table[pix_table.length-1].children);
@@ -107,6 +119,10 @@
             if(ptNames.length>0){
                 ptNames.pop();
             }
+            if(pixels.length==0){
+                $("#pixel_table_coords").attr('hidden', true);
+            }
+            
         });
         
         
@@ -114,7 +130,6 @@
         $('#submit').click(function () {
             $("#pixel_table_coords").attr('hidden', false);
             ptNames.push(inputForLocName.val());
-            console.log(ptNames);
             coords = inputForCoords.val();
             pixels.push(currPixelPoint);
             var pointName = inputForLocName.val();
@@ -127,8 +142,9 @@
             document.getElementById("pixel_table_coords").innerHTML += tr;
             CoordPopUp.dialog("close");
         });
-       
       
+
+    
 
         function markerOn() {
             if($("#id_marker").attr('checked')=='checked'){
@@ -159,7 +175,6 @@
             let img = document.getElementById("workingImage");
             let currWidth = img.clientWidth;
             img.style.width = (currWidth-100)+"px";
-            console.log("{{_point}}");
 
         })
 

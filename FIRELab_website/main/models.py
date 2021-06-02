@@ -40,6 +40,7 @@ class Directory(MPTTModel):
         return '~' + path_str
 
 
+
 class FileInfo(models.Model):
     name = models.CharField(max_length=50)
     extension = models.CharField(max_length=10)
@@ -96,12 +97,22 @@ class ImageFrame(models.Model):
     polygon = gisModels.PolygonField(blank=True, default=None, null=True)
     geoRefPolygon = gisModels.PolygonField(blank=True, default=None, null=True)
     video = models.ForeignKey(Video, on_delete=models.CASCADE, blank=True, default=None, null=True)
-
+    
     def __str__(self):
         return "{} - Frame ({})".format(self.id, self.get_filename())
 
     def get_filename(self):
         return "{}.{}".format(self.file_info.name, self.file_info.extension)
+
+class PointModel(models.Model):
+    name = models.CharField(max_length=50,unique=True, primary_key=True)
+    pix = gisModels.PointField(blank=True, default=None, null=True)
+    geo = gisModels.PointField(blank=True, default=None, null=True)
+    frame = models.ForeignKey(ImageFrame, on_delete=models.CASCADE, blank=True, default=None, null=True)
+   
+    def __str__(self):
+        return "[Point {}]".format(self.name)
+
 
 
 # Receive the pre_delete signal and delete the file associated with the model instance.
@@ -135,10 +146,6 @@ class Grid(models.Model):
     cell_size = models.PositiveIntegerField(blank=False)
 
 
-class PointModel(models.Model):
-    name = models.CharField(max_length=50, null=False,unique=True)
-    pix = gisModels.PointField(blank=True, default=None, null=True)
-    geo = gisModels.PointField(blank=True, default=None, null=True)
 
 class Tile(models.Model):
     position = ArrayField(models.IntegerField(blank=False), size=2)
