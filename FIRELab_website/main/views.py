@@ -1,16 +1,17 @@
+import concurrent.futures
 import io
 import json
 import math
 import pickle
 import time
+from datetime import datetime, timedelta
 
 from django.core.files import File
 from django.core.files.images import ImageFile
 from django.shortcuts import render, redirect
 from django.contrib.gis.geos import Polygon, LinearRing
-from django.db.models import Q
-from colormath.color_objects import sRGBColor, LabColor
-from colormath.color_conversions import convert_color
+from django.db.models import Q, Min, Max
+
 
 from FIRELab_website.settings import MEDIA_ROOT
 from main import utils
@@ -18,7 +19,7 @@ from main.forms import *
 import cv2
 import os
 import numpy as np
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from osgeo import gdal
 
 
@@ -112,22 +113,29 @@ def vegetation(response, project_id):
 
         ortophoto_form = UploadOrtophoto()
         grid_draw_form = DrawGridForm()
+        manual_classifier_form = ManualClassifierForm()
+
         param = {
             'project': project,
             'project_dirs': Directory.objects.all().filter(project_id=project.id),
             'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
             'ortophoto_form': ortophoto_form,
-            'grid_draw': grid_draw_form
+            'grid_draw': grid_draw_form,
+            'manual_classifier_form': manual_classifier_form
         }
 
-        if 'id' in response.GET:
+        if 'id' in response.GET or 'grid' in response.GET:
+
             try:
-                _ortophoto = Ortophoto.objects.get(file_info_id=response.GET['id'])
+                if 'id' in response.GET:
+                    _ortophoto = Ortophoto.objects.get(file_info_id=response.GET['id'])
+                else:
+                    _ortophoto = Ortophoto.objects.get(grid__file_info_id=response.GET['grid'])
+
             except Ortophoto.DoesNotExist:
                 return redirect("/projects/" + str(project_id) + "/vegetation")
 
             if _ortophoto.thumbnail:
-                print("Image exists")
                 param['image'] = _ortophoto
 
             else:
@@ -157,79 +165,99 @@ def vegetation(response, project_id):
                     os.path.join(MEDIA_ROOT, "ortophotos/{}_thumbnail.png.aux.xml".format(_ortophoto.file_info.name))))
                 param['image'] = _ortophoto
 
+        if 'grid' in response.GET:
             # verify if grid exists
             try:
-                _grid = Grid.objects.get(ortophoto=_ortophoto)
+                _grid = Grid.objects.get(ortophoto=_ortophoto, file_info_id=int(response.GET['grid']))
                 param['grid'] = _grid
             except Grid.DoesNotExist:
                 return render(response, "main/vegetation_characterization.html", param)
 
-            # DRAW GRID HERE #
             _top_left = _grid.topLeftCoordinate
             _bottom_right = _grid.bottomRightCoordinate
-
-            print("Corner pixels in ortophoto:", _top_left, _bottom_right)
-
             top_left = [int(e * 0.10) for e in _top_left]
             bottom_right = [int(e * 0.10) for e in _bottom_right]
 
-            print("Corner pixels in thumbnail:", top_left, bottom_right)
-
-            img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _ortophoto.thumbnail.name)))
             tiles = Tile.objects.all().filter(grid_id=_grid.id)
             x_pos = max([t.position[0] for t in tiles])
-
             cell_size = int((bottom_right[0] - top_left[0]) / (x_pos + 1))
 
-            gridded_image = utils.draw_grid(img, cell_size, top_left, bottom_right)
-            gridded_image[np.where((gridded_image == [0, 0, 0]).all(axis=2))] = [255, 255, 255]
-            # TODO: maybe store gridded_image in db
+            # DRAW GRID #
+            if not _grid.gridded_image:
+                # No gridded image - must be created and stored in db
+                img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _ortophoto.thumbnail.name)))
 
-            gridded_image_base64 = utils.opencv_to_base64(gridded_image, 'png')
-            param['gridded_image'] = 'data:image/png;base64,{image}'.format(image=gridded_image_base64.decode())
+                gridded_image = utils.draw_grid(img, cell_size, top_left, bottom_right)
+                gridded_image[np.where((gridded_image == [0, 0, 0]).all(axis=2))] = [255, 255, 255]
+
+                path = os.path.abspath(os.path.join(MEDIA_ROOT, "grids/grid_{}_aux.png".format(_grid.file_info.name)))
+                cv2.imwrite(path, gridded_image)
+
+                file = File(open(path, "rb"))
+                _grid.gridded_image.save("grid_{}.png".format(_grid.file_info.name), file)
+                os.remove(path)
+
+            else:
+                # get image from db
+                gridded_image = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _grid.gridded_image.name)))
+
+            param['gridded_image'] = _grid.gridded_image
 
             # DRAW IMAGE WITH JUST THE WANTED FILTERS
-            if 'none' in response.GET and response.GET['none'] == "0":
-                print("removing level 0")
-                tiles = tiles.filter(~Q(classification=0))
-            if 'low' in response.GET and response.GET['low'] == "0":
-                print("removing level 1")
-                tiles = tiles.filter(~Q(classification=1))
-            if 'medium' in response.GET and response.GET['medium'] == "0":
-                print("removing level 2")
-                tiles = tiles.filter(~Q(classification=2))
-            if 'high' in response.GET and response.GET['high'] == "0":
-                print("removing level 3")
-                tiles = tiles.filter(~Q(classification=3))
+            classification_total = Classification.objects.all().filter(model=_grid.model)
+
+            for index in range(0, len(classification_total)):
+                if str(index) in response.GET and response.GET[str(index)] == 'hidden':
+                    tiles = tiles.filter(~Q(classification=index))
+                    print("hide level", str(index))
 
             to_classify = gridded_image[top_left[1]:bottom_right[1], top_left[0]: bottom_right[0]]
             mask = np.zeros(to_classify.shape[:2], np.uint8)
             mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
 
-            for tile in tiles:
-                test_tile = tile.position
-                start_point = (test_tile[0] * cell_size, test_tile[1] * cell_size)
-                end_point = (start_point[0] + cell_size, start_point[1] + cell_size)
+            tiles = tiles.filter(classification__isnull=False)
 
-                if tile.classification == 0:
-                    mask = cv2.rectangle(mask, start_point, end_point, (20, 20, 255), -1)
-                elif tile.classification == 1:
-                    mask = cv2.rectangle(mask, start_point, end_point, (122, 209, 240), -1)
-                elif tile.classification == 2:
-                    mask = cv2.rectangle(mask, start_point, end_point, (150, 240, 100), -1)
-                elif tile.classification == 3:
-                    mask = cv2.rectangle(mask, start_point, end_point, (45, 80, 20), -1)
+            shape = to_classify.shape[:2]
+            with concurrent.futures.ThreadPoolExecutor(max_workers=len(classification_total)) as executor:
+                future_mask = {
+                    executor.submit(utils.compute_mask, tiles.filter(classification=classification_index), cell_size, classification_total.filter(classificationIndex=classification_index).first(), shape): classification_index
+                    for classification_index in range(0, len(classification_total))
+                }
+
+                done, _ = concurrent.futures.wait(future_mask, timeout=20, return_when=concurrent.futures.ALL_COMPLETED)
+
+                for future in done:
+                    mask = mask + future.result()
+
+            # print("start draw loop on", len(tiles), 'tiles')
+            # start = time.time()
+            # for tile in tiles:
+            #     test_tile = tile.position
+            #     start_point = (test_tile[0] * cell_size, test_tile[1] * cell_size)
+            #     end_point = (start_point[0] + cell_size, start_point[1] + cell_size)
+            #
+            #     if tile.classification < len(classification_total):
+            #         color = classification_total.filter(classificationIndex=tile.classification).first().hexColor
+            #         rgb = tuple(int(color[i:i + 2], 16) for i in (0, 2, 4))
+            #         mask = cv2.rectangle(mask, start_point, end_point, (rgb[2], rgb[1], rgb[0]), -1)
+            # end = time.time()
+            # print("Mask creation without threading:", end-start)
 
             classified_img = cv2.addWeighted(to_classify, 0.5, mask, 0.5, 0, dtype=cv2.CV_8UC3)
             gridded_image[top_left[1]:bottom_right[1], top_left[0]: bottom_right[0]] = classified_img
 
             gridded_image_base64 = utils.opencv_to_base64(gridded_image, 'png')
             param['gridded_image'] = 'data:image/png;base64,{image}'.format(image=gridded_image_base64.decode())
+            param["model"] = Classification.objects.all().filter(model=_grid.model)
 
         return render(response, "main/vegetation_characterization.html", param)
 
     else:
+
         grid_draw_form = DrawGridForm(response.POST)
+        manual_classifier_form = ManualClassifierForm(response.POST)
+
+        # drawing the grid on the ortophoto
         if grid_draw_form.is_valid():
             image_id = grid_draw_form.cleaned_data['image_id']
             try:
@@ -263,7 +291,7 @@ def vegetation(response, project_id):
 
             diff_x, diff_y = x2_m - x1_m, y2_m - y1_m
 
-            CELL_SIZE = 5  # in meters
+            CELL_SIZE = 5  # in meters TODO: MAKE DYNAMIC
             patch_x = diff_x % CELL_SIZE  # value to remove to lat2
             x2_m -= patch_x
 
@@ -275,15 +303,111 @@ def vegetation(response, project_id):
             column = int(abs(diff_x // CELL_SIZE))
             row = int(abs(diff_y // CELL_SIZE))
 
+            _file_info = FileInfo(
+                name=_ortophoto.file_info.name + "_",
+                extension="grid",
+                dir=Directory.objects.get(name="Grids", project_id=project.id)
+            )
+            _file_info.save()
             _grid = Grid(
                 topLeftCoordinate=[p1_x, p1_y],
                 bottomRightCoordinate=[p2_x, p2_y],
                 ortophoto=_ortophoto,
-                cell_size=CELL_SIZE
+                cell_size=CELL_SIZE,
+                file_info=_file_info
             )
             _grid.save()
+            # change the name on the file info
+            _file_info.name += str(_grid.id)
+            _file_info.save()
 
             utils.cell_cutter(ortophoto_path, row, column, p1_x, p1_y, p2_x, p2_y, _grid.id)
+
+        # Manual classification of a tile on the grid
+        # TODO: ADD DRAG BRUSH FEATURE
+        print(manual_classifier_form.errors)
+        if manual_classifier_form.is_valid():
+            print("valid")
+            try:
+                _grid = Grid.objects.get(file_info_id=manual_classifier_form.cleaned_data['grid'])
+                _ortophoto = Ortophoto.objects.get(grid=_grid)
+            except Grid.DoesNotExist:
+                return redirect("/projects")
+            except Ortophoto.DoesNotExist:
+                return redirect("/projects")
+
+            # get the brush path pixels
+            brush_json = json.loads(response.POST['point'])
+            brush = np.array(brush_json)
+            brush_path = brush.astype(np.int)
+
+            # calculate real pixel-position of the point
+            img_width, img_height = manual_classifier_form.cleaned_data['classification_image_size'].split(", ")
+            # p_x, p_y = brush_path[0]
+
+            img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _ortophoto.thumbnail.name)))
+            real_height, real_width = img.shape[:2]
+
+            # factor is the multiplication factor between the dimensions in the frontend and the image's real dimensions
+            # multiplied by 10 because the map is compressed 10% to create the png
+            x_factor, y_factor = real_width / int(img_width), real_height / int(img_height)
+            brush_path = [(math.floor(int(p[0]) * x_factor) * 10, math.floor(int(p[1]) * y_factor) * 10) for p in brush_path ]
+
+            # get top left in meters
+            top_left_pixels = _grid.topLeftCoordinate
+            bottom_right_pixels = _grid.bottomRightCoordinate
+            ortophoto_path = os.path.join(MEDIA_ROOT, _grid.ortophoto.content.name)
+            top_left_meters = utils.ortophoto_transformation_pixel_to_coordinate(
+                ortophoto_path, top_left_pixels[0], top_left_pixels[1]
+            )
+
+            # point = (math.floor(int(p_x) * x_factor) * 10, math.floor(int(p_y) * y_factor) * 10)
+            classification = manual_classifier_form.cleaned_data['classification_index']
+            brush_size = manual_classifier_form.cleaned_data['brush_size'] - 1
+            for point in brush_path:
+
+                # check if point is inside the grid
+                if point[0] < top_left_pixels[0] or point[0] > bottom_right_pixels[0]:
+                    print("invalid x")
+                    return redirect("/projects/" + str(project_id) + "/vegetation")
+
+                if point[1] < top_left_pixels[1] or point[1] > bottom_right_pixels[1]:
+                    print("invalid y")
+                    return redirect("/projects/" + str(project_id) + "/vegetation")
+
+                # compute the offset of the point to the top left
+                point_meters = utils.ortophoto_transformation_pixel_to_coordinate(ortophoto_path, point[0], point[1])
+                diff = [round(point_meters[0]-top_left_meters[0]), round(top_left_meters[1]-point_meters[1])]
+                # print('offset:', diff)
+
+                # get column and row of point in grid
+                cell_size = _grid.cell_size
+                column = diff[0] // cell_size
+                row = diff[1] // cell_size
+
+                # get the affected tiles
+                column_range = [math.floor(column - brush_size/2), math.floor(column + brush_size/2)]
+                row_range = [math.floor(row - brush_size/2), math.floor(row + brush_size/2)]
+
+                affected_tiles = Tile.objects.all().filter(grid=_grid)\
+                    .filter(position__0__range=column_range)\
+                    .filter(position__1__range=row_range)\
+                    .filter(~Q(classification=classification))
+
+
+                # change the classification of each tile
+                # print("cleaning tiles")
+                with concurrent.futures.ThreadPoolExecutor(max_workers=max(row, column)) as executor:
+                    future_mask = {
+                        executor.submit(utils.change_classification, tile, classification): tile.id
+                        for tile in affected_tiles
+                    }
+
+                    done, _ = concurrent.futures.wait(future_mask, timeout=20, return_when=concurrent.futures.ALL_COMPLETED)
+
+            return redirect("/projects/" + str(project_id) + "/vegetation?grid=" +
+                            str(manual_classifier_form.cleaned_data['grid'])
+                            + '&selected=' + str(classification) + "&brush=" + str(brush_size+1))
 
     return redirect("/projects/" + str(project_id) + "/vegetation")
 
@@ -298,26 +422,22 @@ def auto_classifier(request, project_id, grid_id):
         return redirect("/projects")
 
     if request.method == "GET":
-        # TODO: do means using tiles in db
         tile_list = Tile.objects.all().filter(grid_id=grid.id)
-
         classified_tiles = tile_list.filter(classification__isnull=False)
-        means = [[233, 231, 234], [140, 138, 107], [114, 114, 98], [60, 63, 31]]
 
         if len(classified_tiles) == 0:
+            # TODO raise error if no classification exists
             means = [[233, 231, 234], [140, 138, 107], [114, 114, 98], [60, 63, 31]]
         else:
-            level_0_tiles = tile_list.filter(classification=0)
-            level_1_tiles = tile_list.filter(classification=1)
-            level_2_tiles = tile_list.filter(classification=2)
-            level_3_tiles = tile_list.filter(classification=3)
+            classification_total = Classification.objects.all().filter(model=grid.model)
+            print(classification_total)
 
-            avg_0 = utils.simplified_pixel_average(level_0_tiles)
-            avg_1 = utils.simplified_pixel_average(level_1_tiles)
-            avg_2 = utils.simplified_pixel_average(level_2_tiles)
-            avg_3 = utils.simplified_pixel_average(level_3_tiles)
-
-            means = [avg_0, avg_1, avg_2, avg_3]
+            means = []
+            for c in classification_total:
+                pixel_avg = utils.simplified_pixel_average(tile_list.filter(classification=c.classificationIndex))
+                if pixel_avg:
+                    means.append(pixel_avg)
+            print(means)
 
         # # if we use distance, this block is unnecessary #
         # lab_means = []
@@ -340,6 +460,78 @@ def auto_classifier(request, project_id, grid_id):
             # tile.classification = utils.visually_closest(tile, lab_colors)
             tile.classification = utils.numerically_closest(tile, means)
             tile.save()
+
+    return redirect("/projects/" + str(project.id) + "/vegetation?grid=" + str(grid.file_info.id))
+
+
+def export_fuel_map(request, project_id, grid_id):
+    try:
+        project = Project.objects.get(id=project_id)
+        grid = Grid.objects.get(id=grid_id, ortophoto__file_info__dir__project_id=project_id)
+    except Project.DoesNotExist:
+        return redirect("/projects")
+    except Grid.DoesNotExist:
+        return redirect("/projects")
+
+    if request.method == 'GET':
+        print("store to fuel map")
+
+        # CELL_SIZE - na bd
+        cell_size = grid.cell_size
+
+        # bottom left coord -  pontos na bd em pixels
+        _top_left = grid.topLeftCoordinate
+        _bottom_right = grid.bottomRightCoordinate
+
+        bottom_left_pixels = [_top_left[0], _bottom_right[1]]
+        top_right_pixels = [_bottom_right[0], _top_left[1]]
+
+        ortophoto_path = os.path.join(MEDIA_ROOT, grid.ortophoto.content.name)
+        x_bottom_left_meters, y_bottom_left_meters = utils.ortophoto_transformation_pixel_to_coordinate(
+            ortophoto_path, bottom_left_pixels[0], bottom_left_pixels[1]
+        )
+        print(x_bottom_left_meters, y_bottom_left_meters)
+        x_bottom_left_meters = round(x_bottom_left_meters)
+        y_bottom_left_meters = round(y_bottom_left_meters)
+
+        # calcular cols e rows
+        x_top_right_meters, y_top_right_meters = utils.ortophoto_transformation_pixel_to_coordinate(
+            ortophoto_path, top_right_pixels[0], top_right_pixels[1]
+        )
+        diff_x, diff_y = abs(x_top_right_meters - x_bottom_left_meters), abs(y_bottom_left_meters - y_top_right_meters)
+
+        column = int(abs(diff_x // cell_size))
+        row = int(abs(diff_y // cell_size))
+
+        # tile list da bd
+        file_output = str(column) + '\n' + \
+            str(row) + '\n' + \
+            str(x_bottom_left_meters) + '\n' + \
+            str(y_bottom_left_meters) + '\n' + \
+            str(cell_size) + '\n'
+
+        tile_list = Tile.objects.all().filter(grid_id=grid.id)
+        print(tile_list.filter(position=[0, 0]))
+        model = grid.model
+        formatted_str = '{:02.1f}'
+        tiles_str = ""
+        for r in range(row):
+            for c in range(column):
+                elem = tile_list.filter(position=[c, r]).first()
+                # TODO: exception when has no classification
+                elem_percentage = float(Classification.objects.all().filter(model=model, classificationIndex=elem.classification).first().minPercentage)
+                if elem_percentage == 0:
+                    elem_percentage = 99.0
+                tiles_str += formatted_str.format(elem_percentage) + ' '
+            tiles_str += "\n"
+
+        file_output += tiles_str
+
+        filename = 'fuelmap_' + grid.ortophoto.file_info.name + '.asc'
+        response = HttpResponse(file_output, content_type='application/octet-stream')
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+        return response
 
     return redirect("/projects/" + str(project.id) + "/vegetation?id=" + str(grid.ortophoto.file_info.id))
 
@@ -474,9 +666,13 @@ def upload_video(request, project_id):
 
     if request.method == 'POST':
         form = UploadVideo(request.POST, request.FILES)
+        print(form.errors)
         if form.is_valid():
             name, extension = request.FILES['video'].name.split('.')
             frame_number = request.POST['frames']
+            originTimestamp = request.POST['videoOriginDateTime']
+            startingTimestamp = request.POST['startingDateTime']
+
             video = Video(
                 frame_number=frame_number,
                 name=name,
@@ -488,10 +684,21 @@ def upload_video(request, project_id):
             video_capture = cv2.VideoCapture()
             video_capture.open(os.path.abspath(os.path.join(MEDIA_ROOT, video.content.name)))
             max_frames = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
+            fps = video_capture.get(cv2.CAP_PROP_FPS)
             print("Successfully loaded {}.{} with {} frames".format(video.name, video.extension, max_frames))
 
-            step = math.floor(max_frames / int(frame_number))
-            cur_frame = 0
+            startingDateTime = datetime.strptime(startingTimestamp, "%Y-%m-%d %H:%M:%S")
+            originDateTime = datetime.strptime(originTimestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+            skipSeconds = (startingDateTime - originDateTime).seconds
+            skipFrames = int(skipSeconds * fps)
+            print('seconds to skip:', skipSeconds, '-> frames to skip:', skipFrames)
+
+            fpm = fps * 60
+            step = int(fpm / int(frame_number))
+            print('capturing in a step of', step)
+
+            # step = math.floor(max_frames / int(frame_number))
+            cur_frame = 1
             frame_index = 1  # retrieved frame index
 
             frames_dir = Directory(
@@ -500,49 +707,52 @@ def upload_video(request, project_id):
                 parent=Directory.objects.get(project__id=project.id, name="Frames")
             )
             frames_dir.save()
-
+            temp = skipFrames
             try:
-                while video_capture.isOpened() and cur_frame < max_frames:
+                while video_capture.isOpened() and cur_frame < max_frames - temp:
                     _, frame = video_capture.read()  # read next image from video
-                    if cur_frame % step == 0:
-                        frame_name = "{}_{}".format(name, frame_index)
+                    if skipFrames > 0:
+                        skipFrames -= 1
+                    else:
+                        if cur_frame % step == 0:
+                            frame_name = "{}_{}".format(name, frame_index)
+                            timestamp = (cur_frame + temp) / fps
+                            print("Captured frame at second", timestamp, "(" + str(originDateTime + timedelta(seconds=timestamp)) + ")")
 
-                        _, frame_arr = cv2.imencode('.png', frame)  # Numpy one-dim array representative of the img
-                        frame_bytes = frame_arr.tobytes()
-                        _frame = ImageFile(io.BytesIO(frame_bytes), name='{}.png'.format(frame_name))
+                            _, frame_arr = cv2.imencode('.png', frame)  # Numpy one-dim array representative of the img
+                            frame_bytes = frame_arr.tobytes()
+                            _frame = ImageFile(io.BytesIO(frame_bytes), name='{}.png'.format(frame_name))
 
-                        # cv2.imshow('{}.png'.format(frame_name), frame)
-                        # cv2.waitKey(0)  # waits until a key is pressed
-                        # cv2.destroyAllWindows()  # destroys the window showing image
+                            _file_info = FileInfo(
+                                name=frame_name,
+                                extension='png',
+                                dir=frames_dir
+                            )
+                            _file_info.save()
 
-                        _file_info = FileInfo(
-                            name=frame_name,
-                            extension='png',
-                            dir=frames_dir
-                        )
-                        _file_info.save()
+                            _frame = ImageFrame(
+                                video=video,
+                                file_info=_file_info,
+                                content=_frame,
+                                timestamp=timestamp,
+                            )
+                            _frame.save()
 
-                        _frame = ImageFrame(
-                            video=video,
-                            file_info=_file_info,
-                            content=_frame,
-                        )
-                        _frame.save()
+                            # create empty mask of image's size ans "serialize" it
+                            _mask = np.zeros(frame.shape[:2], np.uint8)
+                            mask_encoded = pickle.dumps(_mask)
+                            # save mask in the previously created image
+                            _frame.mask = mask_encoded
+                            _frame.save()
 
-                        # create empty mask of image's size ans "serialize" it
-                        _mask = np.zeros(frame.shape[:2], np.uint8)
-                        mask_encoded = pickle.dumps(_mask)
-                        # save mask in the previously created image
-                        _frame.mask = mask_encoded
-                        _frame.save()
-
-                        frame_index += 1
-                    cur_frame += 1
+                            frame_index += 1
+                        cur_frame += 1
             finally:
                 video_capture.release()
                 # delete content from model and from file system
                 video.content.delete()
                 print(video.content)
+                print("Done")
 
     return redirect("/projects/" + str(project_id) + "/segmentation")
 
@@ -726,7 +936,7 @@ def generate_contour(request, file_id, project_id):
     binary = cv2.dilate(binary, kernel)
     binary = cv2.erode(binary, kernel)
 
-    _, vertexes, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    vertexes, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
     if len(vertexes) > 1:
         print("More than one polygon were identified")
@@ -907,3 +1117,151 @@ def generate_georreference(request, file_id, project_id):
 
     return redirect('/projects/' + str(project_id) + '/progression?id=' + str(file_id))
 '''
+
+
+# DISPERFIRE FILE EXPORT VIEW
+def export_disperfire_file(request, project_id, video_id, grid_id):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+
+    try:
+        _project = Project.objects.get(id=project_id)
+        _grid = Grid.objects.get(id=grid_id, ortophoto__file_info__dir__project_id=project_id)
+        _video = Video.objects.get(id=video_id)
+    except Project.DoesNotExist:
+        print("no porject")
+        return redirect("/projects")
+    except Grid.DoesNotExist:
+        print("no grid")
+        return redirect("/projects")
+    except Video.DoesNotExist:
+        print("no video")
+        return redirect("/projects")
+
+    # add test polygon
+    coords = ((-7.614775, 41.391031), (-7.614078, 41.390717), (-7.615237, 41.390556), (-7.614775, 41.391031))
+    poly = Polygon(coords)
+
+    frame = ImageFrame.objects.get(id=21)
+    frame.geoRefPolygon = poly
+    frame.save()
+
+    coords = ((-7.615859, 41.391369), (-7.615437, 41.388883), (-7.612594, 41.388883), (-7.613800, 41.391282), (-7.615859, 41.391369))
+    poly = Polygon(coords)
+    frame = ImageFrame.objects.get(id=22)
+    frame.geoRefPolygon = poly
+    frame.save()
+
+
+    # get top left in meters
+    cell_size = _grid.cell_size
+    top_left_pixels = _grid.topLeftCoordinate
+    ortophoto_path = os.path.join(MEDIA_ROOT, _grid.ortophoto.content.name)
+    top_left_meters = utils.ortophoto_transformation_pixel_to_coordinate(
+        ortophoto_path, top_left_pixels[0], top_left_pixels[1]
+    )
+
+    frame_list = ImageFrame.objects.all().filter(video_id=_video.id).order_by('id')
+    print(frame_list)
+
+    for i in range(0, len(frame_list)):
+        print("frame", i)
+        cur_frame = frame_list[i]
+
+        # get outer bounds of bigger polygon
+        envelope = cur_frame.geoRefPolygon.envelope
+        print('envelope', envelope)
+        coords = envelope.coords[0][:-1]
+
+        x_coords = [x[0] for x in coords]
+        max_x, min_x = max(x_coords), min(x_coords)
+        y_coords = [y[1] for y in coords]
+        max_y, min_y = max(y_coords), min(y_coords)
+
+        min_point = (min_x, min_y)
+        max_point = (max_x, max_y)
+        min_point_meters = utils.ortophoto_transform_degrees_to_meters(ortophoto_path, min_point[0], min_point[1])
+        max_point_meters = utils.ortophoto_transform_degrees_to_meters(ortophoto_path, max_point[0], max_point[1])
+
+        max_dif = [abs(top_left_meters[0] - max_point_meters[0]), abs(top_left_meters[1] - max_point_meters[1])]
+        max_col, max_row = int(max_dif[0] // cell_size) + 1, int(max_dif[1] // cell_size) + 1
+        min_dif = [abs(top_left_meters[0] - min_point_meters[0]), abs(top_left_meters[1] - min_point_meters[1])]
+        min_col, min_row = int(min_dif[0] // cell_size), int(min_dif[1] // cell_size)
+
+        if min_col > max_col:
+            temp = min_col
+            min_col = max_col
+            max_col = temp
+
+        if min_row > max_row:
+            temp = min_row
+            min_row = max_row
+            max_row = temp
+
+        tiles_to_analyse = Tile.objects.all().filter(grid=_grid, start_time_frame__isnull=True)\
+            .filter(position__0__range=[min_col, max_col-1])\
+            .filter(position__1__range=[min_row, max_row-1])
+        print(len(tiles_to_analyse))
+        print('total', len(Tile.objects.all().filter(grid=_grid)))
+
+        for tile in tiles_to_analyse:
+
+            # calculate vertices in meters
+            temp = ((tile.position[0]*cell_size + top_left_meters[0]), (top_left_meters[1] - tile.position[1]*cell_size))
+            tile_vertices = [temp,
+                             (temp[0] + cell_size, temp[1]),
+                             (temp[0] + cell_size, temp[1] - cell_size),
+                             (temp[0], temp[1] - cell_size)]
+
+            # convert 4 vertices to degrees
+            tile_vertices_degrees = [utils.ortophoto_transform_meters_to_degrees(ortophoto_path, x[0], x[1]) for x in tile_vertices]
+            tile_vertices_degrees.append(tile_vertices_degrees[0])
+            tile_vertices_degrees = tuple(tile_vertices_degrees)
+
+            # create polygon and intersect with burnt geo-referenced polygon
+            tile_polygon = Polygon(tile_vertices_degrees)
+            intersectTile = cur_frame.geoRefPolygon.intersects(tile_polygon)
+
+            # update tile's start time frame
+            if intersectTile:
+                tile.start_time_frame = cur_frame
+                tile.save()
+
+    # WRITE FILE TO SEND TO CLIENT
+    # calculate columns and rows
+    bottom_right = _grid.bottomRightCoordinate
+    bottom_right_meters = utils.ortophoto_transformation_pixel_to_coordinate(
+        ortophoto_path, bottom_right[0], bottom_right[1]
+    )
+    diff_x, diff_y = abs(top_left_meters[0] - bottom_right_meters[0]), abs(top_left_meters[1] - bottom_right_meters[1])
+    column = int(abs(diff_x // cell_size))
+    row = int(abs(diff_y // cell_size))
+
+
+    video_frames = ImageFrame.objects.all().filter(video_id=_video.id)
+    min_timestamp, max_timestamp = video_frames.aggregate(Min('timestamp'))['timestamp__min'], video_frames.aggregate(Max('timestamp'))['timestamp__max']
+    print(min_timestamp, max_timestamp)
+
+    file_output = str(round(max_timestamp)) + '\n' + str(round(min_timestamp)) + '\n'
+
+    tile_list = Tile.objects.all().filter(grid_id=_grid.id)
+    tiles_str = ""
+    for r in range(row):
+        for c in range(column):
+            elem = tile_list.filter(position=[c, r]).first()
+
+            if elem.start_time_frame is not None:
+                elem_timestamp = round(elem.start_time_frame.timestamp)
+                tiles_str += str(elem_timestamp) + ' '
+
+            else:
+                tiles_str += '-1 '
+        tiles_str += "\n"
+
+    file_output += tiles_str
+
+    filename = 'disperModel_' + _grid.ortophoto.file_info.name + '.asc'
+    response = HttpResponse(file_output, content_type='application/octet-stream')
+    response['Content-Type'] = 'application/octet-stream'
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    return response

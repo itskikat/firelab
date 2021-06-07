@@ -36,6 +36,8 @@ class UploadImage(forms.Form):
 class UploadVideo(forms.Form):
     video = forms.FileField(label="Video")
     frames = forms.IntegerField(label="Number of frames")
+    startingDateTime = forms.DateTimeField()
+    videoOriginDateTime = forms.DateTimeField()
 
     def __init__(self, *args, **kwargs):
         super(UploadVideo, self).__init__(*args, **kwargs)
@@ -68,6 +70,14 @@ class DrawGridForm(forms.Form):
     p2 = forms.CharField()
     image_size = forms.CharField()
     image_id = forms.IntegerField()
+
+
+class ManualClassifierForm(forms.Form):
+    point = forms.CharField()
+    classification_image_size = forms.CharField()
+    classification_index = forms.IntegerField()
+    brush_size = forms.IntegerField(validators=[MinValueValidator(1)])
+    grid = forms.IntegerField()
 
 
 class Georreferencing(forms.Form):

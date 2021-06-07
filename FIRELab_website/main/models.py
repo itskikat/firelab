@@ -87,8 +87,9 @@ class ImageFrame(models.Model):
     file_info = models.OneToOneField(FileInfo, on_delete=models.CASCADE, blank=False)
     mask = models.BinaryField(blank=True, null=True, default=None)
     polygon = gisModels.PolygonField(blank=True, default=None, null=True)
-    # add geo-referenced polygon field
+    geoRefPolygon = gisModels.PolygonField(blank=True, default=None, null=True)
     video = models.ForeignKey(Video, on_delete=models.CASCADE, blank=True, default=None, null=True)
+    timestamp = models.FloatField(blank=True, default=None, null=True)
 
     def __str__(self):
         return "{} - Frame ({})".format(self.id, self.get_filename())
@@ -121,11 +122,42 @@ def ortophoto_delete(sender, instance, **kwargs):
         instance.thumbnail.delete(False)
 
 
+class FuelModel(models.Model):
+    name = models.CharField(max_length=30)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
+
+    def __str__(self):
+        return self.name
+
+
+class Classification(models.Model):
+    name = models.CharField(max_length=30)
+    model = models.ForeignKey(FuelModel, on_delete=models.CASCADE, blank=True, null=True, default=None)
+    minPercentage = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
+    maxPercentage = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
+    hexColor = models.CharField(max_length=6)
+    classificationIndex = models.IntegerField(blank=True, null=True, default=None, validators=[MinValueValidator(0)])
+
+    def __str__(self):
+        return self.name + " (" + str(self.minPercentage) + "%-" + str(self.maxPercentage) + "%)"
+
+
 class Grid(models.Model):
     topLeftCoordinate = ArrayField(models.IntegerField(blank=False), size=2)
     bottomRightCoordinate = ArrayField(models.IntegerField(blank=False), size=2)
     ortophoto = models.ForeignKey(Ortophoto, on_delete=models.CASCADE, blank=False)
+    gridded_image = models.ImageField(upload_to="grids/", blank=True, null=True, default=None)
     cell_size = models.PositiveIntegerField(blank=False)
+    model = models.ForeignKey(FuelModel, on_delete=models.CASCADE, blank=True, null=True, default=None)
+    file_info = models.OneToOneField(FileInfo, on_delete=models.CASCADE, blank=False)
+
+
+# Receive the pre_delete signal and delete the file associated with the model instance.
+@receiver(pre_delete, sender=Grid)
+def grid_delete(sender, instance, **kwargs):
+    # Pass false so FileField doesn't save the model.
+    if instance.gridded_image is not None:
+        instance.gridded_image.delete(False)
 
 
 class Tile(models.Model):
@@ -136,6 +168,7 @@ class Tile(models.Model):
                             validators=[MinValueValidator(0), MaxValueValidator(255)]),
         size=3)
     grid = models.ForeignKey(Grid, on_delete=models.CASCADE)
+    start_time_frame = models.ForeignKey(ImageFrame, on_delete=models.SET_NULL, blank=True, null=True, default=None)
 
     def __str__(self):
         return "tile(" + str(self.position) + "), avgColor: " + str(self.avgColor) + ", classification: " + str(self.classification)

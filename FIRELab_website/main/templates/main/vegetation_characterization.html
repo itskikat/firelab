@@ -2,6 +2,18 @@
 
 {% block content %}
     {% load static %}
+    <form id="manualClassification" action="" method="post">
+        {% csrf_token %}
+        {% if image %}
+            <div hidden>
+                {{ manual_classifier_form.point }}
+                {{ manual_classifier_form.classification_image_size }}
+                {{ manual_classifier_form.classification_index }}
+                {{ manual_classifier_form.grid }}
+                {{ manual_classifier_form.brush_size }}
+            </div>
+        {% endif %}
+    </form>
     <form id="workingImageForm" action="./vegetation" method="POST">
         {% csrf_token %}
         {% if image %}
@@ -29,18 +41,12 @@
 		<table id="pickertable" class="scroll">
 			<caption id="captionPicker">Picker<a id= "closePicker" title="Close Picker" onclick="openClosePicker()"><i id="closeP" class="fas fa-times"></i></a></caption>
 			<tbody style="font-size: 13px" id="pickerBody">
+            {% for class in model %}
 			<tr>
-				<td colspan="2">No Vegetation (1-20%)<i id="none_icon" onclick="filter('none')" class="fas fa-eye fa-lg"></i><div class='box red'></div></td>
+				<td onclick="setSelectedLayer({{ class.classificationIndex }})" id="{{ class.classificationIndex }}_layer" colspan="2">{{ class.name}} {% if not class.minPercentage == 0 and not class.maxPercentage == class.minPercentage %} ({{ class.minPercentage }}-{{ class.maxPercentage }}%) {% endif %}<i id="{{ class.classificationIndex }}_icon" onclick="filter({{ class.classificationIndex}})" class="fas fa-eye fa-lg"></i><div style="background-color: #{{ class.hexColor }}" class='box'></div></td>
 			</tr>
-			<tr>
-				<td colspan="2">Low Vegetation (21-50%)<i id="low_icon" onclick="filter('low')" class="fas fa-eye fa-lg"></i><div class='box yellow'></div></td>
-			</tr>
-			<tr>
-				<td colspan="2">Medium Vegetation (50-80%)<i id="medium_icon" onclick="filter('medium')" class="fas fa-eye fa-lg"></i><div class='box green'></div></td>
-			</tr>
-			<tr>
-				<td colspan="2">High Vegetation (81-100%)<i id="high_icon" onclick="filter('high')" class="fas fa-eye fa-lg"></i><div class='box dark-green'></div></td>
-			</tr>
+            {% endfor %}
+
             <tr>
                 <td style="text-align: center" onclick="showAll()">Show all layers</td>
                 <td style="text-align: center" onclick="hideAll()">Hide all layers</td>
@@ -51,16 +57,17 @@
     {% endif %}
 
 	<div class="toolkit">
+        <input id="brushSettings" type="range" step="1" min="1" max="20" style="transform: rotate(270deg); display: none; position:absolute; top: 12vh; left: -5vw; background: grey">
 		<table>
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
 			<tr>
-				<td><i class="fas fa-leaf fa-lg"></i></td>
+				<td onclick="openBrushSetings()"><i title="Manually classify" style="cursor: pointer" class="fas fa-leaf fa-lg" {% if grid %} onclick="manualSelect()" {% endif %}></i></td>
 				<td><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
 			</tr>
 			<tr>
 				<td><a title="Auto classify" style="cursor: pointer" {% if grid %} onclick="openLoadingPopUp()" href="{% url 'auto_classifier' project.id grid.id %}" {% endif %}><i class="fas fa-tree fa-lg"></i></a></td>
-				<td><i class="fas fa-save fa-lg"></i></td>
+				<td><a title="Save fuel map" style="cursor: pointer" {% if grid %} href="{% url 'export_fuel_map' project.id grid.id %}" {% endif %}><i class="fas fa-save fa-lg" ></i></a></td>
 			</tr>
 			<tr>
 				<td><i class="fas fa-eraser fa-lg"></i></td>
@@ -113,26 +120,70 @@
     <script>
 
         let workingImage = $("#workingImage");
+        let selectedLayer = null
         let selectedPointsTotal = 0;
         let gridDrawOn = false;
+        let manualSelectOn = false;
+        let brushSize = null
+        let clicking = false;
+        let brush = [];
         let queryDict = {};
 
-
         $(document).ready(function () {
-            location.search.substr(1).split("&").forEach(function(item) {queryDict[item.split("=")[0]] = item.split("=")[1]});
+            location.search.substr(1).split("&").forEach(function(item) {
+                if (!item.includes("selected") && !item.includes("brush")) {
+                    queryDict[item.split("=")[0]] = item.split("=")[1]
+                } else {
+                    if (item.includes("brush")) {
+                        brushSize = item.split("=")[1]
+                        manualSelectOn = true
+                        openBrushSetings()
+                    }
+
+                    if (item.includes("selected")) {
+                        selectedLayer = item.split("=")[1]
+                    }
+                }
+
+            });
             for (const [key, value] of Object.entries(queryDict)) {
-                if (value === "0") {
+                if (value === "hidden") {
                     $("#" + key + "_icon").addClass('fa-eye-slash').removeClass('fa-eye');
                 }
             }
+
+            if (selectedLayer === null) { selectedLayer = 0; }
+            if (brushSize === null) { brushSize = 1; }
+
+            let selectedLayerId = "#" + selectedLayer + "_layer"
+            $(selectedLayerId).css("background-color", "grey")
         });
+
+        function manualSelect() {
+            manualSelectOn = !manualSelectOn
+        }
 
         function drawGrid() {
             gridDrawOn = !gridDrawOn;
             let selectedFileId = JSON.parse("{{image.file_info.id|escapejs}}");
             $("#id_image_id").val(selectedFileId);
-
         }
+
+         workingImage.mousedown(function(event) {
+            clicking = true
+            brush = []
+            let x = event.pageX - this.offsetLeft;
+            let y = event.pageY - this.offsetTop;
+            brush.push( [x, y])
+        });
+
+        workingImage.mousemove(function(event) {
+            if (clicking !== true) return
+
+            let x = event.pageX - this.offsetLeft;
+            let y = event.pageY - this.offsetTop;
+            brush.push( [x, y])
+        });
 
         workingImage.mouseup(function(event) {
             let image = document.getElementById("workingImage");
@@ -148,15 +199,36 @@
                     $("#id_image_size").val(String(image.width) + ", " + String(image.height))
                     document.getElementById("workingImageForm").submit();
                 }
+
+            } else if (manualSelectOn) {
+                let x = event.pageX - this.offsetLeft;
+                let y = event.pageY - this.offsetTop;
+
+                clicking = false;
+                brush.push([x, y]);
+                $("#id_point").val(JSON.stringify(brush));
+
+                $("#id_classification_image_size").val(String(image.width) + ", " + String(image.height))
+                $("#id_classification_index").val(selectedLayer)
+                $("#id_grid").val(JSON.parse("{{grid.file_info.id|escapejs}}"));
+                $("#id_brush_size").val(brushSize)
+                console.log(brush)
+                document.getElementById("manualClassification").submit();
             }
         });
 
+        function setSelectedLayer(layer) {
+            $("#" + selectedLayer + "_layer").css("background-color", "")
+            selectedLayer = layer;
+            $("#" + selectedLayer + "_layer").css("background-color", "grey")
+        }
+
         function filter(levelType) {
             let val = queryDict[levelType]
-            if (val === "0") {
-                queryDict[levelType] = "1";
+            if (val === "hidden") {
+                delete queryDict[levelType];
             } else {
-                queryDict[levelType] = "0";
+                queryDict[levelType] = "hidden";
             }
 
             let path = '?'
@@ -168,12 +240,30 @@
         }
 
         function showAll() {
-           window.location.href = window.location.pathname + "?id=" + queryDict['id'];
+           window.location.href = window.location.pathname + "?grid=" + queryDict['grid'];
         }
 
         function hideAll() {
-            window.location.href = window.location.pathname + "?id=" + queryDict['id'] + "&none=0&low=0&medium=0&high=0";
+            let modelLength = JSON.parse("{{model|length}}");
+            path = ""
+            for (let i=0; i<modelLength; i++){ path += "&" + String(i) + "=hidden";}
+            window.location.href = window.location.pathname + "?grid=" + queryDict['grid'] + path;
         }
+
+        function openBrushSetings() {
+            if (brushSize === null) { brushSize = 1; }
+            let settings = $("#brushSettings")
+            settings.val(brushSize)
+            if (settings.css("display") === "none") {
+                settings.css("display", "")
+            } else {
+                settings.css("display", "none")
+            }
+        }
+
+        $("#brushSettings").change(function (){
+            brushSize = $("#brushSettings").val()
+        })
 
     </script>
 

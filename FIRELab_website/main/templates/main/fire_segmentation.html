@@ -28,6 +28,8 @@
     {% endif %}
     </form>
 
+    <p id="output"></p>
+
 	<div class="toolkit">
 		<table>
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
@@ -73,6 +75,17 @@
 {#                    <input type="text" name="video-fpm" id="video-fpm" value="5" style="padding-left: 10px" />#}
                     {{ video_form.frames }}
                 </div>
+
+                <div>
+                    <span id="startingTimestamp"></span><br>
+                    <span id="endingTimestamp"></span>
+                    {{ video_form.startingDateTime }}
+                </div>
+                <div hidden>
+                    {{ video_form.videoOriginDateTime }}
+                </div>
+
+
                 <div style="padding: 1%;">
                     <input type="submit" id="submit_vd" value="Upload video" onclick="openLoadingPopUp()">
                 </div>
@@ -121,11 +134,66 @@
 	
 
     <link rel="stylesheet" href="{% static 'viewmodel/css/fire_seg.css' %}"/>
+    <script type="text/javascript" src="https://unpkg.com/mediainfo.js/dist/mediainfo.min.js"></script>
     <script src="{% static 'viewmodel/js/fire_seg.js' %}"></script>
     <script>
     let workingImage = $("#workingImage")
     let clicking, path;
     let maskOn = true
+
+    // READ VIDEO FILE METADATA //////////////////////////////////////////////////////////////
+    const fileinput = document.getElementById('videoFile')
+    const output = document.getElementById("output")
+    const startingTimeStamp = document.getElementById("startingTimestamp")
+    const endingTimestamp = document.getElementById("endingTimestamp")
+    const onChangeFile = (mediainfo) => {
+        const file = fileinput.files[0]
+        if (file) {
+            output.value = 'Working…'
+            const getSize = () => file.size
+            const readChunk = (chunkSize, offset) =>
+              new Promise((resolve, reject) => {
+                const reader = new FileReader()
+                reader.onload = (event) => {
+                  if (event.target.error) {
+                    reject(event.target.error)
+                  }
+                  resolve(new Uint8Array(event.target.result))
+                }
+                reader.readAsArrayBuffer(file.slice(offset, offset + chunkSize))
+              })
+
+            mediainfo.analyzeData(getSize, readChunk).then((result) => {
+                result = result['media']['track']
+                let generalData = result[0]
+                if (generalData['Tagged_Date'] && generalData['Duration']) {
+                    console.log(generalData['Tagged_Date'], generalData['Duration'])
+                    let starting = new Date(generalData['Tagged_Date'].split(" ")[1] + "T" + generalData['Tagged_Date'].split(" ")[2])
+                    console.log(starting.toISOString())
+                    $("#id_videoOriginDateTime").val(starting.toISOString())
+                    startingTimeStamp.innerText = "Starting time: " + starting.toUTCString()
+
+                    let durationInSeconds = generalData['Duration'];
+
+                    starting.setSeconds(durationInSeconds.split(".")[0])
+                    starting.setMilliseconds(durationInSeconds.split(".")[1])
+                    endingTimestamp.innerText = "Ending Time: " + starting.toUTCString()
+                }
+                //console.log(result.replace("\t", "").replace(/\s/g,'').split(/[:\n\\]+/))
+              }).catch((error) => {
+                  console.log("An error occurred", error)
+                output.value = `An error occurred: ${error.stack}`
+              })
+          }
+    }
+
+    MediaInfo({ format: 'object' }, (mediainfo) => {
+      fileinput.addEventListener('change', () => onChangeFile(mediainfo))
+    })
+
+    // END OF READ VIDEO FILE METADATA ///////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+
 
     $("#maskToggle").click(function (event) {
         maskOn = !maskOn;

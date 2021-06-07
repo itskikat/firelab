@@ -51,6 +51,8 @@
                                         {% if f.dir == node %}
                                             {% if f.extension == 'tif' %}
                                                 <a title=" {{ f.get_path }}" onclick="openLoadingPopUp()" style="padding-left: 2em; width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/vegetation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
+                                            {% elif f.extension == 'grid' %}
+                                                <a title=" {{ f.get_path }}" onclick="openLoadingPopUp()" style="padding-left: 2em; width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/vegetation?grid={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
                                             {% else %}
                                                 <a title=" {{ f.get_path }}" style="padding-left: 2em; width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/segmentation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
                                             {% endif %}

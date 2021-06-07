@@ -9,6 +9,22 @@ from main.models import Tile, Grid
 import math
 
 
+def compute_mask(tile_list, cell_size, classification, shape):
+    mask = np.zeros(shape, np.uint8)
+    mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+
+    for tile in tile_list:
+        test_tile = tile.position
+        start_point = (test_tile[0] * cell_size, test_tile[1] * cell_size)
+        end_point = (start_point[0] + cell_size, start_point[1] + cell_size)
+
+        color = classification.hexColor
+        rgb = tuple(int(color[i:i + 2], 16) for i in (0, 2, 4))
+        mask = cv2.rectangle(mask, start_point, end_point, (rgb[2], rgb[1], rgb[0]), -1)
+
+    return mask
+
+
 def opencv_to_base64(img, ext):
     _, im_arr = cv2.imencode('.' + ext, img)  # Numpy one-dim array representative of the img
     im_bytes = im_arr.tobytes()
@@ -21,6 +37,38 @@ def base64_to_opencv(im_b64):
     im_arr = np.frombuffer(im_bytes, dtype=np.uint8)  # Numpy one-dim array representative of the img
     img = cv2.imdecode(im_arr, flags=cv2.IMREAD_COLOR)
     return img
+
+
+def ortophoto_transform_degrees_to_meters(tif_path, lat, long):
+    src = gdal.Open(tif_path)
+    target = osr.SpatialReference()
+    target.ImportFromWkt(src.GetProjection())
+
+    # The target projection - WGS84 mainly favoured in GPSs
+    source = osr.SpatialReference()
+    source.ImportFromEPSG(4326)
+
+    # Create the transform
+    transform = osr.CoordinateTransformation(source, target)
+    x, y, _ = transform.TransformPoint(lat, long)
+    # first comes longitude and then latitude (and rotation in the end?)
+    return x, y
+
+
+def ortophoto_transform_meters_to_degrees(tif_path, x, y):
+    src = gdal.Open(tif_path)
+    source = osr.SpatialReference()
+    source.ImportFromWkt(src.GetProjection())
+
+    # The target projection - WGS84 mainly favoured in GPSs
+    target = osr.SpatialReference()
+    target.ImportFromEPSG(4326)
+
+    # Create the transform
+    transform = osr.CoordinateTransformation(source, target)
+    lon, lat, _ = transform.TransformPoint(x, y)
+    # first comes longitude and then latitude (and rotation in the end?)
+    return lon, lat
 
 
 def ortophoto_transformation_pixel_to_coordinate(tif_path, x, y):
@@ -132,6 +180,11 @@ def cell_cutter(tif_path, row, column, top_left_x, top_left_y, bottom_right_x, b
             tile.save()
 
 
+def change_classification(tile, classification):
+    tile.classification = classification
+    tile.save()
+
+
 def draw_grid(mask, step, top_left, bottom_right, line_color=(255, 0, 0), thickness=1, type_=cv2.LINE_AA):
     x = top_left[0]
     y = top_left[1]
@@ -204,6 +257,8 @@ def visually_closest(tile, lab_colors):
 
 
 def simplified_pixel_average(tile_list):
+    if len(tile_list) == 0:
+        return
     return [
         sum([c[0] for c in [t.avgColor for t in tile_list]]) / len(tile_list),
         sum([c[1] for c in [t.avgColor for t in tile_list]]) / len(tile_list),

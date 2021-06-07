@@ -14,14 +14,20 @@ urlpatterns = [
     path("home", views.frontpage, name="frontpage"),
     path("account", views.account, name="account"),
     path("projects/<int:project_id>/process", views.process, name="process"),
+
     path("projects/<int:project_id>/vegetation", views.vegetation, name="vegetation"),
     path("projects/<int:project_id>/vegetation/upload", views.upload_orthphoto, name="upload_ortophoto"),
     path("projects/<int:project_id>/vegetation/auto/<int:grid_id>", views.auto_classifier, name="auto_classifier"),
+    path("projects/<int:project_id>/vegetation/save/<int:grid_id>", views.export_fuel_map, name="export_fuel_map"),
+
     path("projects/<int:project_id>/segmentation", views.segmentation, name="segmentation"),
     path("projects/<int:project_id>/segmentation/upload", views.upload, name="upload"),
     path("projects/<int:project_id>/segmentation/uploadVideo", views.upload_video, name="uploadVideo"),
     path("projects/<int:project_id>/segmentation/save/<int:file_id>", views.generate_contour, name="upload"),
+
     path("projects/<int:project_id>/progression", views.progression, name="progression"),
+
+    path("projects/<int:project_id>/export/<int:video_id>/grid/<int:grid_id>", views.export_disperfire_file, name="export_disperfire")
 
     # path("projects/<int:project_id>/progression/play/<int:file_id>", views.play_animation, name="play animation"),
 ]
