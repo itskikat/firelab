@@ -11,7 +11,9 @@
         var inputForLocName = $('#coordLocName');
         let workingImage = $('#workingImage');
         var loadPointPopUpDialog = $('#loadPointPopUp');
+        var loadImagePopUpDialog = $('#loadImagePopUp');
         var pointNameToSearch = $('#coordNameToSearch');
+        var imageNameToSearch = $('#imageNameToSearch');
         var marker = $('#marker');
         var ptNames=[];
         CoordPopUp.dialog({
@@ -27,7 +29,19 @@
             width: 300,
             modal: true,
         });
-
+        loadImagePopUpDialog.dialog({
+            autoOpen: false,
+            show: {
+                effect: "blind",
+                duration: 300
+            },
+            draggable: true,
+            hide: "blind",
+            resizable: false,
+            height: "auto",
+            width: 300,
+            modal: true,
+        });
 
         loadPointPopUpDialog.dialog({
             autoOpen: false,
@@ -85,6 +99,11 @@
             loadPointPopUpDialog.dialog("open");
         });
 
+        $('#loadImage').click(function () {
+            imageNameToSearch.val('');
+            loadImagePopUpDialog.dialog("open");
+        });
+       
 
         $('#SearchPointBtn').click(function () {
             var imagePointsAsString = document.getElementById('frame_points').textContent;

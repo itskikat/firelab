@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
             name='PointModel',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, unique=True,primary_key=True),),
+                ('name', models.CharField(max_length=50, unique=True),),
                 ('pix', django.contrib.gis.db.models.fields.PointField(blank=True, default=None, null=True)),
                 ('geo', django.contrib.gis.db.models.fields.PointField(blank=True, default=None, null=True)),
             ],

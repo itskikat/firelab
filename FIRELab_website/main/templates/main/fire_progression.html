@@ -22,6 +22,7 @@
 
     <form id="georreferencingForm" action="./progression" method="POST">
     {% if frame is not None %}
+        
         <div hidden>
             {{ georreferencing.marker }}
             {{ georreferencing.pixels }}
@@ -32,14 +33,9 @@
         </div>
         {% csrf_token %}
         <div id="img_prog"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
-        {% if segmented %}
-            <div hidden id="polygon_georreferenced">
-            {{ segmented }}>
-            </div>
-            <img hidden draggable="false" id="WorkingImage" src={{ frame.content.url }}>
-        {% else %}
-            <img hidden draggable="false" id="workingImage" src={{ frame.content.url }}>
-        {% endif %}
+        <div hidden id="polygon_georreferenced">
+        </div>
+            <img hidden draggable="false" id="workingImage" src= {{ frame.content.url }}>
         </div>
     {% endif %}
     </form>
@@ -61,11 +57,14 @@
                 <td onclick="saveCoords()"><i class="fas fa-save fa-lg" aria-hidden="true"></i></td>
 			</tr>
 			<tr>
-				<!-- <td id="stack"><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td>
-				<td onClick="openUpload()"><a ><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td> -->
+				<!-- <td id="stack"><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td> -->
                 <td id="undo"><a ><i class="fa fa-undo" aria-hidden="true"></i></td>
                 <td id="loadPoint"><i class="fa fa-crosshairs" aria-hidden="true"></i></td>
 			</tr>
+            <tr>
+                <td id="loadImage"><a ><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td>
+                <td><a ><i hidden></i></td>
+            </tr>
 			<tr>
 				<td><i class="fas fa-expand-arrows-alt fa-lg" aria-hidden="true"></i></td>
 				<td id="help"><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
@@ -140,6 +139,14 @@
         <br>
         <button class='btn btn-default'id='SearchPointBtn'> SEARCH! </button>
     </div>
+
+    <form action="./progression" method="POST" id="loadImagePopUp" title="Image Finder" style="display:none" role="dialog" class="ui-dialog ui-corner-all ui-widget ui-widget-content ui-front ui-draggable">
+        {% csrf_token %}
+        <small>Location Name:</small>
+        <input id='imageNameToSearch' type='text' name='frame_name' class='form-control'>
+        <br>
+        <button type="submit" class='btn btn-default'id='searchImageBtn'> SEARCH! </button>
+    </form>
     <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/678111-map-marker-512.png" id="georef_marker" style="display: none; position: absolute; width: 50px; height: 50px;" />
 
     {% block extrajs %}

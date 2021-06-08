@@ -105,7 +105,7 @@ class ImageFrame(models.Model):
         return "{}.{}".format(self.file_info.name, self.file_info.extension)
 
 class PointModel(models.Model):
-    name = models.CharField(max_length=50,unique=True, primary_key=True)
+    name = models.CharField(max_length=50,unique=True)
     pix = gisModels.PointField(blank=True, default=None, null=True)
     geo = gisModels.PointField(blank=True, default=None, null=True)
     frame = models.ForeignKey(ImageFrame, on_delete=models.CASCADE, blank=True, default=None, null=True)

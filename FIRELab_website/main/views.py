@@ -822,6 +822,11 @@ def progression(request, project_id):
 		return render(request, "main/fire_progression.html", param)
 
 	elif request.method == 'POST':
+		if request.POST["frame_name"]:
+			_file_info = FileInfo.objects.all().filter(name=request.POST["frame_name"])
+			frame_id=_file_info.values('id').first()['id']
+			return redirect("/projects/" + str(project_id) + "/progression?id="+str(frame_id))
+
 		param = {
 			'frame': None,
 			'project': project,
