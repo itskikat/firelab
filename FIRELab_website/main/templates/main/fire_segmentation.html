@@ -141,6 +141,15 @@
     let clicking, path;
     let maskOn = true
 
+     $(document).ready(function () {
+        location.search.substr(1).split("&").forEach(function(item) {
+        let params = item.split("=")
+        if (params[0] === "error" && params[1] === "quota_surpassed") {
+            // place open pop up here
+            console.log("user quato surpassed")
+        }})
+     });
+
     // READ VIDEO FILE METADATA //////////////////////////////////////////////////////////////
     const fileinput = document.getElementById('videoFile')
     const output = document.getElementById("output")

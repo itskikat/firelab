@@ -108,8 +108,16 @@ def delete_project(request, project_id):
     return redirect("/projects")
 
 
-def account(response):
-    return render(response, "main/account.html", {})
+def account(request):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+
+    # compute user quota in megaBytes
+    mb_quota = utils.compute_user_quota(request.user)
+    print(round(mb_quota, 3), 'Megabytes')
+    print(round(mb_quota / 1024, 3), 'Gigabytes')
+
+    return render(request, "main/account.html", {})
 
 
 def process(response, project_id):
@@ -147,7 +155,7 @@ def delete_file(request, project_id, fileinfo_id):
         _fileinfo.delete()
         print("Deleted grid file successfully")
 
-    elif _fileinfo.extension == "tiff":
+    elif _fileinfo.extension == "tif":
         try:
             _ortophoto = Ortophoto.objects.get(file_info_id=fileinfo_id,
                                                file_info__dir__project_id=project_id,
@@ -175,7 +183,10 @@ def delete_file(request, project_id, fileinfo_id):
                 _frame.video.delete()
                 parent_directory = _fileinfo.dir.name
                 _fileinfo.dir.delete()
-                os.rmdir(os.path.abspath(os.path.join(MEDIA_ROOT, 'frames/{}'.format(parent_directory))))
+
+                filesystem_dir = os.path.abspath(os.path.join(MEDIA_ROOT, 'frames/{}'.format(parent_directory)))
+                if len(os.listdir(filesystem_dir)) == 0:
+                    os.rmdir(os.path.abspath(os.path.join(MEDIA_ROOT, 'frames/{}'.format(parent_directory))))
 
             else:
                 _fileinfo.delete()
@@ -696,9 +707,14 @@ def upload(request, project_id):
     if request.method == 'POST':
         form = UploadImage(request.POST, request.FILES)
         if form.is_valid():
+
+            user_quota = utils.compute_user_quota(request.user)
+            file_size_mb = round(request.FILES['image'].size / 1024**2, 3)
+
+            if user_quota + file_size_mb >= 5 * 1024:
+                return redirect("/projects/" + str(project_id) + "/segmentation?error=quota_surpassed")
+
             name, extension = request.FILES['image'].name.split('.')
-            print(request.FILES)
-            print(name, extension)
 
             try:
                 # file already exists in the server
@@ -744,6 +760,13 @@ def upload_video(request, project_id):
         form = UploadVideo(request.POST, request.FILES)
         print(form.errors)
         if form.is_valid():
+
+            user_quota = utils.compute_user_quota(request.user)
+            file_size_mb = round(request.FILES['video'].size / 1024 ** 2, 3)
+
+            if user_quota + file_size_mb >= 5 * 1024:
+                return redirect("/projects/" + str(project_id) + "/segmentation?error=quota_surpassed")
+
             name, extension = request.FILES['video'].name.split('.')
             frame_number = request.POST['frames']
             originTimestamp = request.POST['videoOriginDateTime']

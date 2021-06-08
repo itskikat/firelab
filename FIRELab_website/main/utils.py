@@ -1,11 +1,15 @@
 import base64
+import os
+
 import numpy as np
 import cv2
 from colormath.color_conversions import convert_color
 from colormath.color_objects import sRGBColor, LabColor
 from colormath.color_diff import delta_e_cie2000
 from osgeo import gdal, osr
-from main.models import Tile, Grid
+
+from FIRELab_website.settings import MEDIA_ROOT
+from main.models import Tile, Grid, FileInfo, Ortophoto, ImageFrame
 import math
 
 
@@ -241,3 +245,49 @@ def simplified_pixel_average(tile_list):
         sum([c[1] for c in [t.avgColor for t in tile_list]]) / len(tile_list),
         sum([c[2] for c in [t.avgColor for t in tile_list]]) / len(tile_list)
     ]
+
+
+def compute_user_quota(user):
+    _file_infos = FileInfo.objects.all().filter(dir__project__owner=user)
+    total_byte_size = 0
+
+    for file in _file_infos:
+        # grid
+        if file.extension == "grid":
+            try:
+                grid = Grid.objects.get(file_info_id=file.id)
+            except Grid.DoesNotExist:
+                continue
+
+            grid_path = os.path.abspath(os.path.join(MEDIA_ROOT, grid.gridded_image.path))
+            grid_size = os.path.getsize(grid_path)
+            total_byte_size += grid_size
+
+        # ortophoto
+        elif file.extension == "tif":
+            try:
+                ortophoto = Ortophoto.objects.get(file_info_id=file.id)
+            except Grid.DoesNotExist:
+                continue
+
+            content_path = os.path.abspath(os.path.join(MEDIA_ROOT, ortophoto.content.path))
+            content_size = os.path.getsize(content_path)
+            total_byte_size += content_size
+
+            thumbnail_path = os.path.abspath(os.path.join(MEDIA_ROOT, ortophoto.thumbnail.path))
+            thumbnail_size = os.path.getsize(thumbnail_path)
+            total_byte_size += thumbnail_size
+
+        # frams
+        else:
+            try:
+                frame = ImageFrame.objects.get(file_info_id=file.id)
+            except ImageFrame.DoesNotExist:
+                continue
+
+            frame_path = os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.path))
+            frame_size = os.path.getsize(frame_path)
+            total_byte_size += frame_size
+
+    return total_byte_size / (1024 ** 2)
+
