@@ -176,13 +176,7 @@ def cell_cutter(tif_path, row, column, top_left_x, top_left_y, bottom_right_x, b
                 avgColor=[int(avgColor[0]), int(avgColor[1]), int(avgColor[2])],
                 grid=_grid
             )
-            print(tile)
             tile.save()
-
-
-def change_classification(tile, classification):
-    tile.classification = classification
-    tile.save()
 
 
 def draw_grid(mask, step, top_left, bottom_right, line_color=(255, 0, 0), thickness=1, type_=cv2.LINE_AA):
@@ -198,23 +192,6 @@ def draw_grid(mask, step, top_left, bottom_right, line_color=(255, 0, 0), thickn
         y += step
 
     return mask
-
-    # # crop mask
-    # mask = mask[1052:2332, 865:1735]
-    #
-    # scale_percent = 50  # percent of original size
-    # width = int(mask.shape[1] * scale_percent / 100)
-    # height = int(mask.shape[0] * scale_percent / 100)
-    # dim = (width, height)
-    #
-    # # resize image
-    # resized = cv2.resize(mask, dim, interpolation=cv2.INTER_AREA)
-    #
-    # print('Resized Dimensions : ', resized.shape)
-    #
-    # cv2.imshow("Resized image", resized)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
 
 
 def distance(rgb1, rgb2):

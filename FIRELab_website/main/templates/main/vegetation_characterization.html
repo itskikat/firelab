@@ -206,7 +206,7 @@
 
                 clicking = false;
                 brush.push([x, y]);
-                $("#id_point").val(JSON.stringify(brush));
+                $("#id_point").val(JSON.stringify([...new Set(brush)]));
 
                 $("#id_classification_image_size").val(String(image.width) + ", " + String(image.height))
                 $("#id_classification_index").val(selectedLayer)

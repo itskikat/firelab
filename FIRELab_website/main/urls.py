@@ -15,6 +15,9 @@ urlpatterns = [
     path("account", views.account, name="account"),
     path("projects/<int:project_id>/process", views.process, name="process"),
 
+    path("projects/<int:project_id>/files/delete/<int:fileinfo_id>", views.delete_file, name="delete_file"),
+    path("projects/<int:project_id>/delete", views.delete_project, name="delete_project"),
+
     path("projects/<int:project_id>/vegetation", views.vegetation, name="vegetation"),
     path("projects/<int:project_id>/vegetation/upload", views.upload_orthphoto, name="upload_ortophoto"),
     path("projects/<int:project_id>/vegetation/auto/<int:grid_id>", views.auto_classifier, name="auto_classifier"),

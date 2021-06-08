@@ -10,6 +10,22 @@
 	padding-left: 18%;
 }
 
+.filename_row {
+	display: inline
+}
+
+.filename_row:hover .delete_button {
+  	visibility: visible;
+}
+
+.delete_button {
+	width: 10%;
+	float:left;
+	padding-left: 1em;
+	visibility: hidden
+}
+
+
 .split {
 		-moz-align-items: center;
 		-webkit-align-items: center;

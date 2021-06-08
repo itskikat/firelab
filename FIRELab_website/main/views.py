@@ -85,6 +85,29 @@ def projects(request):
         return render(request, "main/projects.html", params)
 
 
+def delete_project(request, project_id):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+
+    try:
+        _project = Project.objects.get(id=project_id)
+    except Project.DoesNotExist:
+        return redirect("/projects")
+
+    _video_frames = ImageFrame.objects.all().filter(file_info__dir__project_id=project_id,
+                                                    file_info__dir__project__owner=request.user,
+                                                    video__isnull=False)
+    for video in _video_frames.values('video').distinct():
+        try:
+            _video = Video.objects.get(id=video['video'])
+            _video.delete()
+        except Video.DoesNotExist:
+            continue
+
+    _project.delete()
+    return redirect("/projects")
+
+
 def account(response):
     return render(response, "main/account.html", {})
 
@@ -101,6 +124,66 @@ def process(response, project_id):
         'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
     }
     return render(response, "main/project_process.html", param)
+
+
+def delete_file(request, project_id, fileinfo_id):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+
+    try:
+        _project = Project.objects.get(id=project_id)
+        _fileinfo = FileInfo.objects.get(id=fileinfo_id)
+    except Project.DoesNotExist or FileInfo.DoesNotExist:
+        return redirect("/projects")
+
+    if _fileinfo.extension == "grid":
+        try:
+            _grid = Grid.objects.get(file_info_id=fileinfo_id,
+                                     file_info__dir__project_id=project_id,
+                                     file_info__dir__project__owner=request.user)
+        except Grid.DoesNotExist:
+            return redirect("/projects/" + str(_project.id) + "/process")
+
+        _fileinfo.delete()
+        print("Deleted grid file successfully")
+
+    elif _fileinfo.extension == "tiff":
+        try:
+            _ortophoto = Ortophoto.objects.get(file_info_id=fileinfo_id,
+                                               file_info__dir__project_id=project_id,
+                                               file_info__dir__project__owner=request.user)
+        except Ortophoto.DoesNotExist:
+            return redirect("/projects/" + str(_project.id) + "/process")
+
+        _fileinfo.delete()
+        print("Deleted ortphoto file successfully")
+
+    else:
+        try:
+            _frame = ImageFrame.objects.get(file_info_id=fileinfo_id,
+                                            file_info__dir__project_id=project_id,
+                                            file_info__dir__project__owner=request.user)
+        except ImageFrame.DoesNotExist:
+            return redirect("/projects/" + str(_project.id) + "/process")
+
+        if _frame.video:
+            print(_frame.content)
+            _video_frames = ImageFrame.objects.all().filter(file_info__dir__project_id=project_id,
+                                                            file_info__dir__project__owner=request.user,
+                                                            video_id=_frame.video.id)
+            if len(_video_frames) == 1:
+                _frame.video.delete()
+                parent_directory = _fileinfo.dir.name
+                _fileinfo.dir.delete()
+                os.rmdir(os.path.abspath(os.path.join(MEDIA_ROOT, 'frames/{}'.format(parent_directory))))
+
+            else:
+                _fileinfo.delete()
+
+        else:
+            _fileinfo.delete()
+
+    return redirect("/projects/" + str(_project.id) + "/process")
 
 
 def vegetation(response, project_id):
@@ -324,7 +407,6 @@ def vegetation(response, project_id):
             utils.cell_cutter(ortophoto_path, row, column, p1_x, p1_y, p2_x, p2_y, _grid.id)
 
         # Manual classification of a tile on the grid
-        # TODO: ADD DRAG BRUSH FEATURE
         print(manual_classifier_form.errors)
         if manual_classifier_form.is_valid():
             print("valid")
@@ -364,16 +446,16 @@ def vegetation(response, project_id):
             # point = (math.floor(int(p_x) * x_factor) * 10, math.floor(int(p_y) * y_factor) * 10)
             classification = manual_classifier_form.cleaned_data['classification_index']
             brush_size = manual_classifier_form.cleaned_data['brush_size'] - 1
+            cell_size = _grid.cell_size
+            affected_points = []
             for point in brush_path:
 
                 # check if point is inside the grid
                 if point[0] < top_left_pixels[0] or point[0] > bottom_right_pixels[0]:
-                    print("invalid x")
-                    return redirect("/projects/" + str(project_id) + "/vegetation")
+                    continue
 
                 if point[1] < top_left_pixels[1] or point[1] > bottom_right_pixels[1]:
-                    print("invalid y")
-                    return redirect("/projects/" + str(project_id) + "/vegetation")
+                    continue
 
                 # compute the offset of the point to the top left
                 point_meters = utils.ortophoto_transformation_pixel_to_coordinate(ortophoto_path, point[0], point[1])
@@ -381,7 +463,6 @@ def vegetation(response, project_id):
                 # print('offset:', diff)
 
                 # get column and row of point in grid
-                cell_size = _grid.cell_size
                 column = diff[0] // cell_size
                 row = diff[1] // cell_size
 
@@ -389,21 +470,16 @@ def vegetation(response, project_id):
                 column_range = [math.floor(column - brush_size/2), math.floor(column + brush_size/2)]
                 row_range = [math.floor(row - brush_size/2), math.floor(row + brush_size/2)]
 
-                affected_tiles = Tile.objects.all().filter(grid=_grid)\
-                    .filter(position__0__range=column_range)\
-                    .filter(position__1__range=row_range)\
-                    .filter(~Q(classification=classification))
+                range_points = [(x, y)
+                                for x in range(column_range[0], column_range[1]+1)
+                                for y in range(row_range[0], row_range[1]+1)
+                                if (x, y) not in affected_points]
+                affected_points.extend(range_points)
 
-
-                # change the classification of each tile
-                # print("cleaning tiles")
-                with concurrent.futures.ThreadPoolExecutor(max_workers=max(row, column)) as executor:
-                    future_mask = {
-                        executor.submit(utils.change_classification, tile, classification): tile.id
-                        for tile in affected_tiles
-                    }
-
-                    done, _ = concurrent.futures.wait(future_mask, timeout=20, return_when=concurrent.futures.ALL_COMPLETED)
+            affected_tiles = Tile.objects.all().filter(grid=_grid)\
+                .filter(position__in=affected_points)\
+                .filter(~Q(classification=classification))
+            affected_tiles.update(classification=classification)
 
             return redirect("/projects/" + str(project_id) + "/vegetation?grid=" +
                             str(manual_classifier_form.cleaned_data['grid'])
