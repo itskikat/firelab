@@ -112,12 +112,25 @@ def account(request):
     if not request.user.is_authenticated:
         return redirect("/login")
 
+    if request.method == 'POST':
+        model_creation_form = ModelCreation(request.POST)
+        if model_creation_form.is_valid():
+            model_creation_form = ModelCreation()   
+
+    else:
+        model_creation_form = ModelCreation()
+
     # compute user quota in megaBytes
     mb_quota = utils.compute_user_quota(request.user)
     print(round(mb_quota, 3), 'Megabytes')
     print(round(mb_quota / 1024, 3), 'Gigabytes')
 
-    return render(request, "main/account.html", {})
+    params = {
+        'model_creation_form': model_creation_form
+        
+    }
+
+    return render(request, "main/account.html", params)
 
 
 def process(response, project_id):

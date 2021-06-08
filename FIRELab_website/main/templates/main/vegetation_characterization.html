@@ -23,18 +23,18 @@
                 {{ grid_draw.p2 }}
                 {{ grid_draw.image_size }}
             </div>
-
             {% if gridded_image %}
-                <div id="img_ortophoto"  style="display: flex; padding-top: 15vh; justify-content: center; align-items: center; ">
+                <div id="img_ortophoto"  style="display: flex; padding-top: 1%; justify-content: center; align-items: center; ">
                     <img style="width: 40%" draggable="false" id="workingImage" src={{ gridded_image }}>
                 </div>
             {% else %}
-                <div id="img_ortophoto"  style="display: flex; padding-top: 15vh; justify-content: center; align-items: center; ">
+                <div id="img_ortophoto"  style="display: flex; padding-top: 1%; justify-content: center; align-items: center; ">
                     <img style="width: 40%" draggable="false" id="workingImage" src={{ image.thumbnail.url }}>
                 </div>
             {% endif %}
         {% endif %}
     </form>
+    <span id="icon"></span>
 
     {% if grid %}
     <div class="picker">
@@ -79,11 +79,32 @@
 			</tr>
 			<tr>
 				<td><i class="fa fa-search-minus fa-lg" aria-hidden="true"></i></td>
-                <td title="Draw Grid" onclick="drawGrid()" style="cursor: pointer"><i class="fa fa-border-all fa-lg"></i></td>
+                <td title="Draw Grid" onclick="drawGrid()" style="cursor: pointer"><i class="fa fa-border-all fa-lg" id="grid" style="color: black"></i></td>
 			</tr>
 		</tbody>
 		</table>
 	</div>
+
+    {% if not gridded_image %}
+    <div class="gridPop" id="gridPop">
+        <div class="cell"><p> Cell size: <input type="number" min="1" max="20" step="1" value="5" style="color: black"></p></div>
+       <div class="models">
+       <select name="model" id="model" title="If you don't pick a model, a default one will be used." style="width: 152px; height: 40px; font-size: 13px;">
+          <option selected disabled>Choose model</option>
+          <option value="volvo">DISPERFIRE</option>
+          <option value="saab">FIRESITE</option>
+        </select>
+    </div>
+            
+    <div id="explained" >
+        <p style="font-size: 12px;"><i class="fas fa-info-circle fa-sm"></i>To edit a point click on it (the color should change to blue) and then click again to set (the color should change to pink).</p>
+    </div>
+    <div class="points" id="points">
+        <a  class="button primary" onclick="createGrid()">Draw Grid</a>
+    </div>
+    </div>
+
+    {% endif %}
 
 	<div class="upload" id="upload">
 		<h1>Upload Files</h1>
@@ -164,9 +185,21 @@
         }
 
         function drawGrid() {
-            gridDrawOn = !gridDrawOn;
-            let selectedFileId = JSON.parse("{{image.file_info.id|escapejs}}");
-            $("#id_image_id").val(selectedFileId);
+            var gridPop = document.getElementById("gridPop");
+            gridPop.style.display = "block";
+            var grid = document.getElementById("grid");
+            if (grid.style.color == "black") {
+                grid.style.color = "#B55B29";
+                gridDrawOn = !gridDrawOn;
+                let selectedFileId = JSON.parse("{{image.file_info.id|escapejs}}");
+                $("#id_image_id").val(selectedFileId);
+                
+            }
+            else {
+                grid.style.color = "black";
+                
+            }
+
         }
 
          workingImage.mousedown(function(event) {
@@ -192,13 +225,67 @@
                 let y = event.pageY - this.offsetTop;
                 selectedPointsTotal++;
 
+                //icon position
+                var i = document.createElement("i");
+                i.className = "fas fa-thumbtack fa-lg";
+                i.style.position = "absolute";
+                i.style.display = "block";
+                i.style.left = event.pageX +'px';
+                i.id = "icon_" + selectedPointsTotal;
+                i.style.color = "#FF69B4";
+                i.style.zIndex = "2";
+                i.style.top = event.pageY +'px';
+                i.style.width = "20px";
+                i.style.height = "20px";
+                document.getElementById("img_ortophoto").appendChild(i);
+                var count = 0;
+                var count2 = 0;
+
                 if (selectedPointsTotal === 1) {
                     $("#id_p1").val(String(x) + ", " + String(y))
                 } else if (selectedPointsTotal === 2) {
                     $("#id_p2").val(String(x) + ", " + String(y))
                     $("#id_image_size").val(String(image.width) + ", " + String(image.height))
-                    document.getElementById("workingImageForm").submit();
-                }
+
+                    icon_1 = document.getElementById("icon_1");
+                    icon_2 = document.getElementById("icon_2");
+
+                    icon_1.onclick = function(event) {
+                        if (count2 != 1 && count2 !=2) {
+                            count++;
+                        }
+                        if (count === 1) {
+                            icon_1.style.color = "#69FFB4";
+                            icon_2.style.color = "#FF69B4";
+                            document.addEventListener("click", change);
+                        }
+                        else if (count === 2) {
+                            icon_1.style.color = "#FF69B4";
+                           document.removeEventListener("click", change); 
+                           count = 0;
+                        }
+
+                    };
+
+                    icon_2.onclick = function(event) {
+                        if (count != 1 && count !=2) {
+                            count2++;
+                        }
+                        
+                        if (count2 === 1) {
+                            icon_2.style.color = "#69FFB4";
+                            icon_1.style.color = "#FF69B4";
+                            document.addEventListener("click", change2);
+                        }
+                        else if (count2 === 2) {
+                            icon_2.style.color = "#FF69B4";
+                           document.removeEventListener("click", change2); 
+                           count2 = 0;
+                        }
+
+                    };
+                    var points = document.getElementById("points");
+                    points.style.display = "flex";
 
             } else if (manualSelectOn) {
                 let x = event.pageX - this.offsetLeft;
@@ -212,10 +299,34 @@
                 $("#id_classification_index").val(selectedLayer)
                 $("#id_grid").val(JSON.parse("{{grid.file_info.id|escapejs}}"));
                 $("#id_brush_size").val(brushSize)
-                console.log(brush)
                 document.getElementById("manualClassification").submit();
             }
+        }
         });
+
+        function change() {       
+            var x = parseFloat(event.pageX) - parseFloat(icon_2.style.left);
+            var y = parseFloat(event.pageY) - parseFloat(icon_2.style.top);
+            if ((Math.abs(x) > 5) && (Math.abs(y) > 5)) {
+                icon_1.style.left = event.pageX +'px';
+                icon_1.style.top = event.pageY +'px';
+            }
+        }
+
+        function change2() {
+            var x = parseFloat(event.pageX) - parseFloat(icon_1.style.left);
+            var y = parseFloat(event.pageY) - parseFloat(icon_1.style.top);
+            if ((Math.abs(x) > 5) && (Math.abs(y) > 5)) {
+                icon_2.style.left = event.pageX +'px';
+                icon_2.style.top = event.pageY +'px';
+            }
+        }
+        
+
+        function createGrid() {
+            document.getElementById("workingImageForm").submit();
+            grid.style.color = "black";
+        }
 
         function setSelectedLayer(layer) {
             $("#" + selectedLayer + "_layer").css("background-color", "")
