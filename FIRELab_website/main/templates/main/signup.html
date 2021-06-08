@@ -25,7 +25,7 @@
                         <div class="inner">
                             <section>
                                 <h4>Create your account</h4>
-                                <form action="" method="post" id="signupForm" >
+                                <form action="." method="post" id="signupForm" >
                                     {% csrf_token %}
                                     <div class="row gtr-uniform">
                                         <div class="col-4 col-12-xsmall">
@@ -42,9 +42,11 @@
                                             <p style="font-size: small;"> {{ form.email.help_text }}</p>
                                         </div>
                                         <div class="col-8 col-12-xsmall">
+                                            {{ form.password1.label_tag }}
                                             {{ form.password1|add_class:'form-control' }}
                                         </div>
                                         <div class="col-8 col-12-xsmall">
+                                            {{ form.password2.label_tag }}
                                             {{ form.password2|add_class:'form-control' }}
                                         </div>
                                         <div class="col-8">

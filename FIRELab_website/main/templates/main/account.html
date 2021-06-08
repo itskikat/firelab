@@ -47,8 +47,8 @@
 						<div id="info">
 							<p>Email: </p>
 							<p id="space">Storage:</p>
-							<progress id="file" value="12" max="100"></progress>
-							<p id="storage">x out of y used</p>
+							<progress id="file" value="{{ storage_relative }}" max="100"></progress>
+							<p id="storage">{{ storage }}GB out of 5GB used</p>
 						</div>
 						
 					</div>
@@ -70,71 +70,44 @@
 									 </tr>
 									</thead>
 								  <tbody>
-									  	<tr>
-									    <td>DISPERFIRE</td>
-									    <td>
-										    <table id="modelsList">
-										    	<tr>
-										    		<th>Name</th>
-										    		<th>Minimal %</th>
-										    		<th>Maximum %</th>
-										    		<th>Hexadecimal Color</th>
-										    		<th>Classification Index</th>
-										    	</tr>
-										    	<tr>
-										    		<td>No vegetation</td>
-										    		<td>0</td>
-										    		<td>10</td>
-										    		<td>#ffffff</td>
-										    		<td>1</td>
-										    	</tr>
-										    	<tr>
-										    		<td>Vegetation 1</td>
-										    		<td>11</td>
-										    		<td>20</td>
-										    		<td>#fffff1</td>
-										    		<td>2</td>
-										    	</tr>
-										    </table>
-										</td>
-										</tr>
-										<tr>
-									    <td>DISPERFIRE</td>
-									    <td>
-										    <table id="modelsList">
-										    	<tr>
-										    		<th>Name</th>
-										    		<th>Minimal %</th>
-										    		<th>Maximum %</th>
-										    		<th>Hexadecimal Color</th>
-										    		<th>Classification Index</th>
-										    	</tr>
-										    	<tr>
-										    		<td>No vegetation</td>
-										    		<td>0</td>
-										    		<td>10</td>
-										    		<td>#ffffff</td>
-										    		<td>1</td>
-										    	</tr>
-										    	<tr>
-										    		<td>Vegetation 1</td>
-										    		<td>11</td>
-										    		<td>20</td>
-										    		<td>#fffff1</td>
-										    		<td>2</td>
-										    	</tr>
-										    </table>
-										</td>
-										</tr>
-										<tfoot>
-											
-										<tr>
-									    <th style="padding-top : 0">Model Name</th>
-									    <th style="padding-top: 0">Classification List</th>
-									 	</tr>
-									
-										</tfoot>
 
+                                    {% for model in user_models %}
+
+									  	<tr>
+									    <td>{{ model.name }}</td>
+									    <td>
+										    <table id="modelsList">
+										    	<tr>
+										    		<th>Name</th>
+										    		<th>Minimal %</th>
+										    		<th>Maximum %</th>
+										    		<th>Hexadecimal Color</th>
+										    		<th>Classification Index</th>
+										    	</tr>
+                                                {% for classification in user_classifications %}
+                                                    {% if classification.model == model %}
+                                                    <tr>
+                                                        <td>{{ classification.name }}</td>
+                                                        <td>{{ classification.minPercentage }}</td>
+                                                        <td>{{ classification.maxPercentage }}</td>
+                                                        <td>#{{ classification.hexColor }}</td>
+                                                        <td>{{ classification.classificationIndex }}</td>
+                                                    </tr>
+                                                    {% endif %}
+                                                {% endfor %}
+
+										    </table>
+										</td>
+										</tr>
+
+                                    {% endfor %}
+
+                                    <tfoot>
+                                        <tr>
+                                            <th style="padding-top : 0">Model Name</th>
+                                            <th style="padding-top: 0">Classification List</th>
+                                        </tr>
+                                    </tfoot>
 									  
 								  </tbody>
 

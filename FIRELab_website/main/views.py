@@ -33,14 +33,30 @@ def createAccountView(request):
     data = {}
     if request.method == 'POST':
         form = CreateAccountForm(request.POST)
+
         if form.is_valid():
-            print(form)
             user = form.save()
             user.refresh_from_db()
-            return redirect('login')
+
+            # create farsite default model
+            farsite_model = FuelModel(name="FARSITE", user=user)
+            farsite_model.save()
+            no_vegetation_class = Classification(name="No vegetation", minPercentage=0, maxPercentage=0, hexColor="FF1414", classificationIndex=0, model=farsite_model)
+            no_vegetation_class.save()
+            low_vegetation_class = Classification(name="Low vegetation", minPercentage=1, maxPercentage=20, hexColor="FFA500", classificationIndex=1, model=farsite_model)
+            low_vegetation_class.save()
+            medium_vegetation_class = Classification(name="Medium vegetation", minPercentage=21, maxPercentage=50, hexColor="F0DE7A", classificationIndex=2, model=farsite_model)
+            medium_vegetation_class.save()
+            high_vegetation_class = Classification(name="High vegetation", minPercentage=51, maxPercentage=80, hexColor="58d383", classificationIndex=3, model=farsite_model)
+            high_vegetation_class.save()
+            deep_vegetation_class = Classification(name="Deep vegetation", minPercentage=81, maxPercentage=100, hexColor="14502D", classificationIndex=4, model=farsite_model)
+            deep_vegetation_class.save()
+
+            return redirect('/login')
     else:
         form = CreateAccountForm()
         data['form'] = form
+
     return render(request, 'main/signup.html', data)
 
 
@@ -115,7 +131,8 @@ def account(request):
     if request.method == 'POST':
         model_creation_form = ModelCreation(request.POST)
         if model_creation_form.is_valid():
-            model_creation_form = ModelCreation()   
+            print(model_creation_form.cleaned_data)
+            model_creation_form = ModelCreation()
 
     else:
         model_creation_form = ModelCreation()
@@ -126,8 +143,11 @@ def account(request):
     print(round(mb_quota / 1024, 3), 'Gigabytes')
 
     params = {
-        'model_creation_form': model_creation_form
-        
+        'model_creation_form': model_creation_form,
+        'storage': round(mb_quota / 1024, 3),
+        'storage_relative': round(mb_quota / 1024, 3) * 100 / 5,
+        'user_models': FuelModel.objects.all().filter(user=request.user),
+        'user_classifications': Classification.objects.all().filter(model__user=request.user)
     }
 
     return render(request, "main/account.html", params)
@@ -645,6 +665,13 @@ def upload_orthphoto(request, project_id):
     if request.method == "POST":
         ortophoto_form = UploadOrtophoto(request.POST, request.FILES)
         if ortophoto_form.is_valid():
+
+            user_quota = utils.compute_user_quota(request.user)
+            file_size_mb = round(request.FILES['image'].size / 1024 ** 2, 3)
+
+            if user_quota + file_size_mb >= 5 * 1024:
+                return redirect("/projects/" + str(project_id) + "/vegetation?error=quota_surpassed")
+
             name, extension = request.FILES['image'].name.split('.')
             start = time.time()
 

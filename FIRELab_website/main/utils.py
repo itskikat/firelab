@@ -270,13 +270,15 @@ def compute_user_quota(user):
             except Grid.DoesNotExist:
                 continue
 
-            content_path = os.path.abspath(os.path.join(MEDIA_ROOT, ortophoto.content.path))
-            content_size = os.path.getsize(content_path)
-            total_byte_size += content_size
+            if ortophoto.content:
+                content_path = os.path.abspath(os.path.join(MEDIA_ROOT, ortophoto.content.path))
+                content_size = os.path.getsize(content_path)
+                total_byte_size += content_size
 
-            thumbnail_path = os.path.abspath(os.path.join(MEDIA_ROOT, ortophoto.thumbnail.path))
-            thumbnail_size = os.path.getsize(thumbnail_path)
-            total_byte_size += thumbnail_size
+            if ortophoto.thumbnail:
+                thumbnail_path = os.path.abspath(os.path.join(MEDIA_ROOT, ortophoto.thumbnail.path))
+                thumbnail_size = os.path.getsize(thumbnail_path)
+                total_byte_size += thumbnail_size
 
         # frams
         else:

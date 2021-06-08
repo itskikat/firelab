@@ -43,6 +43,7 @@ class UploadVideo(forms.Form):
         super(UploadVideo, self).__init__(*args, **kwargs)
         self.fields['video'].widget.attrs = ({'class': 'file-upload__input', 'name': 'videoFile', 'id': 'videoFile'})
 
+
 class ModelCreation(forms.Form):
     nameModel = forms.CharField(max_length=30, label="Model Name")
     nameClass = forms.CharField(label="Classification Name", max_length=50)
