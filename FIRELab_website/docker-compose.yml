@@ -16,18 +16,18 @@ services:
     volumes:
       - postgis-data:/var/lib/postgresql
 
-#  web:
-#    build: .
-#    environment:
-#      - PYTHONUNBUFFERED=1
-#      - DJANGO_SETTINGS_MODULE=FIRELab_website.settings_production
-#    command: python3 manage.py runserver 0.0.0.0:8000
-#    volumes:
-#      - .:/code
-#    ports:
-#      - "8000:8000"
-#    depends_on:
-#      - db
+  web:
+    build: .
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=FIRELab_website.settings_production
+    command: python3 manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
 
 volumes:
   postgis-data:

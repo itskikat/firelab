@@ -43,6 +43,21 @@ class UploadVideo(forms.Form):
         super(UploadVideo, self).__init__(*args, **kwargs)
         self.fields['video'].widget.attrs = ({'class': 'file-upload__input', 'name': 'videoFile', 'id': 'videoFile'})
 
+class ModelCreation(forms.Form):
+    nameModel = forms.CharField(max_length=30, label="Model Name")
+    nameClass = forms.CharField(label="Classification Name", max_length=50)
+    minimumPercentage = forms.CharField(label="Minimum Percentage")
+    maximumPercentage = forms.CharField(label="Maximum Percentage")
+    hexColor = forms.CharField(label="Color in Hexadecimal", max_length=20)
+    index = forms.CharField(label="Classification Index")
+
+    def __init__(self, *args, **kwargs):
+        super(ModelCreation, self).__init__(*args, **kwargs)
+        self.fields['nameModel'].widget.attrs = ({'id': 'model_name', 'placeholder': 'Model Name', 'name': 'model_name'})
+        self.fields['nameClass'].widget.attrs = ({'id': 'class_name', 'placeholder': 'Classification Name', 'name': 'class_name'})
+        self.fields['minimumPercentage'].widget.attrs = ({'id': 'minimum_percentage', 'placeholder': 'Minimum %', 'name': 'minimum_percentage', 'class': 'number_input'})
+        self.fields['maximumPercentage'].widget.attrs = ({'id': 'maximum_percentage', 'placeholder': 'Maximum %', 'name': 'maximum_percentage'})
+
 
 class Segmentation(forms.Form):
     pen = forms.BooleanField()

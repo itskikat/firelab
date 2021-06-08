@@ -1,0 +1,146 @@
+.user {
+	padding: 10% 0 0 35%; 
+}
+
+.user p {
+	padding-left: 6.5%;
+}
+
+#info {
+	padding: 2% 0 0 3%;
+}
+
+.right {
+	padding-top: 2% !important;
+}
+
+#space {
+	margin-bottom: 1.5%;
+}
+
+#storage {
+	margin-top: 0.3%;
+	font-size: 13px;
+	color: #D3D3D3;
+}
+
+progress[value] {
+	-webkit-appearance: none;
+   appearance: none;
+  width: 250px;
+  height: 23px;
+
+}
+
+progress::-webkit-progress-value { background: #771300; }
+progress::-moz-progress-bar { background: #771300; }
+progress { color: #771300; }
+
+hr {
+	width: 98%;
+
+}
+
+#models table {
+	border-spacing: 0 0;
+}
+
+#modelsList table {
+	border-spacing: 0 0; 
+}
+
+.right {
+	height: 100%;
+	overflow-y: auto;
+}
+
+table {
+	border-collapse: collapse !important;
+	border:1px solid white !important;
+	background-color: rgba(144, 144, 144, 0.25);
+}
+
+
+table tbody tr:nth-child(2n + 1) {
+				background-color: inherit;
+			}
+
+.form-popup {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 53%;
+  transform: translate(-50%, -50%);
+  z-index: 9;
+  width: 520px;
+  height: 590px;
+}
+
+/* Add styles to the form container */
+.form-container {
+  overflow-y: auto;
+  width: 100%;
+  height: 100%;
+  padding: 15px;
+  background-color: #2f3338;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.form-container .actions {
+  padding-top: 0.5em;
+  padding-left: 0.3em;
+
+}
+
+.form-container #create {
+  right: 0;
+}
+
+.number-input {
+    -moz-appearance: textfield;
+    appearance: textfield;
+    margin: 0; 
+}
+
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none !important; 
+      margin: 0; 
+}
+
+.form-popup-password {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9;
+  width: 520px;
+  height: 350px;
+}
+
+.form-container-password {
+  overflow-y: auto;
+  width: 100%;
+  height: 100%;
+  padding: 15px;
+  background-color: #2f3338;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.form-container-password .actions {
+  padding-top: 0.5em;
+  padding-left: 0.3em;
+
+}
+
+a {
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+}
+
+.change:hover {
+  border-bottom: 1px solid #771300;
+  text-decoration: none;
+}

@@ -108,8 +108,23 @@ def delete_project(request, project_id):
     return redirect("/projects")
 
 
-def account(response):
-    return render(response, "main/account.html", {})
+def account(request):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            model_creation_form = ModelCreation(request.POST)
+            if model_creation_form.is_valid():
+                model_creation_form = ModelCreation()   
+
+        else:
+            model_creation_form = ModelCreation()
+
+        params = {
+            'model_creation_form': model_creation_form
+            
+        }
+
+
+    return render(request, "main/account.html", params)
 
 
 def process(response, project_id):
