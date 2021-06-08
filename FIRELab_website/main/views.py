@@ -28,6 +28,7 @@ def indexView(response):
     return render(response, "main/home.html", {})
 
 
+
 # Create new user account
 def createAccountView(request):
     data = {}
@@ -1114,124 +1115,6 @@ def generate_contour(request, file_id, project_id):
     return redirect('/projects/' + str(project.id) + '/segmentation?id=' + str(file_id))
 
 
-# TODO: Fire Progression Animation and Processing
-"""
-    GEOREFERENCING
-"""
-
-
-def progression(request, project_id):
-    if not request.user.is_authenticated:
-        return redirect("/login")
-
-    try:
-        project = Project.objects.get(id=project_id)
-    except Project.DoesNotExist:
-        return redirect("/projects")
-
-    if request.method == "GET":
-        frame = None
-        if 'id' in request.GET:
-            try:
-                frame = ImageFrame.objects.get(file_info_id=request.GET['id'])
-            except ImageFrame.DoesNotExist:
-                frame = None
-
-        param = {
-            'frame': frame,
-            'project': project,
-            'project_dirs': Directory.objects.all().filter(project_id=project.id),
-            'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-            'file_form': UploadCoordFile(),
-            'georreferencing': Georreferencing(),
-        }
-
-        # if the frame_id is valid check if it has been georreferenced
-        if frame is None or frame.polygon is None:
-            return render(request, "main/fire_progression.html", param)
-
-        img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.name)))
-        # georreference = pickle.loads(frame.polygon)
-        georreference = frame.polygon.wkt
-        print(georreference)
-
-        param['georreferenced'] = georreference
-
-        return render(request, "main/fire_progression.html", param)
-
-    elif request.method == 'POST':
-        param = {
-            'frame': None,
-            'project': project,
-            'project_dirs': Directory.objects.all().filter(project_id=project.id),
-            'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-            # 'file_form': UploadCoordFile(),
-            'georreferencing': Georreferencing(initial={"marker": False}),
-        }
-
-        if 'frame_id' not in request.POST or request.POST['frame_id'] == '':
-            return redirect(request.build_absolute_uri())
-
-        mode = None
-        if 'marker' in request.POST:
-            param['georreferencing'] = Georreferencing(initial={'marker': True})
-            mode = True
-
-        # check if frame exists
-        _id = int(request.POST['frame_id'])
-        try:
-            _frame = ImageFrame.objects.get(file_info_id=_id)
-            _frame_file = _frame.file_info
-            param['frame'] = _frame
-        except ImageFrame.DoesNotExist:
-            return render(request, 'main/fire_progression.html', param)
-
-        if 'pixels' not in request.POST or 'geo' not in request.POST:
-            return render(request, "main/fire_progression.html", param)
-
-        # compute the pairs from the coordinates
-        pixels_json = json.loads(request.POST['pixels'])
-        print(pixels_json)
-        geo_json = json.loads(request.POST['geo'])
-        print(geo_json)
-
-        # if the frame_id is valid check if it has been georreferenced
-        if _frame is None or _frame.polygon is None:
-            return render(request, "main/fire_segmentation.html", param)
-
-        img = cv2.imread(os.path.abspath(os.path.join(MEDIA_ROOT, _frame.content.name)))
-
-        # TODO: Georeference points
-        pts_src = np.array(pixels_json)
-        pts_dst = np.array(geo_json).astype(int)
-        print(pts_dst)
-
-        # given reference points from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
-        h, status = cv2.findHomography(pts_src, pts_dst)
-
-        coords = _frame.polygon.wkt.split("((")[1].split("))")[0].split(",")
-
-        geo_coords = ""
-        wkt_str = ""
-        for coord in coords:
-            coord_split = coord.strip().split(" ")
-            point_homogenous = h.dot([float(coord_split[0]), float(coord_split[1]), 1])
-            if len(point_homogenous) != 3:
-                geo_coord = [0, 0]
-            else:
-                z = point_homogenous[2]
-                geo_coord = [point_homogenous[0] / z, point_homogenous[1] / z]
-            geo_coords = geo_coords + str(geo_coord[0]) + " " + str(geo_coord[1]) + ", "
-            geo_coords = geo_coords[:-2]
-            wkt_str = "POLYGON ((" + geo_coords + "))"
-        print(wkt_str)
-        # TODO save georef polygon
-
-        # Converted polygon WKT, to be analyzed by JS
-        param['georreferenced'] = wkt_str
-    return render(request, "main/fire_progression.html", param)
-
-
 # TODO: Animate Polygons
 '''
 def generate_georreference(request, file_id, project_id):
@@ -1404,3 +1287,159 @@ def export_disperfire_file(request, project_id, video_id, grid_id):
     response['Content-Type'] = 'application/octet-stream'
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
     return response
+
+    
+def upload_polygon(request, project_id):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    try:
+        project = Project.objects.get(id=project_id)
+    except Project.DoesNotExist:
+        return redirect("/projects")
+    if request.method == 'POST':
+        polygon = request.FILES['coords'].read()
+        image = ImageFrame.objects.get(file_info__id=request.POST['image_id'])
+        image.polygon = polygon
+        image.save()
+    return redirect("/projects/" + str(project_id) + "/progression?id=" + request.POST['image_id'])
+
+
+def progression(request, project_id):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+
+    try:
+        project = Project.objects.get(id=project_id)
+    except Project.DoesNotExist:
+        return redirect("/projects")
+
+    if request.method == "GET":
+        frame = None
+        if 'id' in request.GET:
+            try:
+                frame = ImageFrame.objects.get(file_info_id=request.GET['id'])
+            except ImageFrame.DoesNotExist:
+                frame = None
+
+        wkts = None
+        if 'animation' in request.GET:
+            print("Entrou animação")
+            try:
+                _frames = ImageFrame.objects.filter(file_info__dir__project_id=project_id).order_by('id')
+                # for every frame, check if it has been segmented and georreferenced
+                frames = {}  # Key = Frame ID ; Value = Frame
+                for frame in _frames:
+                    if frame.polygon is None or frame.geoRefPolygon is None:
+                        print("NO POLYGON OR NO GEOREF DUNNO")
+                        # TODO: Error Message, tell the user the frame needs to be segmented
+                    else:
+                        frames[frame.id] = frame
+            except ImageFrame.DoesNotExist:
+                return redirect(request.get_full_path())
+
+            try:
+                wkts = {}
+                for frame in frames.values():
+                    wkt = frame.geoRefPolygon.wkt
+                    wkts[frame.id] = wkt
+            except Exception:
+                print("ERROR IDK WHYYYY")
+                redirect(request.get_full_path())
+
+        param = {
+            'frame': frame,
+            'project': project,
+            'project_dirs': Directory.objects.all().filter(project_id=project.id),
+            'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
+            'file_form': UploadCoordFile(),
+            'georreferencing': Georreferencing(),
+        }
+
+        if wkts:
+            if len(wkts) == 1:
+                param['warning'] = "WARNING - Only one frame detected"
+            param['wkts'] = json.dumps(wkts)
+            print("WKTS ", json.dumps(wkts) )
+
+        # if the frame_id is valid check if it has been georreferenced
+        if frame is None or frame.polygon is None:
+            return render(request, "main/fire_progression.html", param)
+
+        param['georreferenced'] = frame.polygon.wkt[10:-2]
+
+        return render(request, "main/fire_progression.html", param)
+
+    elif request.method == 'POST':
+        param = {
+            'frame': None,
+            'project': project,
+            'project_dirs': Directory.objects.all().filter(project_id=project.id),
+            'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
+            'georreferencing': Georreferencing(initial={"marker": False}),
+        }
+
+        if 'frame_id' not in request.POST or request.POST['frame_id'] == '':
+            return redirect(request.build_absolute_uri())
+
+        mode = None
+        if 'marker' in request.POST:
+            param['georreferencing'] = Georreferencing(initial={'marker': True})
+            mode = True
+
+        # check if frame exists
+        _id = request.POST['frame_id']
+        try:
+            _frame = ImageFrame.objects.get(file_info_id=_id)
+            _frame_file = _frame.file_info
+            param['frame'] = _frame
+        except ImageFrame.DoesNotExist:
+            return render(request, 'main/fire_progression.html', param)
+
+        if 'pixels' not in request.POST or 'geo' not in request.POST:
+            return render(request, "main/fire_progression.html", param)
+
+        # compute the pairs from the coordinates
+        pixels_json = json.loads(request.POST['pixels'])
+        geo_json = json.loads(request.POST['geo'])
+
+        # if the frame_id is valid check if it has been georreferenced
+        if _frame is None or _frame.polygon is None:
+            param['error'] = "PROGRESSION ERROR - The frame needs to be segmented first!!"
+            return render(request, "main/fire_segmentation.html", param)
+
+        pts_src = np.array(pixels_json)
+        pts_dst = np.array(geo_json)
+
+        #given reference points	 from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
+        h, status = cv2.findHomography(pts_src, pts_dst)
+
+        coords = _frame.polygon.wkt
+        coords = coords.split("((")[1].split("))")[0].split(",")
+
+        geo_coord = []
+        for coord in coords:
+            coord_split = coord.strip().split(" ")
+            point_homogenous = h.dot([float(coord_split[0]), float(coord_split[1]), 1])
+            if len(point_homogenous) != 3:
+                geo_coord = [0, 0]
+            else:
+                z = point_homogenous[2]
+                # Longitude, Latitude
+                geo_coord += [ (point_homogenous[1]/z, point_homogenous[0]/z) ]
+
+        # store polygon on db
+        wkt_list = []
+        last = geo_coord[0]
+        for point in geo_coord:
+            wkt_list.append(point)
+        wkt_list.append(last)
+        wkt = tuple(wkt_list)
+
+        geo_polygon = Polygon(LinearRing(wkt))
+        _frame.geoRefPolygon = geo_polygon
+        _frame.save()
+
+        param['georreferenced'] = geo_polygon
+    return render(request, "main/fire_progression.html", param)
+
+

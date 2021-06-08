@@ -30,7 +30,7 @@ urlpatterns = [
 
     path("projects/<int:project_id>/progression", views.progression, name="progression"),
 
-    path("projects/<int:project_id>/export/<int:video_id>/grid/<int:grid_id>", views.export_disperfire_file, name="export_disperfire")
+    path("projects/<int:project_id>/export/<int:video_id>/grid/<int:grid_id>", views.export_disperfire_file, name="export_disperfire"),
+    path("projects/<int:project_id>/progression/upload_polygon", views.upload_polygon, name="upload_polygon")
 
-    # path("projects/<int:project_id>/progression/play/<int:file_id>", views.play_animation, name="play animation"),
 ]

@@ -76,6 +76,15 @@ class ProjectCreation(forms.Form):
         self.fields['name'].widget.attrs = ({'id': 'project_name', 'placeholder': 'Enter project name', 'name': 'project_name'})
         self.fields['description'].widget.attrs = ({'id': 'project_description', 'placeholder': 'Add a description to your project (optional)', 'name': 'project_description'})
 
+class UploadOrtophoto(forms.Form):
+    image = forms.FileField(label="Ortophoto")
+
+
+class DrawGridForm(forms.Form):
+    p1 = forms.CharField()
+    p2 = forms.CharField()
+    image_size = forms.CharField()
+    image_id = forms.IntegerField()
 
 class UploadOrtophoto(forms.Form):
     image = forms.FileField(label="Ortophoto")
@@ -105,6 +114,7 @@ class Georreferencing(forms.Form):
 
 class UploadCoordFile(forms.Form):
     coords = forms.FileField(label="File with Polygon Coordinates")
+    image_id = forms.IntegerField()
 
     def __init__(self, *args, **kwargs):
         super(UploadCoordFile, self).__init__(*args, **kwargs)

@@ -108,7 +108,7 @@
 
 	<div class="upload" id="upload">
 		<h1>Upload Files</h1>
-		<p>If you already have an orthophoto and a grid (shapefile) of the firing area, and only want to classify the vegetation, please use this automatic classification tool. Submit the files below, in the correct places: </p> 
+		<p>If you already have an orthophoto and a grid (shapefile) of the firing area, and only want to classify the vegetation, please use this automatic classification tool. Submit the files below, in the correct places: </p>
 		<div class="orthophoto">
             <form method="POST" action="{% url 'upload_ortophoto' project.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -131,11 +131,10 @@
                 <span class="file-upload__label"></span>
 			</div>
 		</div>
-		
 	</div>
-							 
-						
-<!-- CUSTOM SCRIPTS-->
+
+
+    <!-- CUSTOM SCRIPTS-->
     <script src="{% static 'viewmodel/js/veg_chara.js' %}"></script>
     <link rel="stylesheet" href="{% static 'viewmodel/css/veg_chara.css' %}"/>
     <script>

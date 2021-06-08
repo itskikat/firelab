@@ -108,8 +108,16 @@
                                 <li id="cancel"><a onclick="closeDelete()" class="button cancel">Cancel</a></li>
                             </ul>
                         </div>
+                        <p id="dates"></p>
+                        <p id="modification_date"></p>
+
+                        <p style="width: 70%" id="project_description"></p>
+                    </div>
+                    <div class="actions" hidden>
+                        <a id="workButton" class="button primary work">Work</a>
                     </div>
                 </div>
+<<<<<<< HEAD
 					
 
 			</div>
@@ -139,6 +147,68 @@
                 }
             </script>
 
+=======
+            </div>
+>>>>>>> 16a476f63a9fba29334b571832cbb9bd762f2855
 
+            <!-- POP WHEN NEW PROJECT-->
+            <div class="form-popup" id="myForm" style="height: fit-content; align-self: center;">
+                <form method="POST" action="{% url 'projects' %}" class="form-container">
+                    {% csrf_token %}
+                    <h1>Create a new Project</h1>
+                    <br>
+                    {{ creation_form.name.label }}
+                    {{ creation_form.name }}
+
+                    {{  creation_form.description.label }}
+                    {{  creation_form.description }}
+
+                    <ul class="actions" style="margin-left: 1.5em; margin-bottom: auto;">
+                        <input type="submit" class="button primary create" value="Create">
+                        <li id="cancel"><a onclick="closeForm()" class="button cancel">Cancel</a></li>
+                    </ul>
+              </form>
+            </div>
+
+            <!-- POP WHEN DELETE PROJECT-->
+            <div class="delete-popup" id="deleteCheck" style="height: fit-content; align-self: center;">
+                <div class="container-delete">
+                    <i class="fas fa-trash-alt"></i>
+                    <h4>Are you sure?</h4>
+                    <p style="margin: 0 0 1.3em 0;">Do you want to delete this project? This process cannot be undone.</p>
+                    <div class="options">
+                        <ul class="actions" style="margin-left: -4.5em; margin-bottom: auto;">
+                            <li><a class="button primary create">Delete</a></li>
+                            <li id="cancel"><a onclick="closeDelete()" class="button cancel">Cancel</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- Scripts -->
+        <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+        <script src="{% static 'assets/js/jquery.scrollex.min.js' %}"></script>
+        <script src="{% static 'assets/js/jquery.scrolly.min.js' %}"></script>
+        <script src="{% static 'assets/js/browser.min.js' %}"></script>
+        <script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
+        <script src="{% static 'assets/js/util.js' %}"></script>
+        <script src="{% static 'assets/js/main.js' %}"></script>
+        <!-- CUSTOM SCRIPTS-->
+        <script src="{% static 'assets/js/projects.js' %}"></script>
+
+        <!-- SCRIPTS TO BE MOVED TO ASSETS -->
+        <script>
+            function showInfo(id, name, description, creation, modification) {
+                $("#project_name").text(name);
+                $("#project_description").text("Description: " + description);
+                $("#dates").text("Created on: " + creation);
+                $("#modification_date").text("Last modified on: : " + modification);
+                $(".actions").show();
+                $("#workButton").attr('href', 'projects/' + id + '/process');
+            }
+        </script>
 	</body>
 </html>

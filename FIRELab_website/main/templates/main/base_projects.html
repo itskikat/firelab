@@ -20,22 +20,22 @@
 				<!-- Main -->
 				<div class="split" id="blur">
 					<div class="left">
-							<h2>FIRELab</h2>
-							<div class="options">
-								<table>
-									<tr id="veg">
-										<td><a href="{% url 'vegetation' project.id %}">Vegetation Characterization</a></td>
-									</tr>
-									<tr id="seg">
-										<td><a href="{% url 'segmentation' project.id %}">Fire Segmentation</a></td>
-									</tr>
-									<tr id="prog">
-										<td><a href="{% url 'progression' project.id %}">Fire Progression</a></td>
-									</tr>
-								</table>
-							</div>
-                        <div style="color: white">
+                        <h2>FIRELab</h2>
+                        <div class="options">
+                            <table>
+                                <tr id="veg">
+                                    <td><a href="{% url 'vegetation' project.id %}">Vegetation Characterization</a></td>
+                                </tr>
+                                <tr id="seg">
+                                    <td><a href="{% url 'segmentation' project.id %}">Fire Segmentation</a></td>
+                                </tr>
+                                <tr id="prog">
+                                    <td><a href="{% url 'progression' project.id %}">Fire Progression</a></td>
+                                </tr>
+                            </table>
+                        </div>
 
+                        <div style="color: white">
                         {% recursetree project_dirs %}
                             <div {% if node.parent is not None %} style="padding-left: 2em" {% endif %}>
                                 {% comment %} show directory name {% endcomment %}
@@ -69,14 +69,12 @@
                                 </div>
                             </div>
                         {% endrecursetree %}
-
-                    
-
-
                         </div>
+
 						<div class="actions">
 							<a href="{% url 'projects' %}" class="leave"><i class="fas fa-arrow-circle-left"></i> Back to Projects</a>
 						</div>
+
 					</div>
 					<div class="right">
 						{% block content %}{% endblock %}
@@ -99,7 +97,6 @@
                             </div>
 
 			</div>
-
 
 			<!-- MOVE TO STATIC -->
             <script>

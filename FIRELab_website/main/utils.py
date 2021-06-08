@@ -7,7 +7,6 @@ from colormath.color_conversions import convert_color
 from colormath.color_objects import sRGBColor, LabColor
 from colormath.color_diff import delta_e_cie2000
 from osgeo import gdal, osr
-
 from FIRELab_website.settings import MEDIA_ROOT
 from main.models import Tile, Grid, FileInfo, Ortophoto, ImageFrame
 import math
