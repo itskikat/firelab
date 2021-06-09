@@ -22,6 +22,7 @@
                 {{ grid_draw.p1 }}
                 {{ grid_draw.p2 }}
                 {{ grid_draw.image_size }}
+                {{ grid_draw.modelField }}
             </div>
             {% if gridded_image %}
                 <div id="img_ortophoto"  style="display: flex; padding-top: 1%; justify-content: center; align-items: center; ">
@@ -91,8 +92,9 @@
        <div class="models">
        <select name="model" id="model" title="If you don't pick a model, a default one will be used." style="width: 152px; height: 40px; font-size: 13px;">
           <option selected disabled>Choose model</option>
-          <option value="volvo">DISPERFIRE</option>
-          <option value="saab">FIRESITE</option>
+           {% for model in available_models %}
+          <option value="{{ model.id }}">{{ model.name }}</option>
+           {% endfor %}
         </select>
     </div>
             
@@ -302,6 +304,10 @@
             }
         }
         });
+
+        $("#model").change(function () {
+            $("#id_modelField").val($(this).val())
+        })
 
         function change() {       
             var x = parseFloat(event.pageX) - parseFloat(icon_2.style.left);

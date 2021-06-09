@@ -252,7 +252,8 @@ def vegetation(response, project_id):
             'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
             'ortophoto_form': ortophoto_form,
             'grid_draw': grid_draw_form,
-            'manual_classifier_form': manual_classifier_form
+            'manual_classifier_form': manual_classifier_form,
+            'available_models': FuelModel.objects.all().filter(user=response.user)
         }
 
         if 'id' in response.GET or 'grid' in response.GET:
@@ -442,12 +443,23 @@ def vegetation(response, project_id):
                 dir=Directory.objects.get(name="Grids", project_id=project.id)
             )
             _file_info.save()
+
+            if grid_draw_form.cleaned_data['modelField']:
+                try:
+                    model = FuelModel.objects.get(user=response.user, id=grid_draw_form.cleaned_data['modelField'])
+                except FuelModel.DoesNotExist:
+                    model = FuelModel.objects.get(user=response.user, name__exact="FARSITE")
+            else:
+                    model = FuelModel.objects.get(user=response.user, name__exact="FARSITE")
+
+
             _grid = Grid(
                 topLeftCoordinate=[p1_x, p1_y],
                 bottomRightCoordinate=[p2_x, p2_y],
                 ortophoto=_ortophoto,
                 cell_size=CELL_SIZE,
-                file_info=_file_info
+                file_info=_file_info,
+                model=model
             )
             _grid.save()
             # change the name on the file info

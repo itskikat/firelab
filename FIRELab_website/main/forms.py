@@ -98,6 +98,7 @@ class DrawGridForm(forms.Form):
     p2 = forms.CharField()
     image_size = forms.CharField()
     image_id = forms.IntegerField()
+    modelField = forms.IntegerField(required=False)
 
 
 class ManualClassifierForm(forms.Form):
