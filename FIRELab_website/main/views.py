@@ -746,15 +746,13 @@ def generate_contour(request, file_id, project_id):
 	# return redirect("/segmentation?id=" + str(file_id)) + "&error=TooManyValues
 	else:
 		vertexes = vertexes[0]
-
-
+	print(vertexes)
 	# store polygon on db
 	wkt_list = []
 	for point in vertexes:
 		wkt_list+=[(point[0][0],point[0][1])]
 	wkt_list.append((vertexes[0][0][0],vertexes[0][0][1]))
 	wkt = tuple(wkt_list)
-
 	polygon = Polygon(LinearRing(wkt))
 	_image.polygon = polygon
 	_image.save()
