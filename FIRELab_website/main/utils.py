@@ -258,9 +258,10 @@ def compute_user_quota(user):
             except Grid.DoesNotExist:
                 continue
 
-            grid_path = os.path.abspath(os.path.join(MEDIA_ROOT, grid.gridded_image.path))
-            grid_size = os.path.getsize(grid_path)
-            total_byte_size += grid_size
+            if grid.gridded_image:
+                grid_path = os.path.abspath(os.path.join(MEDIA_ROOT, grid.gridded_image.path))
+                grid_size = os.path.getsize(grid_path)
+                total_byte_size += grid_size
 
         # ortophoto
         elif file.extension == "tif":
@@ -286,9 +287,10 @@ def compute_user_quota(user):
             except ImageFrame.DoesNotExist:
                 continue
 
-            frame_path = os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.path))
-            frame_size = os.path.getsize(frame_path)
-            total_byte_size += frame_size
+            if frame.content:
+                frame_path = os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.path))
+                frame_size = os.path.getsize(frame_path)
+                total_byte_size += frame_size
 
     return total_byte_size / (1024 ** 2)
 

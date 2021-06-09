@@ -1,0 +1,20 @@
+{% load static %}
+{% block popup %}
+
+{% block extracss %}
+    <link rel="stylesheet" href="{% static 'viewmodel/css/warning_popup.css' %}"/>
+{% endblock %}
+
+<div class="popup" id="warning_popup" style="height: fit-content; align-self: center;">
+    <div class="container-popup">
+        <i class="fas fa-info-circle fa-2x"></i>
+        <br/>
+        <div id="element" style="padding-top: 2%"><p id="msg" style="font-size: 18px"></p></div>
+        <div class="options">
+            <ul class="actions" style="padding-left: 65%;margin-bottom: auto;">
+                <li id="cancel"><a onclick="closePopUp()" class="button cancel">Close</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

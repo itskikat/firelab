@@ -13,6 +13,7 @@
 		<noscript><link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}" /></noscript>
         {% block extracss %}{% endblock %}
 	</head>
+    {% include 'main/warning_popup.html' %}
 	<body class="is-preload">
         {% include 'main/loading_popup.html' %}
 		<!-- Page Wrapper -->
@@ -100,7 +101,38 @@
 
 			<!-- MOVE TO STATIC -->
             <script>
+                let errorType, errorMessage;
                 const waiting = document.getElementById("waiting");
+                const warning_popup = document.getElementById("warning_popup");
+
+
+                $(document).ready(function () {
+                    location.search.substr(1).split("&").forEach(function(item) {
+                        if (item.includes("error")) {
+                            errorType = item.split("=")[1];
+                                if (errorType === "QuotaSurpassed" ) {
+                                    errorMessage = "[" + errorType + "] Your user quota was surpassed, delete some files to free up some space."
+                                }
+                                openWarningPopUp(errorMessage);
+                        }
+                    });
+                });
+
+                function openWarningPopUp(msg) {
+                    const element = document.getElementById("msg");
+                    element.innerHTML = msg;
+                    warning_popup.style.display = "flex";
+                    blur.style.filter = "blur(2px)";
+                    setTimeout(function() { closePopUp(); }, 10000);
+                }
+
+                function closePopUp() {
+                    errorType = null;
+                    errorMessage = null;
+
+                    warning_popup.style.display = "none";
+                    blur.style.filter = "none";
+                }
 
                 function toggleChildren(childrenName) {
                     let dirId = "#" + childrenName + "_children"

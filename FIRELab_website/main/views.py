@@ -135,7 +135,54 @@ def account(request):
     if request.method == 'POST':
         model_creation_form = ModelCreation(request.POST)
         if model_creation_form.is_valid():
-            print(model_creation_form.cleaned_data)
+
+            model_name = model_creation_form.cleaned_data['nameModel']
+            model = FuelModel(
+                name=model_name,
+                user=request.user
+            )
+
+            added_classifications = json.loads(model_creation_form.cleaned_data['previously_added'])
+            if model_creation_form.cleaned_data['nameClass'] != '' and model_creation_form.cleaned_data['minimumPercentage'] != '' and model_creation_form.cleaned_data['maximumPercentage'] != '' and model_creation_form.cleaned_data['hexColor'] != '':
+                last_classification = {
+                    "class_name": model_creation_form.cleaned_data['nameClass'],
+                    "min_percentage": model_creation_form.cleaned_data['minimumPercentage'],
+                    "max_percentage": model_creation_form.cleaned_data['maximumPercentage'],
+                    "hex": model_creation_form.cleaned_data['hexColor']
+                }
+                added_classifications.append(last_classification)
+
+            classification_to_save = []
+            previous = None
+            for i in range(0, len(added_classifications)):
+                if previous is not None and int(added_classifications[i]['min_percentage']) <= previous.maxPercentage:
+                    print("ERROR CREATING MODEL - PERCENTAGES DON'T MATCH WITH OTHER CLASSIFICATIONS")
+                    return redirect("/account?error=MismatchedPercentages")
+
+                if int(added_classifications[i]['min_percentage']) > int(added_classifications[i]['max_percentage']):
+                    print("ERROR CREATING MODEL - PERCENTAGES DON'T MATCH IN THE CLASS")
+                    return redirect("/account?error=MismatchedPercentages")
+
+                if int(added_classifications[i]['min_percentage']) > 100 or int(added_classifications[i]['max_percentage']) > 100:
+                    print("ERROR CREATING MODEL - PERCENTAGES SURPASS 100")
+                    return redirect("/account?error=PercentageBiggerThan100")
+
+                if int(added_classifications[i]['min_percentage']) < 0 or int(added_classifications[i]['max_percentage']) < 0:
+                    return redirect("/account?error=NegativePercentage")
+
+                previous = Classification(
+                    name=added_classifications[i]['class_name'],
+                    minPercentage=int(added_classifications[i]['min_percentage']),
+                    maxPercentage=int(added_classifications[i]['max_percentage']),
+                    hexColor=added_classifications[i]['hex'],
+                    model=model,
+                    classificationIndex=i
+                )
+                classification_to_save.append(previous)
+
+            model.save()
+            for c in classification_to_save:
+                c.save()
             model_creation_form = ModelCreation()
 
     else:
@@ -243,7 +290,7 @@ def vegetation(response, project_id):
     if response.method == "GET":
 
         ortophoto_form = UploadOrtophoto()
-        grid_draw_form = DrawGridForm()
+        grid_draw_form = DrawGridForm(initial={'cell_size': 5})
         manual_classifier_form = ManualClassifierForm()
 
         param = {
@@ -425,7 +472,11 @@ def vegetation(response, project_id):
 
             diff_x, diff_y = x2_m - x1_m, y2_m - y1_m
 
-            CELL_SIZE = 5  # in meters TODO: MAKE DYNAMIC
+            CELL_SIZE = grid_draw_form.cleaned_data['cell_size']  # in meters
+            print(CELL_SIZE)
+            if CELL_SIZE > abs(diff_x) or CELL_SIZE > abs(diff_y):
+                return redirect("/projects/" + str(project_id) + "/vegetation?id=" + str(_ortophoto.file_info.id) + "&error=CellSizeTooBig")
+
             patch_x = diff_x % CELL_SIZE  # value to remove to lat2
             x2_m -= patch_x
 
@@ -450,8 +501,7 @@ def vegetation(response, project_id):
                 except FuelModel.DoesNotExist:
                     model = FuelModel.objects.get(user=response.user, name__exact="FARSITE")
             else:
-                    model = FuelModel.objects.get(user=response.user, name__exact="FARSITE")
-
+                model = FuelModel.objects.get(user=response.user, name__exact="FARSITE")
 
             _grid = Grid(
                 topLeftCoordinate=[p1_x, p1_y],
@@ -469,7 +519,6 @@ def vegetation(response, project_id):
             utils.cell_cutter(ortophoto_path, row, column, p1_x, p1_y, p2_x, p2_y, _grid.id)
 
         # Manual classification of a tile on the grid
-        print(manual_classifier_form.errors)
         if manual_classifier_form.is_valid():
             print("valid")
             try:
@@ -563,20 +612,22 @@ def auto_classifier(request, project_id, grid_id):
     if request.method == "GET":
         tile_list = Tile.objects.all().filter(grid_id=grid.id)
         classified_tiles = tile_list.filter(classification__isnull=False)
+        print(classified_tiles)
 
         if len(classified_tiles) == 0:
-            # TODO raise error if no classification exists
-            means = [[233, 231, 234], [140, 138, 107], [114, 114, 98], [60, 63, 31]]
-        else:
-            classification_total = Classification.objects.all().filter(model=grid.model)
-            print(classification_total)
+            # raise error if no classification exists
+            return redirect("/projects/" + str(project.id) + "/vegetation?grid=" + str(
+                grid.file_info.id) + "&error=NotEnoughValues")
 
-            means = []
-            for c in classification_total:
-                pixel_avg = utils.simplified_pixel_average(tile_list.filter(classification=c.classificationIndex))
-                if pixel_avg:
-                    means.append(pixel_avg)
-            print(means)
+        classification_total = Classification.objects.all().filter(model=grid.model).order_by('classificationIndex')
+        print(classification_total)
+
+        means = []
+        for c in classification_total:
+            pixel_avg = utils.simplified_pixel_average(tile_list.filter(classification=c.classificationIndex))
+            if pixel_avg:
+                means.append(pixel_avg)
+        print(means)
 
         # # if we use distance, this block is unnecessary #
         # lab_means = []
@@ -594,10 +645,11 @@ def auto_classifier(request, project_id, grid_id):
         # # Convert from RGB to Lab Color Space
         # lab_colors.append(convert_color(lab_means[3], LabColor))
         # # end of block #
+        classification_order = classified_tiles.values('classification').distinct()
+        classification_order = sorted([c['classification'] for c in classification_order])
 
         for tile in tile_list:
-            # tile.classification = utils.visually_closest(tile, lab_colors)
-            tile.classification = utils.numerically_closest(tile, means)
+            tile.classification = classification_order[utils.numerically_closest(tile, means)]
             tile.save()
 
     return redirect("/projects/" + str(project.id) + "/vegetation?grid=" + str(grid.file_info.id))
@@ -657,7 +709,10 @@ def export_fuel_map(request, project_id, grid_id):
         for r in range(row):
             for c in range(column):
                 elem = tile_list.filter(position=[c, r]).first()
-                # TODO: exception when has no classification
+                if elem.classification is None:
+                    return redirect("/projects/" + str(project.id) + "/vegetation?id=" +
+                                    str(grid.ortophoto.file_info.id) + "&error=UnclassifiedTiles")
+
                 elem_percentage = float(Classification.objects.all().filter(model=model,
                                                                             classificationIndex=elem.classification).first().minPercentage)
                 if elem_percentage == 0:
@@ -690,7 +745,7 @@ def upload_orthphoto(request, project_id):
             file_size_mb = round(request.FILES['image'].size / 1024 ** 2, 3)
 
             if user_quota + file_size_mb >= 5 * 1024:
-                return redirect("/projects/" + str(project_id) + "/vegetation?error=quota_surpassed")
+                return redirect("/projects/" + str(project_id) + "/vegetation?error=QuotaSurpassed")
 
             name, extension = request.FILES['image'].name.split('.')
             start = time.time()
@@ -772,7 +827,7 @@ def upload(request, project_id):
             file_size_mb = round(request.FILES['image'].size / 1024 ** 2, 3)
 
             if user_quota + file_size_mb >= 5 * 1024:
-                return redirect("/projects/" + str(project_id) + "/segmentation?error=quota_surpassed")
+                return redirect("/projects/" + str(project_id) + "/segmentation?error=QuotaSurpassed")
 
             name, extension = request.FILES['image'].name.split('.')
 
@@ -818,14 +873,13 @@ def upload_video(request, project_id):
 
     if request.method == 'POST':
         form = UploadVideo(request.POST, request.FILES)
-        print(form.errors)
         if form.is_valid():
 
             user_quota = utils.compute_user_quota(request.user)
             file_size_mb = round(request.FILES['video'].size / 1024 ** 2, 3)
 
             if user_quota + file_size_mb >= 5 * 1024:
-                return redirect("/projects/" + str(project_id) + "/segmentation?error=quota_surpassed")
+                return redirect("/projects/" + str(project_id) + "/segmentation?error=QuotaSurpassed")
 
             name, extension = request.FILES['video'].name.split('.')
             frame_number = request.POST['frames']
@@ -1012,9 +1066,12 @@ def segmentation(response, project_id):
             _image = ImageFrame.objects.get(file_info__id=_id)
             _image_file = _image.file_info
             param['image'] = _image
+
             if _image.video:
-                param['video_frames'] = ImageFrame.objects.all().filter(video_id=_image.video.id,
-                                                                        file_info__dir__project_id=project_id),
+                param['video_frames'] = ImageFrame.objects.all().filter(
+                    video_id=_image.video.id,
+                    file_info__dir__project_id=project_id
+                )
 
         except ImageFrame.DoesNotExist:
             return render(response, "main/fire_segmentation.html", param)
@@ -1143,20 +1200,21 @@ def export_disperfire_file(request, project_id, video_id, grid_id):
         print("no video")
         return redirect("/projects")
 
+    # TODO: TEST THIS
     # add test polygon
-    coords = ((-7.614775, 41.391031), (-7.614078, 41.390717), (-7.615237, 41.390556), (-7.614775, 41.391031))
-    poly = Polygon(coords)
-
-    frame = ImageFrame.objects.get(id=21)
-    frame.geoRefPolygon = poly
-    frame.save()
-
-    coords = ((-7.615859, 41.391369), (-7.615437, 41.388883), (-7.612594, 41.388883), (-7.613800, 41.391282),
-              (-7.615859, 41.391369))
-    poly = Polygon(coords)
-    frame = ImageFrame.objects.get(id=22)
-    frame.geoRefPolygon = poly
-    frame.save()
+    # coords = ((-7.614775, 41.391031), (-7.614078, 41.390717), (-7.615237, 41.390556), (-7.614775, 41.391031))
+    # poly = Polygon(coords)
+    #
+    # frame = ImageFrame.objects.get(id=21)
+    # frame.geoRefPolygon = poly
+    # frame.save()
+    #
+    # coords = ((-7.615859, 41.391369), (-7.615437, 41.388883), (-7.612594, 41.388883), (-7.613800, 41.391282),
+    #           (-7.615859, 41.391369))
+    # poly = Polygon(coords)
+    # frame = ImageFrame.objects.get(id=22)
+    # frame.geoRefPolygon = poly
+    # frame.save()
 
     # get top left in meters
     cell_size = _grid.cell_size
@@ -1213,7 +1271,8 @@ def export_disperfire_file(request, project_id, video_id, grid_id):
 
             # calculate vertices in meters
             temp = (
-            (tile.position[0] * cell_size + top_left_meters[0]), (top_left_meters[1] - tile.position[1] * cell_size))
+                (tile.position[0] * cell_size + top_left_meters[0]),
+                (top_left_meters[1] - tile.position[1] * cell_size))
             tile_vertices = [temp,
                              (temp[0] + cell_size, temp[1]),
                              (temp[0] + cell_size, temp[1] - cell_size),

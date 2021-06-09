@@ -2,6 +2,7 @@
 
 {% block content %}
     {% load static %}
+
     <form id="manualClassification" action="" method="post">
         {% csrf_token %}
         {% if image %}
@@ -23,6 +24,7 @@
                 {{ grid_draw.p2 }}
                 {{ grid_draw.image_size }}
                 {{ grid_draw.modelField }}
+                {{ grid_draw.cell_size }}
             </div>
             {% if gridded_image %}
                 <div id="img_ortophoto"  style="display: flex; padding-top: 1%; justify-content: center; align-items: center; ">
@@ -88,7 +90,7 @@
 
     {% if not gridded_image %}
     <div class="gridPop" id="gridPop">
-        <div class="cell"><p> Cell size: <input type="number" min="1" max="20" step="1" value="5" style="color: black"></p></div>
+        <div class="cell"><p> Cell size: <input id="cell_size_input" type="number" min="1" max="20" step="1" value="5" style="color: black"></p></div>
        <div class="models">
        <select name="model" id="model" title="If you don't pick a model, a default one will be used." style="width: 152px; height: 40px; font-size: 13px;">
           <option selected disabled>Choose model</option>
@@ -140,7 +142,6 @@
     <script src="{% static 'viewmodel/js/veg_chara.js' %}"></script>
     <link rel="stylesheet" href="{% static 'viewmodel/css/veg_chara.css' %}"/>
     <script>
-
         let workingImage = $("#workingImage");
         let selectedLayer = null
         let selectedPointsTotal = 0;
@@ -153,7 +154,7 @@
 
         $(document).ready(function () {
             location.search.substr(1).split("&").forEach(function(item) {
-                if (!item.includes("selected") && !item.includes("brush")) {
+                if (!item.includes("selected") && !item.includes("brush") && !item.includes("error")) {
                     queryDict[item.split("=")[0]] = item.split("=")[1]
                 } else {
                     if (item.includes("brush")) {
@@ -164,6 +165,19 @@
 
                     if (item.includes("selected")) {
                         selectedLayer = item.split("=")[1]
+                    }
+
+                    if (item.includes("error")) {
+                        errorType = item.split("=")[1];
+                        if (errorType === "CellSizeTooBig" ) {
+                            errorMessage = "[" + errorType + "] The cell size is too big for the grid you are trying to create."
+                        } else if (errorType === "NotEnoughValues") {
+                            errorMessage = "[" + errorType + "] Manually classify at least one tile so that the auto-classification can be done."
+                        } else if (errorType === "UnclassifiedTiles") {
+                            errorMessage = "[" + errorType + "] Cannot export fuel map, make sure all the tiles on the grid have a classification."
+                        }
+
+                        openWarningPopUp(errorMessage);
                     }
                 }
 
@@ -189,7 +203,7 @@
             var gridPop = document.getElementById("gridPop");
             gridPop.style.display = "block";
             var grid = document.getElementById("grid");
-            if (grid.style.color == "black") {
+            if (grid.style.color === "black") {
                 grid.style.color = "#B55B29";
                 gridDrawOn = !gridDrawOn;
                 let selectedFileId = JSON.parse("{{image.file_info.id|escapejs}}");
@@ -221,7 +235,9 @@
 
         workingImage.mouseup(function(event) {
             let image = document.getElementById("workingImage");
+            console.log(manualSelectOn)
             if (gridDrawOn && selectedPointsTotal < 2) {
+                console.log("place icon")
                 let x = event.pageX - this.offsetLeft;
                 let y = event.pageY - this.offsetTop;
                 selectedPointsTotal++;
@@ -231,11 +247,11 @@
                 i.className = "fas fa-thumbtack fa-lg";
                 i.style.position = "absolute";
                 i.style.display = "block";
-                i.style.left = event.pageX +'px';
+                i.style.left = event.pageX + 'px';
                 i.id = "icon_" + selectedPointsTotal;
                 i.style.color = "#FF69B4";
                 i.style.zIndex = "2";
-                i.style.top = event.pageY +'px';
+                i.style.top = event.pageY + 'px';
                 i.style.width = "20px";
                 i.style.height = "20px";
                 document.getElementById("img_ortophoto").appendChild(i);
@@ -251,44 +267,43 @@
                     icon_1 = document.getElementById("icon_1");
                     icon_2 = document.getElementById("icon_2");
 
-                    icon_1.onclick = function(event) {
-                        if (count2 != 1 && count2 !=2) {
+                    icon_1.onclick = function (event) {
+                        if (count2 != 1 && count2 != 2) {
                             count++;
                         }
                         if (count === 1) {
                             icon_1.style.color = "#69FFB4";
                             icon_2.style.color = "#FF69B4";
                             document.addEventListener("click", change);
-                        }
-                        else if (count === 2) {
+                        } else if (count === 2) {
                             icon_1.style.color = "#FF69B4";
-                           document.removeEventListener("click", change); 
-                           count = 0;
+                            document.removeEventListener("click", change);
+                            count = 0;
                         }
 
                     };
 
-                    icon_2.onclick = function(event) {
-                        if (count != 1 && count !=2) {
+                    icon_2.onclick = function (event) {
+                        if (count != 1 && count != 2) {
                             count2++;
                         }
-                        
+
                         if (count2 === 1) {
                             icon_2.style.color = "#69FFB4";
                             icon_1.style.color = "#FF69B4";
                             document.addEventListener("click", change2);
-                        }
-                        else if (count2 === 2) {
+                        } else if (count2 === 2) {
                             icon_2.style.color = "#FF69B4";
-                           document.removeEventListener("click", change2); 
-                           count2 = 0;
+                            document.removeEventListener("click", change2);
+                            count2 = 0;
                         }
 
                     };
                     var points = document.getElementById("points");
                     points.style.display = "flex";
-
-            } else if (manualSelectOn) {
+                }
+            } else if (manualSelectOn === true) {
+                    console.log("here")
                 let x = event.pageX - this.offsetLeft;
                 let y = event.pageY - this.offsetTop;
 
@@ -302,8 +317,11 @@
                 $("#id_brush_size").val(brushSize)
                 document.getElementById("manualClassification").submit();
             }
-        }
         });
+
+        $("#cell_size_input").change(function () {
+            $("#id_cell_size").val($(this).val())
+        })
 
         $("#model").change(function () {
             $("#id_modelField").val($(this).val())

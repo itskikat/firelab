@@ -46,11 +46,11 @@ class UploadVideo(forms.Form):
 
 class ModelCreation(forms.Form):
     nameModel = forms.CharField(max_length=30, label="Model Name")
-    nameClass = forms.CharField(label="Classification Name", max_length=50)
-    minimumPercentage = forms.CharField(label="Minimum Percentage")
-    maximumPercentage = forms.CharField(label="Maximum Percentage")
-    hexColor = forms.CharField(label="Color in Hexadecimal", max_length=20)
-    index = forms.CharField(label="Classification Index")
+    nameClass = forms.CharField(label="Classification Name", max_length=50, required=False)
+    minimumPercentage = forms.CharField(label="Minimum Percentage", required=False)
+    maximumPercentage = forms.CharField(label="Maximum Percentage", required=False)
+    hexColor = forms.CharField(label="Color in Hexadecimal", max_length=20, required=False)
+    previously_added = forms.CharField()
 
     def __init__(self, *args, **kwargs):
         super(ModelCreation, self).__init__(*args, **kwargs)
@@ -76,28 +76,21 @@ class ProjectCreation(forms.Form):
         self.fields['name'].widget.attrs = ({'id': 'project_name', 'placeholder': 'Enter project name', 'name': 'project_name'})
         self.fields['description'].widget.attrs = ({'id': 'project_description', 'placeholder': 'Add a description to your project (optional)', 'name': 'project_description'})
 
+
 class UploadOrtophoto(forms.Form):
     image = forms.FileField(label="Ortophoto")
 
-
-class DrawGridForm(forms.Form):
-    p1 = forms.CharField()
-    p2 = forms.CharField()
-    image_size = forms.CharField()
-    image_id = forms.IntegerField()
 
 class PointNames(forms.Form):
     ptNames = forms.CharField()
 
-class UploadOrtophoto(forms.Form):
-    image = forms.FileField(label="Ortophoto")
-
 
 class DrawGridForm(forms.Form):
     p1 = forms.CharField()
     p2 = forms.CharField()
     image_size = forms.CharField()
     image_id = forms.IntegerField()
+    cell_size = forms.IntegerField(validators=[MinValueValidator(1)])
     modelField = forms.IntegerField(required=False)
 
 
@@ -107,6 +100,7 @@ class ManualClassifierForm(forms.Form):
     classification_index = forms.IntegerField()
     brush_size = forms.IntegerField(validators=[MinValueValidator(1)])
     grid = forms.IntegerField()
+
 
 class Georreferencing(forms.Form):
     marker = forms.BooleanField()

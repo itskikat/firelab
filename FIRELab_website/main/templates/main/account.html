@@ -10,7 +10,7 @@
 		<noscript><link rel="stylesheet" href="static/assets/css/noscript.css" /></noscript>
 	</head>
 	<body class="is-preload">
-
+        {% include 'main/warning_popup.html' %}
 		<!-- Page Wrapper -->
 			<div id="page-wrapper">
                 <form id="logoutForm" action="/logout" method="GET" hidden>
@@ -74,33 +74,34 @@
                                     {% for model in user_models %}
 
 									  	<tr>
-									    <td>{{ model.name }}</td>
-									    <td>
-										    <table id="modelsList">
-										    	<tr>
-										    		<th>Name</th>
-										    		<th>Minimal %</th>
-										    		<th>Maximum %</th>
-										    		<th>Hexadecimal Color</th>
-										    		<th>Classification Index</th>
-										    	</tr>
-                                                {% for classification in user_classifications %}
-                                                    {% if classification.model == model %}
+                                            <td>{{ model.name }}</td>
+                                            <td>
+                                                <table id="modelsList">
                                                     <tr>
-                                                        <td>{{ classification.name }}</td>
-                                                        <td>{{ classification.minPercentage }}</td>
-                                                        <td>{{ classification.maxPercentage }}</td>
-                                                        <td>#{{ classification.hexColor }}</td>
-                                                        <td>{{ classification.classificationIndex }}</td>
+                                                        <th>Name</th>
+                                                        <th>Minimal %</th>
+                                                        <th>Maximum %</th>
+                                                        <th>Hexadecimal Color</th>
+                                                        <th>Classification Index</th>
                                                     </tr>
-                                                    {% endif %}
-                                                {% endfor %}
+                                                    {% for classification in user_classifications %}
+                                                        {% if classification.model == model %}
+                                                        <tr>
+                                                            <td>{{ classification.name }}</td>
+                                                            <td>{{ classification.minPercentage }}</td>
+                                                            <td>{{ classification.maxPercentage }}</td>
+                                                            <td>#{{ classification.hexColor }}</td>
+                                                            <td>{{ classification.classificationIndex }}</td>
+                                                        </tr>
+                                                        {% endif %}
+                                                    {% endfor %}
 
-										    </table>
-										</td>
+                                                </table>
+                                            </td>
 										</tr>
 
                                     {% endfor %}
+								  </tbody>
 
                                     <tfoot>
                                         <tr>
@@ -108,8 +109,7 @@
                                             <th style="padding-top: 0">Classification List</th>
                                         </tr>
                                     </tfoot>
-									  
-								  </tbody>
+
 
 							</table>
 						</div>
@@ -120,7 +120,7 @@
 
 				<!-- POP WHEN CREATE MODEL-->
                 <div class="form-popup" id="myForm" style="align-self: center;">
-                    <form method="POST" action="{% url 'account' %}" class="form-container">
+                    <form id="modelForm" method="POST" action="{% url 'account' %}" class="form-container">
                         {% csrf_token %}
                         <h1>Create a new Model <i class="fas fa-times" style="padding-left: 35%; cursor: pointer" onclick="closeForm()"></i></h1><!-- TODO add X-->
                         <br>
@@ -143,24 +143,28 @@
 			                        {{  model_creation_form.maximumPercentage.label }}
 			                        {{  model_creation_form.maximumPercentage }}
 		                   	 	</div>
-		                   	 	<div class="col-6 col-12-xsmall">
+		                   	 	<div class="col-12 col-12-xsmall">
 		                   	 		{{  model_creation_form.hexColor.label }}
 	                        		{{  model_creation_form.hexColor }}
 		                   	 	</div>
-		                   	 	<div class="col-6 col-12-xsmall">
+		                   	 	{% comment %}<div class="col-6 col-12-xsmall">
 		                   	 		{{  model_creation_form.index.label }}
-	                        {{  model_creation_form.index }}
-		                   	 	</div>
+                                    {{  model_creation_form.index }}
+		                   	 	</div>{% endcomment %}
+                                <div hidden>
+                                    {{ model_creation_form.previously_added }}
+                                </div>
 	                   		</div>
-	                     
+
                         </div>
 
                         <ul class="actions" style="padding-left: 4%;margin-bottom: auto; padding-top: 5%">
-                            <input type="submit" class="button primary create" value="Create">
+                            <li><button onclick="submitForm()" class="button primary create">Create</button></li>
                      		<li id="cancel"><a onclick="addClass()" class="button cancel">New classification</a></li>
                         </ul>
                   </form>
                 </div>
+
 
                 <!-- POP When Change Password -->
                 <div class="form-popup-password" id="passwordChange" style="align-self: center;">
@@ -181,7 +185,7 @@
                     <form method="POST" action="{% url 'account' %}" class="form-container-password">
                         {% csrf_token %}
                         <h1>Change Email</h1>
-                        
+
 
                         <ul class="actions" style="padding-left: 4%;margin-bottom: auto; padding-top: 5%">
                             <input type="submit" class="button primary create" value="Change Email">
@@ -204,16 +208,64 @@
 			<script src="static/viewmodel/js/account.js"></script>
 
 			<script>
+                let errorType, errorMessage;
+                const warning_popup = document.getElementById("warning_popup");
+                let classificationList = [];
+
+                $(document).ready(function () {
+                    location.search.substr(1).split("&").forEach(function(item) {
+                        if (item.includes("error")) {
+                            errorType = item.split("=")[1];
+                                if (errorType === "MismatchedPercentages" ) {
+                                    errorMessage = "[" + errorType + "] The percentages of some classification don't match.."
+                                } else if (errorType === "PercentageBiggerThan100" ) {
+                                    errorMessage = "[" + errorType + "] The percentages of one or more classes is bigger than 100%."
+                                } else if (errorType === "NegativePercentage" ) {
+                                    errorMessage = "[" + errorType + "] The percentages of one or more classes is negative."
+                                }
+                                openWarningPopUp(errorMessage);
+                        }
+                    });
+                });
+
+                function openWarningPopUp(msg) {
+                    const element = document.getElementById("msg");
+                    element.innerHTML = msg;
+                    warning_popup.style.display = "flex";
+                    blur.style.filter = "blur(2px)";
+                    setTimeout(function() { closePopUp(); }, 10000);
+                }
+
+                function closePopUp() {
+                    errorType = null;
+                    errorMessage = null;
+
+                    warning_popup.style.display = "none";
+                    blur.style.filter = "none";
+                }
+
+                function submitForm() {
+                    $("#id_previously_added").val(JSON.stringify(classificationList));
+                    $("#modelForm").submit();
+                }
+
 				function addClass() {
 					var className = $("#class_name").val();
 					var minimumPercentage = $("#minimum_percentage").val();
 					var maximumPercentage = $("#maximum_percentage").val();
 					var hexColor = $("#id_hexColor").val();
-					var index = $("#id_index").val();
+					// var index = $("#id_index").val();
+
+                    classificationList.push({
+                        "class_name": className,
+                        "min_percentage": minimumPercentage,
+                        "max_percentage": maximumPercentage,
+                        "hex": hexColor
+                    })
 
 					var classification = document.createElement('p');
 					classification.style.marginBottom = "1.5%";
-					classification.innerText = "Name: " + className + "; Minimum %: " + minimumPercentage + "; Maximum %: " + maximumPercentage + "; Color: " + hexColor + "; Index: " + index;
+					classification.innerText = "Name: " + className + "; Minimum %: " + minimumPercentage + "; Maximum %: " + maximumPercentage + "; Color: " + hexColor;
 					document.getElementById("classAdded").appendChild(classification);
 
 					//clear classfication list form
@@ -221,7 +273,7 @@
 					document.getElementById("minimum_percentage").value = "";
 					document.getElementById("maximum_percentage").value = "";
 					document.getElementById("id_hexColor").value = "";
-					document.getElementById("id_index").value = "";
+					// document.getElementById("id_index").value = "";
 
 
 				}
