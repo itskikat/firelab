@@ -15,29 +15,37 @@
             integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
             crossorigin="">
         </script>
+        <!-- WICKET -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.6/wicket.js"
+            integrity="sha512-jUln1L5hm3qsRXyeWUMa5ol6DccVUrj7zQItoSmiqOcp0q7T99J4/aiEWI6mgWf0duCXpcNCvnQqZlF99bigLg=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer">
+        </script>
     {% endblock %}
         {% csrf_token %}
     </form>
 
-
     <form id="georreferencingForm" action="./progression" method="POST">
-    {% if frame is not None %}
-        
-        <div hidden>
-            {{ georreferencing.marker }}
-            {{ georreferencing.pixels }}
-            {{ georreferencing.geo }}
-            {{ georreferencing.frame_id }}
-            <input class="form-field" name="names" id="ptNames" >
-            
-        </div>
+
         {% csrf_token %}
-        <div id="img_prog"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
-        <div hidden id="polygon_georreferenced">
-        </div>
-            <img hidden draggable="false" id="workingImage" src= {{ frame.content.url }}>
-        </div>
-    {% endif %}
+        {% if frame is not None %}
+            <div hidden>
+                {{ georreferencing.marker }}
+                {{ georreferencing.pixels }}
+                {{ georreferencing.geo }}
+                {{ georreferencing.frame_id }}
+                {{ georreferencing.polygon_wkt }}
+              <input class="form-field" name="names" id="ptNames" >
+            </div>
+            <div id="img_prog"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
+                {% if segmented %}
+                    <div hidden id="polygon_georreferenced"> {{ segmented }}></div>
+                    <img hidden draggable="false" id="WorkingImage" src={{ frame.content.url }}>
+                {% else %}
+                    <img hidden draggable="false" id="workingImage" src={{ frame.content.url }}>
+                {% endif %}
+            </div>
+        {% endif %}
     </form>
 
 	<div class="toolkit">
@@ -113,25 +121,31 @@
         <button type="button" class="button icon solid" name="stopDraw" id="stopDraw">Stop Animation</button><br>
     </div>
     <br>
-	<!-- TODO see the best way to view the progression -->
-    <span hidden id="span_frameid"> {{ frame.id }}</span>
-	<div id="map" style="height: 750px;" hidden>
-
+  <div class="col-12" id="animationButtons" hidden>
+        <button type="button" class="button icon solid" name="drawPolygonButton" id="drawPolygonButton">Play Animation</button>
+        <button type="button" class="button icon solid" name="stopDraw" id="stopDraw">Stop Animation</button>
+        <br>
     </div>
+    <br>
+
+    <span hidden id="span_frameid"> {{ frame.id }}</span>
+    <span hidden id="span_projectid"> {{ project.id }}</span>
+	  <div id="map" style="height: 750px;" hidden></div>
+
 
     <div id="popUpGEO" title="Geo Coord Input">
         <small>Location Name:</small>
         <br>
         <input id='coordLocName' type='text' name='LocName' class='form-control'>
         <br>
+
         <small>Geographic Coordinates: lat, lon</small>
         <br>
         <input id='coordinates' type='text' name='coordinates' class='form-control'>
         <br>
-        <button class='btn btn-default'id='submit'> SAVE! </button>
+        <button class='btn btn-default'id='submit_geo'> SAVE! </button>
     </div>
 
-    
 
     <div id="loadPointPopUp" title="Point Finder" style="display:none" role="dialog" class="ui-dialog ui-corner-all ui-widget ui-widget-content ui-front ui-draggable">
         <small>Location Name:</small>
@@ -147,7 +161,17 @@
         <br>
         <button type="submit" class='btn btn-default'id='searchImageBtn'> SEARCH! </button>
     </form>
+    {% if warning %}
+    <div class="alert alert-warning" role="alert">
+        {{ warning }}
+    </div>
+    {% endif %}
+
     <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/678111-map-marker-512.png" id="georef_marker" style="display: none; position: absolute; width: 50px; height: 50px;" />
+
+    {% if wkts is not None %}
+    <p hidden id="WKTS_HIDDEN"> {{ wkts }} </p>
+    {% endif %}
 
     {% block extrajs %}
         <!-- This is necessary for the popUp -->
@@ -164,7 +188,5 @@
    
     </script>
     {% endblock %}
-
-
 
 {% endblock %}

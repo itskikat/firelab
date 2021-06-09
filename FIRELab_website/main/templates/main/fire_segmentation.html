@@ -118,6 +118,12 @@
     </div>
     {% endif %}
 
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+
     {% block extrajs %}
 
         <script src="{% static 'viewmodel/js/fire_seg.js' %}"></script>

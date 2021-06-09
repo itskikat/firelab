@@ -1,5 +1,11 @@
-        
-        var span_frameid = document.getElementById( 'span_frameid' ).textContent;
+
+        let map = document.getElementById("map");
+        let animationButtons = document.getElementById("animationButtons");
+        let span_projectid = document.getElementById('span_projectid').textContent.trim();
+        let span_frameid = document.getElementById('span_frameid').textContent.trim();
+        var img_prog = document.getElementById("img_prog");
+        let wkts_fromdjango;
+        let wkts = [];
         var pixels = [];
         var geoRefPolys=[];
         var geocoords = [];
@@ -207,30 +213,48 @@
 
 
 
+=======
+          
 
+
+// BUÉ RÚSTICO MAS TÁ A DAR SORRY
+$(document).ready(function() {
+    // Ave maria deus abençoe que se o Zagalo vê isto tem um AVC
+    if(window.location.href.indexOf("animation") > -1) {
+        openMap();
+    }
+})
+
+// Open and Show the Map, where the animation plays
 function openMap() {
-	var map = document.getElementById("map");
-	var animationButtons = document.getElementById("animationButtons");
-	var img_prog = document.getElementById("img_prog");
-    img_prog.style.display="none";
-	if ( window.getComputedStyle(map, null).getPropertyValue("display") === 'none' && window.getComputedStyle(animationButtons, null).getPropertyValue("display") === 'none') {
-        $("#play_tk").css("color", "#B55B29");
 	    map.style.display = 'block';
         animationButtons.style.display = 'block';
         workingImage.hide();
     } else {
-	    $("#play_tk").css("color", "");
-        map.style.display = 'none';
-        animationButtons.style.display = 'none';
-        workingImage.show();
+	    var url = 'javascript: window.location.replace(\'/projects/'+span_projectid+'/progression?animation);'
+	    document.getElementById( "play_tk" ).setAttribute( "onClick", url);
+	    closeMap();
+	    window.location.replace('/projects/'+span_projectid+'/progression?id='+span_frameid);
     }
-
 }
-var mapdiv = document.getElementById('map');
+function closeMap() {
+    $("#play_tk").css("color", "");
+    map.style.display = 'none';
+    animationButtons.style.display = 'none';
+    img_prog.style.display = 'flex';
+}
+function pickAColor() {
+    let available_colors = ['blue', 'cadetblue', 'coral', 'cyan', 'grey', 'green', 'orange', 'khaki', 'magenta', 'pink', 'violet', 'gold', 'maroon', 'olive', 'yellow'];
+    var random_color = available_colors[Math.floor(Math.random() * available_colors.length)];
+    return random_color;
 
-var mymap = L.map(mapdiv).setView([40.6405, -8.6538], 13);
 
-var osm = new L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+
+// ANIMAÇÃO QUE TÁ GG PARA OS PROFS MAS É UMA BECS RÚSTICA KSKSKS
+// SHOW THE MAP
+let mapdiv = document.getElementById('map');
+let mymap = L.map(mapdiv).setView([41.179, -8.609], 13); // Porto
+let osm = new L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     maxZoom: 18,
     id: 'mapbox/streets-v11',
@@ -239,48 +263,42 @@ var osm = new L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{
     accessToken: 'pk.eyJ1IjoiaXRza2lrYXQiLCJhIjoiY2tubGZyeGR4MGtlNjJxczVkMnc1cGJuMSJ9.AqoknzMtuAATdUKs-gGGTw'
 });
 osm.addTo(mymap);
-var assetLayerGroup = new L.LayerGroup();
-var coords1 =  '[ [40.640957, -8.658695], [40.648772, -8.623848], [40.614901, -8.656635], [40.640957, -8.658695] ]' ;
-var a = JSON.parse(coords1); // string to json
-var polygon1 = L.polygon(a, {color: 'red'}).bindPopup("Coordinates: " + coords1);
 
-var coords2 =  '[ [40.640957, -8.658695], [40.646764, -8.621168], [40.630807, -8.623571], [40.614133, -8.648682], [40.640957, -8.658695] ]' ;
-var b = JSON.parse(coords2); // string to json
-var polygon2 = L.polygon(b, {color: 'blue'}).bindPopup("Coordinates: " + coords2);
-
-
+let assetLayerGroup = new L.LayerGroup();
+// AVE MARIA 2.0
 function displayPolygons(){
-
-    if(!assetLayerGroup.hasLayer(polygon1) || !assetLayerGroup.hasLayer(polygon2)) {
-        assetLayerGroup.addLayer(polygon1);
-        assetLayerGroup.addTo(mymap);
-
-        setTimeout(function(){
-            assetLayerGroup.addLayer(polygon2);
-        }, 2000)
-        mymap.fitBounds(polygon1.getBounds()).fitBounds(polygon2.getBounds());
-    }
-    else {
-        assetLayerGroup.clearLayers()
-        window.clearTimeout()
-    }
-
+    var idx = 0;
+    wkts.forEach(function (item, indice, array) {
+        // ITEM == GEOJSON
+        if (!assetLayerGroup.hasLayer(item) && idx === 0) {
+            assetLayerGroup.addLayer(item);
+            idx+=1;
+            assetLayerGroup.addTo(mymap);
+            mymap.fitBounds(item.getBounds());
+        }
+        else if (idx !== 0) {
+            setTimeout(function(){
+                assetLayerGroup.addLayer(item);
+            }, 2000)
+            mymap.fitBounds(item.getBounds());
+        }
+        else {
+            assetLayerGroup.clearLayers()
+            window.clearTimeout()
+        }
+    });
 }
-
 let count;
-
 function start() {
     count = setInterval(displayPolygons, 4000)
 }
-
 function stop() {
     clearInterval(count)
 }
-
 $("#drawPolygonButton").on('click', (start));
 $("#stopDraw").on('click', (stop))
 
-
+// Clicking the map at X displays the coordinates
 var popup = L.popup();
 mymap.on('click', function(e){
     popup
@@ -290,15 +308,6 @@ mymap.on('click', function(e){
 });
 
 
-function openUpload() {
-	var upload = document.getElementById("upload"); 
-    var workingImage = document.getElementById("workingImage");
-	if ( window.getComputedStyle(upload, null).getPropertyValue("display") === 'none') {
-        upload.style.display = 'block';
-        workingImage.style.display = 'none';
-    } else {
-        upload.style.display = 'none';
-        workingImage.style.display = 'flex';
-    }
+
 	
 }
