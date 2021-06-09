@@ -68,6 +68,10 @@ class DrawGridForm(forms.Form):
     image_size = forms.CharField()
     image_id = forms.IntegerField()
 
+class PointNames(forms.Form):
+    ptNames = forms.CharField()
+
+
 class Georreferencing(forms.Form):
     marker = forms.BooleanField()
     pixels = forms.CharField()
@@ -81,3 +85,4 @@ class UploadCoordFile(forms.Form):
     def __init__(self, *args, **kwargs):
         super(UploadCoordFile, self).__init__(*args, **kwargs)
         self.fields['coords'].widget.attrs = ({'class': 'file-upload__input', 'name': 'coordsFile', 'id': 'coordsFile'})
+        

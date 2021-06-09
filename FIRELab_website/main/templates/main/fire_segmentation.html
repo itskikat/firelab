@@ -128,15 +128,14 @@
 
         <script src="{% static 'viewmodel/js/fire_seg.js' %}"></script>
         <script>
-        let workingImage = $("#workingImage")
-        let clicking, path;
-        let maskOn = true
-
+        workingImage = $("#workingImage");
+        
+        let click_test_1;
         workingImage.mousedown(function(event) {
             let selectedFileId = JSON.parse("{{image.file_info.id|escapejs}}");
             $("#id_image_id").val(selectedFileId);
 
-            clicking = true
+            click_test_1 = true
             path = []
             let x = event.pageX - this.offsetLeft;
             let y = event.pageY - this.offsetTop;
@@ -144,7 +143,7 @@
         });
 
         workingImage.mousemove(function(event) {
-            if (clicking !== true) return
+            if (click_test_1 !== true) return
 
             let x = event.pageX - this.offsetLeft;
             let y = event.pageY - this.offsetTop;
@@ -152,7 +151,7 @@
         });
 
         workingImage.mouseup(function(event) {
-            clicking = false;
+            click_test_1 = false;
             $("#id_path").val(JSON.stringify(path));
             document.getElementById("workingImageForm").submit();
         });

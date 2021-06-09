@@ -4,9 +4,11 @@ import math
 import pickle
 import time
 
+
 from django.core.files import File
 from django.core.files.images import ImageFile
 from django.shortcuts import render, redirect
+from django.contrib.gis.geos.point import Point
 from django.contrib.gis.geos import Polygon, LinearRing
 from django.db.models import Q
 from colormath.color_objects import sRGBColor, LabColor
@@ -33,7 +35,6 @@ def createAccountView(request):
 	if request.method == 'POST':
 		form = CreateAccountForm(request.POST)
 		if form.is_valid():
-			print(form)
 			user = form.save()
 			user.refresh_from_db()
 			return redirect('login')
@@ -430,9 +431,6 @@ def upload(request, project_id):
 		form = UploadImage(request.POST, request.FILES)
 		if form.is_valid():
 			name, extension = request.FILES['image'].name.split('.')
-			print(request.FILES)
-			print(name, extension)
-
 			try:
 				# file already exists in the server
 				FileInfo.objects.get(name=name, extension=extension, dir__project__id=project.id)
@@ -462,6 +460,21 @@ def upload(request, project_id):
 			_image.save()
 
 	return redirect("/projects/" + str(project_id) + "/segmentation")
+
+def upload_polygon(request, project_id):
+	if not request.user.is_authenticated:
+		return redirect("/login")
+	try:
+		project = Project.objects.get(id=project_id)
+	except Project.DoesNotExist:
+		return redirect("/projects")
+	if request.method == 'POST':
+		polygon=request.FILES['coords'].read()
+		image = ImageFrame.objects.get(file_info__id=request.POST['image_id'])
+		image.polygon=polygon
+		image.save()
+	
+	return redirect("/projects/" + str(project_id) + "/progression?id="+request.POST['image_id'])
 
 
 def upload_video(request, project_id):
@@ -539,7 +552,6 @@ def upload_video(request, project_id):
 				video_capture.release()
 				# delete content from model and from file system
 				video.content.delete()
-				print(video.content)
 
 	return redirect("/projects/" + str(project_id) + "/segmentation")
 
@@ -722,9 +734,8 @@ def generate_contour(request, file_id, project_id):
 	kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
 	binary = cv2.dilate(binary, kernel)
 	binary = cv2.erode(binary, kernel)
-
-	vertexes, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-
+	vertexes,_ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+	
 	if len(vertexes) > 1:
 		print("More than one polygon were identified")
 		# TODO: add return_bigger to Segmentation form and input on pop up
@@ -735,14 +746,12 @@ def generate_contour(request, file_id, project_id):
 	# return redirect("/segmentation?id=" + str(file_id)) + "&error=TooManyValues
 	else:
 		vertexes = vertexes[0]
-
 	# store polygon on db
 	wkt_list = []
 	for point in vertexes:
-		wkt_list.append((point[0][0], point[0][1]))
-	wkt_list.append((vertexes[0][0][0], vertexes[0][0][1]))
+		wkt_list+=[(point[0][0],point[0][1])]
+	wkt_list.append((vertexes[0][0][0],vertexes[0][0][1]))
 	wkt = tuple(wkt_list)
-
 	polygon = Polygon(LinearRing(wkt))
 	_image.polygon = polygon
 	_image.save()
@@ -764,10 +773,14 @@ def upload_polygon(request, project_id):
 		return redirect("/projects")
 	if request.method == 'POST':
 		polygon = request.FILES['coords'].read()
+
 		image = ImageFrame.objects.get(file_info__id=request.POST['image_id'])
 		image.polygon = polygon
 		image.save()
 	return redirect("/projects/" + str(project_id) + "/progression?id=" + request.POST['image_id'])
+
+
+
 
 
 def progression(request, project_id):
@@ -811,13 +824,20 @@ def progression(request, project_id):
 			except Exception:
 				print("ERROR IDK WHYYYY")
 				redirect(request.get_full_path())
+		pts=""
+		points = PointModel.objects.all().filter(frame=frame)
 
+		for p in points:
+			pts+= p.name+','+str(p.pix).split(';')[1].split('(')[1].split(')')[0]+','+str(p.geo).split(';')[1].split('(')[1].split(')')[0]+';'
+		
+		pts=pts[:-1]
+		print(pts)
 		param = {
 			'frame': frame,
+			'points':pts,
 			'project': project,
 			'project_dirs': Directory.objects.all().filter(project_id=project.id),
 			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-			'file_form': UploadCoordFile(),
 			'georreferencing': Georreferencing(),
 		}
 
@@ -825,7 +845,6 @@ def progression(request, project_id):
 			if len(wkts) == 1:
 				param['warning'] = "WARNING - Only one frame detected"
 			param['wkts'] = json.dumps(wkts)
-			print("WKTS ", json.dumps(wkts) )
 
 		# if the frame_id is valid check if it has been georreferenced
 		if frame is None or frame.polygon is None:
@@ -836,8 +855,17 @@ def progression(request, project_id):
 		return render(request, "main/fire_progression.html", param)
 
 	elif request.method == 'POST':
+		try:
+			if request.POST["frame_name"]:
+				_file_info = FileInfo.objects.all().filter(name=request.POST["frame_name"])
+				frame_id=_file_info.values('id').first()['id']
+				return redirect("/projects/" + str(project_id) + "/progression?id="+str(frame_id))
+		except:
+			print("no frame name")
+		
 		param = {
 			'frame': None,
+			'points': None,
 			'project': project,
 			'project_dirs': Directory.objects.all().filter(project_id=project.id),
 			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
@@ -846,7 +874,6 @@ def progression(request, project_id):
 
 		if 'frame_id' not in request.POST or request.POST['frame_id'] == '':
 			return redirect(request.build_absolute_uri())
-
 		mode = None
 		if 'marker' in request.POST:
 			param['georreferencing'] = Georreferencing(initial={'marker': True})
@@ -854,30 +881,48 @@ def progression(request, project_id):
 
 		# check if frame exists
 		_id = request.POST['frame_id']
-		try:
+		try:	
 			_frame = ImageFrame.objects.get(file_info_id=_id)
 			_frame_file = _frame.file_info
 			param['frame'] = _frame
+			pts=""
+			points = PointModel.objects.all().filter(frame=_frame)
+
+			for p in points:
+				pts+= p.name+','+str(p.pix).split(';')[1].split('(')[1].split(')')[0]+','+str(p.geo).split(';')[1].split('(')[1].split(')')[0]+';'
+			
+			pts=pts[:-1]
+			param['points']=pts
 		except ImageFrame.DoesNotExist:
 			return render(request, 'main/fire_progression.html', param)
 
 		if 'pixels' not in request.POST or 'geo' not in request.POST:
 			return render(request, "main/fire_progression.html", param)
-
 		# compute the pairs from the coordinates
 		pixels_json = json.loads(request.POST['pixels'])
 		geo_json = json.loads(request.POST['geo'])
-
+		names_json = json.loads(request.POST['names'])
 		# if the frame_id is valid check if it has been georreferenced
 		if _frame is None or _frame.polygon is None:
 			param['error'] = "PROGRESSION ERROR - The frame needs to be segmented first!!"
 			return render(request, "main/fire_segmentation.html", param)
 
 		pts_src = np.array(pixels_json)
+		pts_names = np.array(names_json)
 		pts_dst = np.array(geo_json)
-				
+		for i in range(len(pts_src)):
+			_point = PointModel(name=pts_names[i],geo=Point(tuple(pts_dst[i])),pix=Point(tuple(pts_src[i])))
+			_point.frame = _frame
+			try:
+				_point.save()
+			except:
+				print("point already exists")
+		
 		#given reference points	 from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
 		h, status = cv2.findHomography(pts_src, pts_dst)
+		
+		coords = _frame.polygon.wkt
+
 
 		coords = _frame.polygon.wkt
 		coords = coords.split("((")[1].split("))")[0].split(",")
@@ -890,6 +935,7 @@ def progression(request, project_id):
 				geo_coord = [0, 0]
 			else:
 				z = point_homogenous[2]
+
 				# Longitude, Latitude
 				geo_coord += [ (point_homogenous[1]/z, point_homogenous[0]/z) ]
 
@@ -900,12 +946,21 @@ def progression(request, project_id):
 			wkt_list.append(point)
 		wkt_list.append(last)
 		wkt = tuple(wkt_list)
-
 		geo_polygon = Polygon(LinearRing(wkt))
 		_frame.geoRefPolygon = geo_polygon
 		_frame.save()
+		pts=""
+		points = PointModel.objects.all().filter(frame=_frame)
+
+		for p in points:
+			pts+= p.name+','+str(p.pix).split(';')[1].split('(')[1].split(')')[0]+','+str(p.geo).split(';')[1].split('(')[1].split(')')[0]+';'
+		
+		pts=pts[:-1]
+		param['points']=pts
+		# Converted polygon WKT, to be analyzed by JS
 
 		param['georreferenced'] = geo_polygon
 	return render(request, "main/fire_progression.html", param)
 
+	
 

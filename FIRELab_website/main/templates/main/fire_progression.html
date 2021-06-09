@@ -22,9 +22,11 @@
             referrerpolicy="no-referrer">
         </script>
     {% endblock %}
-
+        {% csrf_token %}
+    </form>
 
     <form id="georreferencingForm" action="./progression" method="POST">
+
         {% csrf_token %}
         {% if frame is not None %}
             <div hidden>
@@ -33,6 +35,7 @@
                 {{ georreferencing.geo }}
                 {{ georreferencing.frame_id }}
                 {{ georreferencing.polygon_wkt }}
+              <input class="form-field" name="names" id="ptNames" >
             </div>
             <div id="img_prog"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
                 {% if segmented %}
@@ -47,57 +50,89 @@
 
 	<div class="toolkit">
 		<table>
-			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
+			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
-                <tr>
-                    <td id="image_tk" style="cursor: pointer;" onclick="imageOn()"><i class="fas fa-image fa-lg"></i></td>
-                    <td><i class="fas fa-search-plus fa-lg"></i></td>
-                </tr>
-                <tr>
-                    <td id="marker" {% if georreferencing.marker.value == True %} style="color: #B55B29; cursor: pointer;" {% endif %} onclick="markerOn()"><i class="fas fa-map-marker-alt fa-lg"></i></td>
-                    <td><i class="fas fa-search-minus fa-lg"></i></td>
-                </tr>
-                <tr>
-                    <td id="play_tk" onclick="window.location.replace('/projects/{{ project.id }}/progression?animation');" style="cursor: pointer;"><i class="fas fa-play fa-lg"></i></td>
-                    <td onclick="saveCoords()" style="cursor: pointer;"><i class="fas fa-save fa-lg" aria-hidden="true"></i></td>
-                </tr>
-                <tr>
-                    <td><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td>
-                    <td><a onclick="openUpload()" style="cursor: pointer;"><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td>
-                </tr>
-                <tr>
-                    <td><i class="fas fa-expand-arrows-alt fa-lg" aria-hidden="true"></i></td>
-                    <td><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
-                </tr>
-		    </tbody>
+			<tr>
+				<td id="showImage"><i class="fas fa-image fa-lg"></i></td>
+				<td id="zoomIn"><i class="fas fa-search-plus fa-lg"></i></td>
+			</tr>
+			<tr>
+				<td id="marker" onclick="markerOn()"><i class="fas fa-map-marker-alt fa-lg"></i></td>
+				<td id="zoomOut"><i class="fas fa-search-minus fa-lg"></i></td>
+			</tr>
+			<tr>
+                <td id="play_tk" onclick="window.location.replace('/projects/{{ project.id }}/progression?animation');" style="cursor: pointer;"><i class="fas fa-play fa-lg"></i></td>
+                <td onclick="saveCoords()"><i class="fas fa-save fa-lg" aria-hidden="true"></i></td>
+			</tr>
+			<tr>
+				<!-- <td id="stack"><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td> -->
+                <td id="undo"><a ><i class="fa fa-undo" aria-hidden="true"></i></td>
+                <td id="loadPoint"><i class="fa fa-crosshairs" aria-hidden="true"></i></td>
+			</tr>
+            <tr>
+                <td id="loadImage"><a ><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td>
+                <td><a ><i hidden></i></td>
+            </tr>
+			<tr>
+				<td><i class="fas fa-expand-arrows-alt fa-lg" aria-hidden="true"></i></td>
+				<td id="help"><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
+			</tr>
+		</tbody>
 		</table>
 	</div>
-
-	<div hidden class="upload" id="upload">
+    <div class="pixel_table">
+        <table hidden id="pixel_table_coords">
+            <tr id="head_Of_Coord_Table">
+                <td>
+                    Location Name
+                </td>
+                <td>
+                    Pixel coords
+                </td>
+                <td>
+                    Geo Coords
+                </td>
+            </tr>
+        </table>
+    </div>
+    {%if points is not None %}
+    <span hidden id="frame_points">{{points}}</span>
+    {% endif %}
+   
+	<!-- <div hidden class="upload" id="upload">
 		<h1>Upload Files</h1>
-		<p>If you have the file that contains the polygon coordinates (in WKT format), please use this tool in order to see how the fire evolved:</p>
+		<p>If you have the polygon coordinates, or the file that contains them, please use this tool in order to see how the fire evolved:</p>
 		<form id="UploadCoordFile" style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload_polygon' project.id %}" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ file_form.coords }}
-            <div hidden> {{ file_form.image_id }} </div>
-            <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
-            <span class="file-upload__label"></span>
-            <input type="button" id="submit_pol" value="Upload Coords">
-        </form>
-	</div>
+            <div hidden>
+                {{ file_form.image_id }}
+            </div>
+                {% csrf_token %}
+                
+                {{ file_form.coords }}
+                <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
+                <span class="file-upload__label"></span>
+                <input type="button" id="submit_pol" value="Upload Coords">
+			</form>
+        <button class="button icon solid" type="button" value="Draw" name="drawPolygonButton" id="drawPolygonButton" onclick="drawMap()">DRAW </button><br>
+	</div> -->
 
     <div class="col-12" id="animationButtons" hidden>
         <button type="button" class="button icon solid" name="drawPolygonButton" id="drawPolygonButton">Play Animation</button>
-        <button type="button" class="button icon solid" name="stopDraw" id="stopDraw">Stop Animation</button>
-        <br>
+        <button type="button" class="button icon solid" name="stopDraw" id="stopDraw">Stop Animation</button><br>
     </div>
     <br>
 
     <span hidden id="span_frameid"> {{ frame.id }}</span>
     <span hidden id="span_projectid"> {{ project.id }}</span>
-	<div id="map" style="height: 750px;" hidden></div>
+	  <div id="map" style="height: 750px;" hidden></div>
 
-    <div id="popUpGEO" >
+
+    <div id="popUpGEO" title="Geo Coord Input">
+        <small>Location Name:</small>
+        <br>
+        <input id='coordLocName' type='text' name='LocName' class='form-control'>
+        <br>
+
         <small>Geographic Coordinates: lat, lon</small>
         <br>
         <input id='coordinates' type='text' name='coordinates' class='form-control'>
@@ -105,6 +140,21 @@
         <button class='btn btn-default'id='submit_geo'> SAVE! </button>
     </div>
 
+
+    <div id="loadPointPopUp" title="Point Finder" style="display:none" role="dialog" class="ui-dialog ui-corner-all ui-widget ui-widget-content ui-front ui-draggable">
+        <small>Location Name:</small>
+        <input id='coordNameToSearch' type='text' name='coordinates' class='form-control'>
+        <br>
+        <button class='btn btn-default'id='SearchPointBtn'> SEARCH! </button>
+    </div>
+
+    <form action="./progression" method="POST" id="loadImagePopUp" title="Image Finder" style="display:none" role="dialog" class="ui-dialog ui-corner-all ui-widget ui-widget-content ui-front ui-draggable">
+        {% csrf_token %}
+        <small>Location Name:</small>
+        <input id='imageNameToSearch' type='text' name='frame_name' class='form-control'>
+        <br>
+        <button type="submit" class='btn btn-default'id='searchImageBtn'> SEARCH! </button>
+    </form>
     {% if warning %}
     <div class="alert alert-warning" role="alert">
         {{ warning }}
@@ -121,7 +171,16 @@
         <!-- This is necessary for the popUp -->
         <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-        <script src="{% static 'viewmodel/js/fire_prog.js' %}"></script>
+        <!--
+            <script src="{% static 'viewmodel/js/map.js' %}"></script>
+        -->
+    <script src="{% static 'viewmodel/js/fire_prog.js' %}"></script>
+
+    <!-- TODO: Move this script into viewmodel once it's finished -->
+    <script>
+        
+   
+    </script>
     {% endblock %}
 
 {% endblock %}

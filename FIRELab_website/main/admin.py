@@ -3,6 +3,7 @@ from main.models import *
 
 # Register your models here.
 admin.site.register(FileInfo)
+admin.site.register(PointModel)
 admin.site.register(Project)
 admin.site.register(Directory)
 admin.site.register(Video)

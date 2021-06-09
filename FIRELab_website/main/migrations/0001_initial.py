@@ -44,6 +44,15 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
+            name='PointModel',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=50, unique=True),),
+                ('pix', django.contrib.gis.db.models.fields.PointField(blank=True, default=None, null=True)),
+                ('geo', django.contrib.gis.db.models.fields.PointField(blank=True, default=None, null=True)),
+            ],
+        ),
+        migrations.CreateModel(
             name='Grid',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),

@@ -8,6 +8,18 @@
 		}
 
 
+
+#undo, #loadPoint{
+   font-weight: bold;
+   font-size:27px;
+}
+
+
+#loadPointPopUp {
+    display: none;
+}
+
+
 /* Toolkit */
 .right .toolkit {
 	width: 8%;
@@ -16,6 +28,24 @@
    	top:0;
    	right:1em;
 	padding-top: 1em;
+}
+
+.pixel_table table tr {
+   font-size: 12px;
+   font-weight:normal;
+   margin: 0;
+   padding: 0;
+   border: 0;
+}
+#head_Of_Coord_Table {
+    font-size: 12px;
+    font-weight:bold;
+}
+
+
+.pixel_table table tr td {
+    border:1px solid black;
+    text-align:center;
 }
 
 

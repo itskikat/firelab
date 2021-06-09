@@ -1,58 +1,214 @@
-/* VARIABLES */
-let toolkit = document.getElementById("toolkit");
-let icon = document.getElementById("close");
-let cp = document.getElementById("cp");
 
-let img_prog = document.getElementById("img_prog");
-let upload = document.getElementById("upload");
+        let map = document.getElementById("map");
+        let animationButtons = document.getElementById("animationButtons");
+        let span_projectid = document.getElementById('span_projectid').textContent.trim();
+        let span_frameid = document.getElementById('span_frameid').textContent.trim();
+        var img_prog = document.getElementById("img_prog");
+        let wkts_fromdjango;
+        let wkts = [];
+        var pixels = [];
+        var geoRefPolys=[];
+        var geocoords = [];
+        var clicking;
+        var k =0;
+        var currPixelPoint;
+        var CoordPopUp = $('#popUpGEO');
+        var inputForCoords = $('#coordinates');
+        var inputForLocName = $('#coordLocName');
+        let workingImage = $('#workingImage');
+        var loadPointPopUpDialog = $('#loadPointPopUp');
+        var loadImagePopUpDialog = $('#loadImagePopUp');
+        var pointNameToSearch = $('#coordNameToSearch');
+        var imageNameToSearch = $('#imageNameToSearch');
+        var marker = $('#marker');
+        var ptNames=[];
+        CoordPopUp.dialog({
+            autoOpen: false,
+            show: {
+                effect: "blind",
+                duration: 300
+            },
+            draggable: true,
+            hide: "blind",
+            resizable: false,
+            height: "auto",
+            width: 300,
+            modal: true,
+        });
+        loadImagePopUpDialog.dialog({
+            autoOpen: false,
+            show: {
+                effect: "blind",
+                duration: 300
+            },
+            draggable: true,
+            hide: "blind",
+            resizable: false,
+            height: "auto",
+            width: 300,
+            modal: true,
+        });
 
-let map = document.getElementById("map");
-let animationButtons = document.getElementById("animationButtons");
-let span_projectid = document.getElementById('span_projectid').textContent.trim();
-let span_frameid = document.getElementById('span_frameid').textContent.trim();
-let wkts_fromdjango;
-let wkts = [];
+        loadPointPopUpDialog.dialog({
+            autoOpen: false,
+            show: {
+                effect: "blind",
+                duration: 300
+            },
+            draggable: true,
+            hide: "blind",
+            resizable: false,
+            height: "auto",
+            width: 300,
+            modal: true,
+        });
+
+        $('#showImage').click(function () {
+            workingImage.toggle();
+        });
+
+        $('#cp').click(function () {
+            $('#toolkit').toggle();
+        });
+
+      
+
+        workingImage.mousedown(function (event) {
+            if(clicking){
+                let x = event.pageX - this.offsetLeft;
+                let y = event.pageY - this.offsetTop;
+                currPixelPoint=[x, y];
+                 // Move circle here.
+                marker.css('top', event.pageY - 50);
+                marker.css('left', event.pageX - 25);
+                var pos = {my: "left top", at: "left bottom", of: event};
+                inputForCoords.val('');
+                inputForLocName.val('');
+                CoordPopUp.dialog("option", "position", pos)
+                    .dialog("open");
+            }
+
+        });
+    
+
+        function saveCoords() {
+            $("#id_frame_id").val(JSON.parse(span_frameid));
+            clicking = false;
+            $('#id_pixels').val(JSON.stringify(pixels));
+            $('#ptNames').val(JSON.stringify(ptNames));
+            $('#id_geo').val(JSON.stringify(geocoords));
+            document.getElementById("georreferencingForm").submit();
+        };
+         
+        $('#loadPoint').click(function () {
+            pointNameToSearch.val('');
+            loadPointPopUpDialog.dialog("open");
+        });
+
+        $('#loadImage').click(function () {
+            imageNameToSearch.val('');
+            loadImagePopUpDialog.dialog("open");
+        });
+       
+
+        $('#SearchPointBtn').click(function () {
+            var imagePointsAsString = document.getElementById('frame_points').textContent;
+            console.log(imagePointsAsString);
+            var imagePointsArray =imagePointsAsString.split(";"); //each element of the array is like : "a,POINT (2 7),POINT (0 0)"
+            for(let i=0; i<imagePointsArray.length;i++){
+                let namePixGeo = imagePointsArray[i].split(',');  //split to access name, pix, geo
+                if(namePixGeo[0]==pointNameToSearch.val() && !ptNames.includes(namePixGeo[0])){
+                    let pixAux=namePixGeo[1].split(' ');
+                    pixels.push([parseFloat(pixAux[0]),parseFloat(pixAux[1])]);
+                    let geoAux=namePixGeo[2].split(' ');
+                    geocoords.push([parseFloat(geoAux[0]),parseFloat(geoAux[1])]);
+                    ptNames.push(namePixGeo[0]);
+                    var tr = "<tr>";
+                    tr += "<td>"+namePixGeo[0]+"</td>"+"<td>"+pixAux+"</td>"+"<td>"+geoAux+"</td>"+"</tr>";
+                    document.getElementById("pixel_table_coords").innerHTML += tr;  
+                }
+            }
+            if(ptNames.length>0){
+                $("#pixel_table_coords").attr('hidden', false);
+            }
+            loadPointPopUpDialog.dialog("close");
+        });
+       
 
 
+        $('#undo').click(function () {
+           if(pixels.length>0){
+                pixels.pop();
+                let pix_table =document.getElementById("pixel_table_coords").children;
+                pix_table[pix_table.length-1].remove(pix_table[pix_table.length-1].children);
+            }
+            if(geocoords.length>0){
+                geocoords.pop();
+            }
+            if(ptNames.length>0){
+                ptNames.pop();
+            }
+            if(pixels.length==0){
+                $("#pixel_table_coords").attr('hidden', true);
+            }
+            
+        });
+        
+        
 
-/* FUNCTIONS */
+        $('#submit_geo').click(function () {
+            $("#pixel_table_coords").attr('hidden', false);
+            ptNames.push(inputForLocName.val());
+            coords = inputForCoords.val();
+            pixels.push(currPixelPoint);
+            var pointName = inputForLocName.val();
+            var coords = inputForCoords.val().split(",");
+            geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
+            table_pixel_coord=pixels[pixels.length-1];
+            table_geo_coord=geocoords[geocoords.length-1];
+            var tr = "<tr>";
+            tr += "<td>"+pointName+"</td>"+"<td>"+table_pixel_coord+"</td>"+"<td>"+table_geo_coord+"</td>"+"</tr>";
+            document.getElementById("pixel_table_coords").innerHTML += tr;
+            CoordPopUp.dialog("close");
+        });
+      
 
-// Open and Close the Toolkit
-function openCloseToolkit() {
-	if (toolkit.style.display === "none") {
-		icon.className = "fas fa-times";
-		toolkit.style.display = "block";
-	}
-	else {
-		toolkit.style.display = "none";
-		icon.className = "fas fa-angle-down";
-		cp.title = "Open Toolkit";
-	}
-}
+    
 
-// Show the Image
-function imageOn() {
-    var workingImage = document.getElementById('workingImage');
-    if (window.getComputedStyle(workingImage, null).getPropertyValue("display") === 'none') {
-        workingImage.style.display = 'block';
-        $("#image_tk").css("color", "#B55B29");
-    }
-    else {
-        workingImage.style.display = 'none';
-        $("#image_tk").css("color", "");
-    }
-}
+        function markerOn() {
+            if($("#id_marker").attr('checked')=='checked'){
+                clicking=false;
+                $("#id_marker").attr('checked', false);
+                $("#id_eraser").attr('checked', true);
+                document.getElementById("marker").style.color="";
+                $("#eraser").css("color", "#B55B29");
+            }
+            else{
+                clicking=true;
+                $("#id_marker").attr('checked', true);
+                $("#id_eraser").attr('checked', false);
+                document.getElementById("marker").style.color="#B55B29";
+                $("#eraser").css("color", "");
+            }
+            
+        };
 
-// Open Upload Form (for user input of polygon-coordinates file)
-function openUpload() {
-	if (window.getComputedStyle(upload, null).getPropertyValue("display") === 'none') {
-        upload.style.display = 'block';
-        img_prog.style.display = 'none';
-    } else {
-        upload.style.display = 'none';
-        img_prog.style.display = 'block';
-    }
-}
+
+        $('#zoomIn').click(function () {
+            let img = document.getElementById("workingImage");
+            let currWidth = img.clientWidth;
+            img.style.width = (currWidth+100)+"px";
+        })
+        
+        $('#zoomOut').click(function () {
+            let img = document.getElementById("workingImage");
+            let currWidth = img.clientWidth;
+            img.style.width = (currWidth-100)+"px";
+
+        })
+
+          
+
 
 // BUÉ RÚSTICO MAS TÁ A DAR SORRY
 $(document).ready(function() {
@@ -102,84 +258,6 @@ function pickAColor() {
     var random_color = available_colors[Math.floor(Math.random() * available_colors.length)];
     return random_color;
 }
-
-// Display that the geo-marker is on
-function markerOn() {
-    $("#id_marker").attr('checked', true);
-    $("#id_eraser").attr('checked', false);
-    $("#marker").css("color", "#B55B29")
-    $("#eraser").css("color", "")
-}
-
-/* ANYGAYS, MORE VARIABLES */
-
-let coordsPopUp = $('#popUpGEO');
-let input = $('#coordinates');
-let workingImage = $('#workingImage');
-let pixels = []
-let geocoords = []
-let georef_marker = $('#georef_marker');
-let k = 0;
-let clicking;
-
-
-// User input for Geographic Coordinates
-coordsPopUp.dialog({
-    autoOpen: false,
-    show: {
-        effect: "blind",
-        duration: 300
-    },
-    draggable: true,
-    hide: "blind",
-    resizable: false,
-    height: "auto",
-    width: 300,
-    modal: true,
-});
-
-workingImage.mousedown(function (event) {
-    clicking = true
-    let x = event.pageX - this.offsetLeft;
-    let y = event.pageY - this.offsetTop;
-    pixels.push([x, y])
-    // Move position marker here.
-    georef_marker.css('top', event.pageY - 50);
-    georef_marker.css('left', event.pageX - 25);
-    if (georef_marker.css('display') === 'none') {
-        georef_marker.css('display', 'block');
-    }
-    var pos = {my: "left top", at: "left bottom", of: event}
-    input.val('')
-    coordsPopUp.dialog("option", "position", pos)
-        .dialog("open");
-});
-
-// Place coordinates (Pixels + Geo) in array
-$('#submit_geo').click(function () {
-    var coords = input.val().split(",")
-    geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
-    georef_marker.css('display', 'none')
-    coordsPopUp.dialog("close");
-});
-
-// Submit Polygon File
-$('#submit_pol').click(function () {
-    $("#id_image_id").val("{{frame.id}}");
-    document.getElementById("UploadCoordFile").submit();
-});
-
-// POST form with Coordinates (Pixels + Geo)
-function saveCoords() {
-    $("#id_frame_id").val(JSON.parse(span_frameid));
-    clicking = false;
-    $('#id_pixels').val(JSON.stringify(pixels));
-    $('#id_geo').val(JSON.stringify(geocoords));
-    document.getElementById("georreferencingForm").submit();
-}
-
-
-
 // ANIMAÇÃO QUE TÁ GG PARA OS PROFS MAS É UMA BECS RÚSTICA KSKSKS
 // SHOW THE MAP
 let mapdiv = document.getElementById('map');
