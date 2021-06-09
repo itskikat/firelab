@@ -79,6 +79,7 @@
                 <div>
                     <span id="startingTimestamp"></span><br>
                     <span id="endingTimestamp"></span>
+                    <label style="color: black">Extraction starting time:</label>
                     {{ video_form.startingDateTime }}
                 </div>
                 <div hidden>
@@ -177,19 +178,16 @@
                 result = result['media']['track']
                 let generalData = result[0]
                 if (generalData['Tagged_Date'] && generalData['Duration']) {
-                    console.log(generalData['Tagged_Date'], generalData['Duration'])
                     let starting = new Date(generalData['Tagged_Date'].split(" ")[1] + "T" + generalData['Tagged_Date'].split(" ")[2])
-                    console.log(starting.toISOString())
                     $("#id_videoOriginDateTime").val(starting.toISOString())
                     startingTimeStamp.innerText = "Starting time: " + starting.toUTCString()
+                    $("#id_startingDateTime").val(starting.toISOString().replace("T", " ").substr(0, starting.toISOString().length-5))
 
                     let durationInSeconds = generalData['Duration'];
-
                     starting.setSeconds(durationInSeconds.split(".")[0])
                     starting.setMilliseconds(durationInSeconds.split(".")[1])
                     endingTimestamp.innerText = "Ending Time: " + starting.toUTCString()
                 }
-                //console.log(result.replace("\t", "").replace(/\s/g,'').split(/[:\n\\]+/))
               }).catch((error) => {
                   console.log("An error occurred", error)
                 output.value = `An error occurred: ${error.stack}`

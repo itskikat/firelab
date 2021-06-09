@@ -9,9 +9,8 @@ from datetime import datetime, timedelta
 from django.core.files import File
 from django.core.files.images import ImageFile
 from django.shortcuts import render, redirect
-from django.contrib.gis.geos import Polygon, LinearRing
+from django.contrib.gis.geos import Polygon, LinearRing, Point
 from django.db.models import Q, Min, Max
-
 
 from FIRELab_website.settings import MEDIA_ROOT
 from main import utils
@@ -28,7 +27,6 @@ def indexView(response):
     return render(response, "main/home.html", {})
 
 
-
 # Create new user account
 def createAccountView(request):
     data = {}
@@ -42,15 +40,20 @@ def createAccountView(request):
             # create farsite default model
             farsite_model = FuelModel(name="FARSITE", user=user)
             farsite_model.save()
-            no_vegetation_class = Classification(name="No vegetation", minPercentage=0, maxPercentage=0, hexColor="FF1414", classificationIndex=0, model=farsite_model)
+            no_vegetation_class = Classification(name="No vegetation", minPercentage=0, maxPercentage=0,
+                                                 hexColor="FF1414", classificationIndex=0, model=farsite_model)
             no_vegetation_class.save()
-            low_vegetation_class = Classification(name="Low vegetation", minPercentage=1, maxPercentage=20, hexColor="FFA500", classificationIndex=1, model=farsite_model)
+            low_vegetation_class = Classification(name="Low vegetation", minPercentage=1, maxPercentage=20,
+                                                  hexColor="FFA500", classificationIndex=1, model=farsite_model)
             low_vegetation_class.save()
-            medium_vegetation_class = Classification(name="Medium vegetation", minPercentage=21, maxPercentage=50, hexColor="F0DE7A", classificationIndex=2, model=farsite_model)
+            medium_vegetation_class = Classification(name="Medium vegetation", minPercentage=21, maxPercentage=50,
+                                                     hexColor="F0DE7A", classificationIndex=2, model=farsite_model)
             medium_vegetation_class.save()
-            high_vegetation_class = Classification(name="High vegetation", minPercentage=51, maxPercentage=80, hexColor="58d383", classificationIndex=3, model=farsite_model)
+            high_vegetation_class = Classification(name="High vegetation", minPercentage=51, maxPercentage=80,
+                                                   hexColor="58d383", classificationIndex=3, model=farsite_model)
             high_vegetation_class.save()
-            deep_vegetation_class = Classification(name="Deep vegetation", minPercentage=81, maxPercentage=100, hexColor="14502D", classificationIndex=4, model=farsite_model)
+            deep_vegetation_class = Classification(name="Deep vegetation", minPercentage=81, maxPercentage=100,
+                                                   hexColor="14502D", classificationIndex=4, model=farsite_model)
             deep_vegetation_class.save()
 
             return redirect('/login')
@@ -348,7 +351,9 @@ def vegetation(response, project_id):
             shape = to_classify.shape[:2]
             with concurrent.futures.ThreadPoolExecutor(max_workers=len(classification_total)) as executor:
                 future_mask = {
-                    executor.submit(utils.compute_mask, tiles.filter(classification=classification_index), cell_size, classification_total.filter(classificationIndex=classification_index).first(), shape): classification_index
+                    executor.submit(utils.compute_mask, tiles.filter(classification=classification_index), cell_size,
+                                    classification_total.filter(classificationIndex=classification_index).first(),
+                                    shape): classification_index
                     for classification_index in range(0, len(classification_total))
                 }
 
@@ -478,7 +483,8 @@ def vegetation(response, project_id):
             # factor is the multiplication factor between the dimensions in the frontend and the image's real dimensions
             # multiplied by 10 because the map is compressed 10% to create the png
             x_factor, y_factor = real_width / int(img_width), real_height / int(img_height)
-            brush_path = [(math.floor(int(p[0]) * x_factor) * 10, math.floor(int(p[1]) * y_factor) * 10) for p in brush_path ]
+            brush_path = [(math.floor(int(p[0]) * x_factor) * 10, math.floor(int(p[1]) * y_factor) * 10) for p in
+                          brush_path]
 
             # get top left in meters
             top_left_pixels = _grid.topLeftCoordinate
@@ -504,7 +510,7 @@ def vegetation(response, project_id):
 
                 # compute the offset of the point to the top left
                 point_meters = utils.ortophoto_transformation_pixel_to_coordinate(ortophoto_path, point[0], point[1])
-                diff = [round(point_meters[0]-top_left_meters[0]), round(top_left_meters[1]-point_meters[1])]
+                diff = [round(point_meters[0] - top_left_meters[0]), round(top_left_meters[1] - point_meters[1])]
                 # print('offset:', diff)
 
                 # get column and row of point in grid
@@ -512,23 +518,23 @@ def vegetation(response, project_id):
                 row = diff[1] // cell_size
 
                 # get the affected tiles
-                column_range = [math.floor(column - brush_size/2), math.floor(column + brush_size/2)]
-                row_range = [math.floor(row - brush_size/2), math.floor(row + brush_size/2)]
+                column_range = [math.floor(column - brush_size / 2), math.floor(column + brush_size / 2)]
+                row_range = [math.floor(row - brush_size / 2), math.floor(row + brush_size / 2)]
 
                 range_points = [(x, y)
-                                for x in range(column_range[0], column_range[1]+1)
-                                for y in range(row_range[0], row_range[1]+1)
+                                for x in range(column_range[0], column_range[1] + 1)
+                                for y in range(row_range[0], row_range[1] + 1)
                                 if (x, y) not in affected_points]
                 affected_points.extend(range_points)
 
-            affected_tiles = Tile.objects.all().filter(grid=_grid)\
-                .filter(position__in=affected_points)\
+            affected_tiles = Tile.objects.all().filter(grid=_grid) \
+                .filter(position__in=affected_points) \
                 .filter(~Q(classification=classification))
             affected_tiles.update(classification=classification)
 
             return redirect("/projects/" + str(project_id) + "/vegetation?grid=" +
                             str(manual_classifier_form.cleaned_data['grid'])
-                            + '&selected=' + str(classification) + "&brush=" + str(brush_size+1))
+                            + '&selected=' + str(classification) + "&brush=" + str(brush_size + 1))
 
     return redirect("/projects/" + str(project_id) + "/vegetation")
 
@@ -626,10 +632,10 @@ def export_fuel_map(request, project_id, grid_id):
 
         # tile list da bd
         file_output = str(column) + '\n' + \
-            str(row) + '\n' + \
-            str(x_bottom_left_meters) + '\n' + \
-            str(y_bottom_left_meters) + '\n' + \
-            str(cell_size) + '\n'
+                      str(row) + '\n' + \
+                      str(x_bottom_left_meters) + '\n' + \
+                      str(y_bottom_left_meters) + '\n' + \
+                      str(cell_size) + '\n'
 
         tile_list = Tile.objects.all().filter(grid_id=grid.id)
         print(tile_list.filter(position=[0, 0]))
@@ -640,7 +646,8 @@ def export_fuel_map(request, project_id, grid_id):
             for c in range(column):
                 elem = tile_list.filter(position=[c, r]).first()
                 # TODO: exception when has no classification
-                elem_percentage = float(Classification.objects.all().filter(model=model, classificationIndex=elem.classification).first().minPercentage)
+                elem_percentage = float(Classification.objects.all().filter(model=model,
+                                                                            classificationIndex=elem.classification).first().minPercentage)
                 if elem_percentage == 0:
                     elem_percentage = 99.0
                 tiles_str += formatted_str.format(elem_percentage) + ' '
@@ -750,7 +757,7 @@ def upload(request, project_id):
         if form.is_valid():
 
             user_quota = utils.compute_user_quota(request.user)
-            file_size_mb = round(request.FILES['image'].size / 1024**2, 3)
+            file_size_mb = round(request.FILES['image'].size / 1024 ** 2, 3)
 
             if user_quota + file_size_mb >= 5 * 1024:
                 return redirect("/projects/" + str(project_id) + "/segmentation?error=quota_surpassed")
@@ -857,7 +864,8 @@ def upload_video(request, project_id):
                         if cur_frame % step == 0:
                             frame_name = "{}_{}".format(name, frame_index)
                             timestamp = (cur_frame + temp) / fps
-                            print("Captured frame at second", timestamp, "(" + str(originDateTime + timedelta(seconds=timestamp)) + ")")
+                            print("Captured frame at second", timestamp,
+                                  "(" + str(originDateTime + timedelta(seconds=timestamp)) + ")")
 
                             _, frame_arr = cv2.imencode('.png', frame)  # Numpy one-dim array representative of the img
                             frame_bytes = frame_arr.tobytes()
@@ -1104,7 +1112,6 @@ def generate_contour(request, file_id, project_id):
     return redirect('/projects/' + str(project.id) + '/segmentation?id=' + str(file_id))
 
 
-
 # DISPERFIRE FILE EXPORT VIEW
 def export_disperfire_file(request, project_id, video_id, grid_id):
     if not request.user.is_authenticated:
@@ -1132,12 +1139,12 @@ def export_disperfire_file(request, project_id, video_id, grid_id):
     frame.geoRefPolygon = poly
     frame.save()
 
-    coords = ((-7.615859, 41.391369), (-7.615437, 41.388883), (-7.612594, 41.388883), (-7.613800, 41.391282), (-7.615859, 41.391369))
+    coords = ((-7.615859, 41.391369), (-7.615437, 41.388883), (-7.612594, 41.388883), (-7.613800, 41.391282),
+              (-7.615859, 41.391369))
     poly = Polygon(coords)
     frame = ImageFrame.objects.get(id=22)
     frame.geoRefPolygon = poly
     frame.save()
-
 
     # get top left in meters
     cell_size = _grid.cell_size
@@ -1184,23 +1191,25 @@ def export_disperfire_file(request, project_id, video_id, grid_id):
             min_row = max_row
             max_row = temp
 
-        tiles_to_analyse = Tile.objects.all().filter(grid=_grid, start_time_frame__isnull=True)\
-            .filter(position__0__range=[min_col, max_col-1])\
-            .filter(position__1__range=[min_row, max_row-1])
+        tiles_to_analyse = Tile.objects.all().filter(grid=_grid, start_time_frame__isnull=True) \
+            .filter(position__0__range=[min_col, max_col - 1]) \
+            .filter(position__1__range=[min_row, max_row - 1])
         print(len(tiles_to_analyse))
         print('total', len(Tile.objects.all().filter(grid=_grid)))
 
         for tile in tiles_to_analyse:
 
             # calculate vertices in meters
-            temp = ((tile.position[0]*cell_size + top_left_meters[0]), (top_left_meters[1] - tile.position[1]*cell_size))
+            temp = (
+            (tile.position[0] * cell_size + top_left_meters[0]), (top_left_meters[1] - tile.position[1] * cell_size))
             tile_vertices = [temp,
                              (temp[0] + cell_size, temp[1]),
                              (temp[0] + cell_size, temp[1] - cell_size),
                              (temp[0], temp[1] - cell_size)]
 
             # convert 4 vertices to degrees
-            tile_vertices_degrees = [utils.ortophoto_transform_meters_to_degrees(ortophoto_path, x[0], x[1]) for x in tile_vertices]
+            tile_vertices_degrees = [utils.ortophoto_transform_meters_to_degrees(ortophoto_path, x[0], x[1]) for x in
+                                     tile_vertices]
             tile_vertices_degrees.append(tile_vertices_degrees[0])
             tile_vertices_degrees = tuple(tile_vertices_degrees)
 
@@ -1223,9 +1232,9 @@ def export_disperfire_file(request, project_id, video_id, grid_id):
     column = int(abs(diff_x // cell_size))
     row = int(abs(diff_y // cell_size))
 
-
     video_frames = ImageFrame.objects.all().filter(video_id=_video.id)
-    min_timestamp, max_timestamp = video_frames.aggregate(Min('timestamp'))['timestamp__min'], video_frames.aggregate(Max('timestamp'))['timestamp__max']
+    min_timestamp, max_timestamp = video_frames.aggregate(Min('timestamp'))['timestamp__min'], \
+                                   video_frames.aggregate(Max('timestamp'))['timestamp__max']
     print(min_timestamp, max_timestamp)
 
     file_output = str(round(max_timestamp)) + '\n' + str(round(min_timestamp)) + '\n'
@@ -1252,205 +1261,210 @@ def export_disperfire_file(request, project_id, video_id, grid_id):
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
     return response
 
-    
+
 """
 	GEOREFERENCING 
 """
+
+
 def upload_polygon(request, project_id):
-	if not request.user.is_authenticated:
-		return redirect("/login")
-	try:
-		project = Project.objects.get(id=project_id)
-	except Project.DoesNotExist:
-		return redirect("/projects")
-	if request.method == 'POST':
-		polygon = request.FILES['coords'].read()
+    if not request.user.is_authenticated:
+        return redirect("/login")
+    try:
+        project = Project.objects.get(id=project_id)
+    except Project.DoesNotExist:
+        return redirect("/projects")
+    if request.method == 'POST':
+        polygon = request.FILES['coords'].read()
 
-		image = ImageFrame.objects.get(file_info__id=request.POST['image_id'])
-		image.polygon = polygon
-		image.save()
-	return redirect("/projects/" + str(project_id) + "/progression?id=" + request.POST['image_id'])
-
-
-
+        image = ImageFrame.objects.get(file_info__id=request.POST['image_id'])
+        image.polygon = polygon
+        image.save()
+    return redirect("/projects/" + str(project_id) + "/progression?id=" + request.POST['image_id'])
 
 
 def progression(request, project_id):
-	if not request.user.is_authenticated:
-		return redirect("/login")
+    if not request.user.is_authenticated:
+        return redirect("/login")
 
-	try:
-		project = Project.objects.get(id=project_id)
-	except Project.DoesNotExist:
-		return redirect("/projects")
+    try:
+        project = Project.objects.get(id=project_id)
+    except Project.DoesNotExist:
+        return redirect("/projects")
 
-	if request.method == "GET":
-		frame = None
-		if 'id' in request.GET:
-			try:
-				frame = ImageFrame.objects.get(file_info_id=request.GET['id'])
-			except ImageFrame.DoesNotExist:
-				frame = None
+    if request.method == "GET":
+        frame = None
+        if 'id' in request.GET:
+            try:
+                frame = ImageFrame.objects.get(file_info_id=request.GET['id'])
+            except ImageFrame.DoesNotExist:
+                frame = None
 
-		wkts = None
-		if 'animation' in request.GET:
-			print("Entrou animação")
-			try:
-				_frames = ImageFrame.objects.filter(file_info__dir__project_id=project_id).order_by('id')
-				# for every frame, check if it has been segmented and georreferenced
-				frames = {}  # Key = Frame ID ; Value = Frame
-				for frame in _frames:
-					if frame.polygon is None or frame.geoRefPolygon is None:
-						print("NO POLYGON OR NO GEOREF DUNNO")
-						# TODO: Error Message, tell the user the frame needs to be segmented
-					else:
-						frames[frame.id] = frame
-			except ImageFrame.DoesNotExist:
-				return redirect(request.get_full_path())
+        wkts = None
+        if 'animation' in request.GET:
+            print("Entrou animação")
+            try:
+                _frames = ImageFrame.objects.filter(file_info__dir__project_id=project_id).order_by('id')
+                # for every frame, check if it has been segmented and georreferenced
+                frames = {}  # Key = Frame ID ; Value = Frame
+                for frame in _frames:
+                    if frame.polygon is None or frame.geoRefPolygon is None:
+                        print("NO POLYGON OR NO GEOREF DUNNO")
+                    # TODO: Error Message, tell the user the frame needs to be segmented
+                    else:
+                        frames[frame.id] = frame
+            except ImageFrame.DoesNotExist:
+                return redirect(request.get_full_path())
 
-			try:
-				wkts = {}
-				for frame in frames.values():
-					wkt = frame.geoRefPolygon.wkt
-					wkts[frame.id] = wkt
-			except Exception:
-				print("ERROR IDK WHYYYY")
-				redirect(request.get_full_path())
-		pts=""
-		points = PointModel.objects.all().filter(frame=frame)
+            try:
+                wkts = {}
+                for frame in frames.values():
+                    wkt = frame.geoRefPolygon.wkt
+                    wkts[frame.id] = wkt
+            except Exception:
+                print("ERROR IDK WHYYYY")
+                redirect(request.get_full_path())
+        pts = ""
+        points = PointModel.objects.all().filter(frame=frame)
 
-		for p in points:
-			pts+= p.name+','+str(p.pix).split(';')[1].split('(')[1].split(')')[0]+','+str(p.geo).split(';')[1].split('(')[1].split(')')[0]+';'
-		
-		pts=pts[:-1]
-		print(pts)
-		param = {
-			'frame': frame,
-			'points':pts,
-			'project': project,
-			'project_dirs': Directory.objects.all().filter(project_id=project.id),
-			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-			'georreferencing': Georreferencing(),
-		}
+        for p in points:
+            pts += p.name + ',' + str(p.pix).split(';')[1].split('(')[1].split(')')[0] + ',' + \
+                   str(p.geo).split(';')[1].split('(')[1].split(')')[0] + ';'
 
-		if wkts:
-			if len(wkts) == 1:
-				param['warning'] = "WARNING - Only one frame detected"
-			param['wkts'] = json.dumps(wkts)
+        pts = pts[:-1]
+        print(pts)
+        available_frames = ImageFrame.objects.all().filter(
+            file_info__dir__project_id=project.id,
+            file_info__dir__project__owner=request.user,
+            polygon__isnull=False)
+        param = {
+            'frame': frame,
+            'points': pts,
+            'project': project,
+            'project_dirs': Directory.objects.all().filter(project_id=project.id),
+            'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
+            'georreferencing': Georreferencing(),
+            'available_frames': available_frames
+        }
 
-		# if the frame_id is valid check if it has been georreferenced
-		if frame is None or frame.polygon is None:
-			return render(request, "main/fire_progression.html", param)
+        if wkts:
+            if len(wkts) == 1:
+                param['warning'] = "WARNING - Only one frame detected"
+            param['wkts'] = json.dumps(wkts)
 
-		param['georreferenced'] = frame.polygon.wkt[10:-2]
+        # if the frame_id is valid check if it has been georreferenced
+        if frame is None or frame.polygon is None:
+            return render(request, "main/fire_progression.html", param)
 
-		return render(request, "main/fire_progression.html", param)
+        param['georreferenced'] = frame.polygon.wkt[10:-2]
 
-	elif request.method == 'POST':
-		try:
-			if request.POST["frame_name"]:
-				_file_info = FileInfo.objects.all().filter(name=request.POST["frame_name"])
-				frame_id=_file_info.values('id').first()['id']
-				return redirect("/projects/" + str(project_id) + "/progression?id="+str(frame_id))
-		except:
-			print("no frame name")
-		
-		param = {
-			'frame': None,
-			'points': None,
-			'project': project,
-			'project_dirs': Directory.objects.all().filter(project_id=project.id),
-			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
-			'georreferencing': Georreferencing(initial={"marker": False}),
-		}
+        return render(request, "main/fire_progression.html", param)
 
-		if 'frame_id' not in request.POST or request.POST['frame_id'] == '':
-			return redirect(request.build_absolute_uri())
-		mode = None
-		if 'marker' in request.POST:
-			param['georreferencing'] = Georreferencing(initial={'marker': True})
-			mode = True
+    elif request.method == 'POST':
+        try:
+            if request.POST["frame_name"]:
+                _file_info = FileInfo.objects.all().filter(name=request.POST["frame_name"])
+                frame_id = _file_info.values('id').first()['id']
+                return redirect("/projects/" + str(project_id) + "/progression?id=" + str(frame_id))
+        except:
+            print("no frame name")
 
-		# check if frame exists
-		_id = request.POST['frame_id']
-		try:	
-			_frame = ImageFrame.objects.get(file_info_id=_id)
-			_frame_file = _frame.file_info
-			param['frame'] = _frame
-			pts=""
-			points = PointModel.objects.all().filter(frame=_frame)
+        param = {
+            'frame': None,
+            'points': None,
+            'project': project,
+            'project_dirs': Directory.objects.all().filter(project_id=project.id),
+            'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
+            'georreferencing': Georreferencing(initial={"marker": False}),
+        }
 
-			for p in points:
-				pts+= p.name+','+str(p.pix).split(';')[1].split('(')[1].split(')')[0]+','+str(p.geo).split(';')[1].split('(')[1].split(')')[0]+';'
-			
-			pts=pts[:-1]
-			param['points']=pts
-		except ImageFrame.DoesNotExist:
-			return render(request, 'main/fire_progression.html', param)
+        if 'frame_id' not in request.POST or request.POST['frame_id'] == '':
+            return redirect(request.build_absolute_uri())
+        mode = None
+        if 'marker' in request.POST:
+            param['georreferencing'] = Georreferencing(initial={'marker': True})
+            mode = True
 
-		if 'pixels' not in request.POST or 'geo' not in request.POST:
-			return render(request, "main/fire_progression.html", param)
-		# compute the pairs from the coordinates
-		pixels_json = json.loads(request.POST['pixels'])
-		geo_json = json.loads(request.POST['geo'])
-		names_json = json.loads(request.POST['names'])
-		# if the frame_id is valid check if it has been georreferenced
-		if _frame is None or _frame.polygon is None:
-			param['error'] = "PROGRESSION ERROR - The frame needs to be segmented first!!"
-			return render(request, "main/fire_segmentation.html", param)
+        # check if frame exists
+        _id = request.POST['frame_id']
+        try:
+            _frame = ImageFrame.objects.get(file_info_id=_id)
+            _frame_file = _frame.file_info
+            param['frame'] = _frame
+            pts = ""
+            points = PointModel.objects.all().filter(frame=_frame)
 
-		pts_src = np.array(pixels_json)
-		pts_names = np.array(names_json)
-		pts_dst = np.array(geo_json)
-		for i in range(len(pts_src)):
-			_point = PointModel(name=pts_names[i],geo=Point(tuple(pts_dst[i])),pix=Point(tuple(pts_src[i])))
-			_point.frame = _frame
-			try:
-				_point.save()
-			except:
-				print("point already exists")
-		
-		#given reference points	 from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
-		h, status = cv2.findHomography(pts_src, pts_dst)
-		
-		coords = _frame.polygon.wkt
+            for p in points:
+                pts += p.name + ',' + str(p.pix).split(';')[1].split('(')[1].split(')')[0] + ',' + \
+                       str(p.geo).split(';')[1].split('(')[1].split(')')[0] + ';'
 
+            pts = pts[:-1]
+            param['points'] = pts
+        except ImageFrame.DoesNotExist:
+            return render(request, 'main/fire_progression.html', param)
 
-		coords = _frame.polygon.wkt
-		coords = coords.split("((")[1].split("))")[0].split(",")
+        if 'pixels' not in request.POST or 'geo' not in request.POST:
+            return render(request, "main/fire_progression.html", param)
+        # compute the pairs from the coordinates
+        pixels_json = json.loads(request.POST['pixels'])
+        geo_json = json.loads(request.POST['geo'])
+        names_json = json.loads(request.POST['names'])
+        # if the frame_id is valid check if it has been georreferenced
+        if _frame is None or _frame.polygon is None:
+            param['error'] = "PROGRESSION ERROR - The frame needs to be segmented first!!"
+            return render(request, "main/fire_segmentation.html", param)
 
-		geo_coord = []
-		for coord in coords:
-			coord_split = coord.strip().split(" ")
-			point_homogenous = h.dot([float(coord_split[0]), float(coord_split[1]), 1])
-			if len(point_homogenous) != 3:
-				geo_coord = [0, 0]
-			else:
-				z = point_homogenous[2]
+        pts_src = np.array(pixels_json)
+        pts_names = np.array(names_json)
+        pts_dst = np.array(geo_json)
+        for i in range(len(pts_src)):
+            _point = PointModel(name=pts_names[i], geo=Point(tuple(pts_dst[i])), pix=Point(tuple(pts_src[i])))
+            _point.frame = _frame
+            try:
+                _point.save()
+            except:
+                print("point already exists")
 
-				# Longitude, Latitude
-				geo_coord += [ (point_homogenous[1]/z, point_homogenous[0]/z) ]
+        # given reference points	 from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
+        h, status = cv2.findHomography(pts_src, pts_dst)
 
-		# store polygon on db
-		wkt_list = []
-		last = geo_coord[0]
-		for point in geo_coord:
-			wkt_list.append(point)
-		wkt_list.append(last)
-		wkt = tuple(wkt_list)
-		geo_polygon = Polygon(LinearRing(wkt))
-		_frame.geoRefPolygon = geo_polygon
-		_frame.save()
-		pts=""
-		points = PointModel.objects.all().filter(frame=_frame)
+        coords = _frame.polygon.wkt
 
-		for p in points:
-			pts+= p.name+','+str(p.pix).split(';')[1].split('(')[1].split(')')[0]+','+str(p.geo).split(';')[1].split('(')[1].split(')')[0]+';'
-		
-		pts=pts[:-1]
-		param['points']=pts
-		# Converted polygon WKT, to be analyzed by JS
+        coords = _frame.polygon.wkt
+        coords = coords.split("((")[1].split("))")[0].split(",")
 
-		param['georreferenced'] = geo_polygon
-	return render(request, "main/fire_progression.html", param)
+        geo_coord = []
+        for coord in coords:
+            coord_split = coord.strip().split(" ")
+            point_homogenous = h.dot([float(coord_split[0]), float(coord_split[1]), 1])
+            if len(point_homogenous) != 3:
+                geo_coord = [0, 0]
+            else:
+                z = point_homogenous[2]
 
+                # Longitude, Latitude
+                geo_coord += [(point_homogenous[1] / z, point_homogenous[0] / z)]
+
+        # store polygon on db
+        wkt_list = []
+        last = geo_coord[0]
+        for point in geo_coord:
+            wkt_list.append(point)
+        wkt_list.append(last)
+        wkt = tuple(wkt_list)
+        geo_polygon = Polygon(LinearRing(wkt))
+        _frame.geoRefPolygon = geo_polygon
+        _frame.save()
+        pts = ""
+        points = PointModel.objects.all().filter(frame=_frame)
+
+        for p in points:
+            pts += p.name + ',' + str(p.pix).split(';')[1].split('(')[1].split(')')[0] + ',' + \
+                   str(p.geo).split(';')[1].split('(')[1].split(')')[0] + ';'
+
+        pts = pts[:-1]
+        param['points'] = pts
+        # Converted polygon WKT, to be analyzed by JS
+
+        param['georreferenced'] = geo_polygon
+    return render(request, "main/fire_progression.html", param)

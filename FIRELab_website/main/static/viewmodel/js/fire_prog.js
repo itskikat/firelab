@@ -21,6 +21,7 @@
         var imageNameToSearch = $('#imageNameToSearch');
         var marker = $('#marker');
         var ptNames=[];
+        let selectedImage;
         CoordPopUp.dialog({
             autoOpen: false,
             show: {
@@ -62,9 +63,29 @@
             modal: true,
         });
 
-        $('#showImage').click(function () {
-            workingImage.toggle();
-        });
+       function openImages() {
+            document.getElementById("images-popup").style.display = "flex";
+            //blur.style.filter = "blur(2px)";
+        }
+
+        function selectImage(id) {
+            $(".activeFrame").removeClass("activeFrame")
+            let ref = "#thumbnail_" + id;
+            $(ref).addClass("activeFrame")
+            selectedImage = id;
+
+        }
+
+        function importSelectedImage() {
+           if (selectedImage != null) {
+               window.location.href = window.location.href.split("?")[0] + "?id=" + selectedImage;
+           }
+        }
+
+        function closeImages() {
+           document.getElementById("images-popup").style.display = "none";
+           selectedImage = null;
+        }
 
         $('#cp').click(function () {
             $('#toolkit').toggle();

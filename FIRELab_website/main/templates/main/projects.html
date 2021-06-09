@@ -108,14 +108,6 @@
                                 <li id="cancel"><a onclick="closeDelete()" class="button cancel">Cancel</a></li>
                             </ul>
                         </div>
-                        <p id="dates"></p>
-                        <p id="modification_date"></p>
-
-                        <p style="width: 70%" id="project_description"></p>
-                    </div>
-                    <div class="actions" hidden>
-                        <a id="workButton" class="button primary work">Work</a>
-                    </div>
                 </div>
             <!-- POP WHEN NEW PROJECT-->
             <div class="form-popup" id="myForm" style="height: fit-content; align-self: center;">
@@ -171,9 +163,11 @@
                 $("#project_name").text(name);
                 $("#project_description").text("Description: " + description);
                 $("#dates").text("Created on: " + creation);
-                $("#modification_date").text("Last modified on: : " + modification);
+                $("#modification_date").text("Last modified on: " + modification);
                 $(".actions").show();
                 $("#workButton").attr('href', 'projects/' + id + '/process');
+                $("#delete_div").css('visibility', 'visible')
+                $("#delete_button").attr('href', 'projects/' + id + '/delete')
             }
         </script>
 	</body>
