@@ -827,9 +827,16 @@ def progression(request, project_id):
 			except Exception:
 				print("ERROR IDK WHYYYY")
 				redirect(request.get_full_path())
+		pts=""
+		points = PointModel.objects.all().filter(frame=frame)
 
+		for p in points:
+			pts+= p.name+','+str(p.pix).split(';')[1].split('(')[1].split(')')[0]+','+str(p.geo).split(';')[1].split('(')[1].split(')')[0]+';'
+		
+		pts=pts[:-1]
 		param = {
 			'frame': frame,
+			'points':pts,
 			'project': project,
 			'project_dirs': Directory.objects.all().filter(project_id=project.id),
 			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
@@ -840,7 +847,6 @@ def progression(request, project_id):
 			if len(wkts) == 1:
 				param['warning'] = "WARNING - Only one frame detected"
 			param['wkts'] = json.dumps(wkts)
-			print("WKTS ", json.dumps(wkts) )
 
 		# if the frame_id is valid check if it has been georreferenced
 		if frame is None or frame.polygon is None:
@@ -851,11 +857,13 @@ def progression(request, project_id):
 		return render(request, "main/fire_progression.html", param)
 
 	elif request.method == 'POST':
-		if request.POST["frame_name"]:
-			_file_info = FileInfo.objects.all().filter(name=request.POST["frame_name"])
-			frame_id=_file_info.values('id').first()['id']
-			return redirect("/projects/" + str(project_id) + "/progression?id="+str(frame_id))
-
+		try:
+			if request.POST["frame_name"]:
+				_file_info = FileInfo.objects.all().filter(name=request.POST["frame_name"])
+				frame_id=_file_info.values('id').first()['id']
+				return redirect("/projects/" + str(project_id) + "/progression?id="+str(frame_id))
+		except:
+			print("no frame name")
 		param = {
 			'frame': None,
 			'project': project,
@@ -885,7 +893,7 @@ def progression(request, project_id):
 		# compute the pairs from the coordinates
 		pixels_json = json.loads(request.POST['pixels'])
 		geo_json = json.loads(request.POST['geo'])
-    names_json = json.loads(request.POST['names'])
+		names_json = json.loads(request.POST['names'])
 		# if the frame_id is valid check if it has been georreferenced
 		if _frame is None or _frame.polygon is None:
 			param['error'] = "PROGRESSION ERROR - The frame needs to be segmented first!!"
@@ -897,7 +905,10 @@ def progression(request, project_id):
 		for i in range(len(pts_src)):
 			_point = PointModel(name=pts_names[i],geo=Point(tuple(pts_dst[i])),pix=Point(tuple(pts_src[i])))
 			_point.frame = _frame
-			_point.save()
+			try:
+				_point.save()
+			except:
+				print("point already exists")
 		
 		#given reference points	 from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
 		h, status = cv2.findHomography(pts_src, pts_dst)

@@ -61,7 +61,7 @@
 				<td id="zoomOut"><i class="fas fa-search-minus fa-lg"></i></td>
 			</tr>
 			<tr>
-                <td id="play_tk" onclick="openMap()" style="cursor: pointer;"><i class="fas fa-play fa-lg"></i></td>
+                <td id="play_tk" onclick="window.location.replace('/projects/{{ project.id }}/progression?animation');" style="cursor: pointer;"><i class="fas fa-play fa-lg"></i></td>
                 <td onclick="saveCoords()"><i class="fas fa-save fa-lg" aria-hidden="true"></i></td>
 			</tr>
 			<tr>
@@ -119,12 +119,6 @@
     <div class="col-12" id="animationButtons" hidden>
         <button type="button" class="button icon solid" name="drawPolygonButton" id="drawPolygonButton">Play Animation</button>
         <button type="button" class="button icon solid" name="stopDraw" id="stopDraw">Stop Animation</button><br>
-    </div>
-    <br>
-  <div class="col-12" id="animationButtons" hidden>
-        <button type="button" class="button icon solid" name="drawPolygonButton" id="drawPolygonButton">Play Animation</button>
-        <button type="button" class="button icon solid" name="stopDraw" id="stopDraw">Stop Animation</button>
-        <br>
     </div>
     <br>
 

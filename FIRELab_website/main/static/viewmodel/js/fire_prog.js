@@ -127,6 +127,9 @@
                     document.getElementById("pixel_table_coords").innerHTML += tr;  
                 }
             }
+            if(ptNames.length>0){
+                $("#pixel_table_coords").attr('hidden', true);
+            }
             loadPointPopUpDialog.dialog("close");
         });
        
@@ -152,7 +155,7 @@
         
         
 
-        $('#submit').click(function () {
+        $('#submit_geo').click(function () {
             $("#pixel_table_coords").attr('hidden', false);
             ptNames.push(inputForLocName.val());
             coords = inputForCoords.val();
@@ -206,17 +209,6 @@
           
 
 
-        // $('#submit_pol').click(function () {
-        //     $("#id_image_id").val("{{frame.id}}");
-        //     document.getElementById("UploadCoordFile").submit();
-        // });
-
-
-
-=======
-          
-
-
 // BUÉ RÚSTICO MAS TÁ A DAR SORRY
 $(document).ready(function() {
     // Ave maria deus abençoe que se o Zagalo vê isto tem um AVC
@@ -227,9 +219,26 @@ $(document).ready(function() {
 
 // Open and Show the Map, where the animation plays
 function openMap() {
+    wkts_fromdjango = JSON.parse(document.getElementById('WKTS_HIDDEN').textContent);
+    Object.entries(wkts_fromdjango).forEach((entry) => {
+        var size = Object.keys.length;
+        const [key, value] = entry; // STRING, STRING
+        for (var n=0; n<size; n++) {
+            var wkt = new Wkt.Wkt();
+            wkt.read(value);
+            var feature = { "type": "Feature", 'properties': {}, "geometry": wkt.toJson() };
+            var geojson_item = L.geoJSON(feature, {color: pickAColor()});
+            wkts[parseInt(key)] = geojson_item;
+        }
+    });
+	if ( window.getComputedStyle(map, null).getPropertyValue("display") === 'none'
+        && window.getComputedStyle(animationButtons, null).getPropertyValue("display") === 'none')
+	{
+        $("#play_tk").css("color", "#b55b29");
+        document.getElementById( "play_tk" ).setAttribute( "onClick", "javascript: openMap();" );
 	    map.style.display = 'block';
         animationButtons.style.display = 'block';
-        workingImage.hide();
+        img_prog.style.display = 'none';
     } else {
 	    var url = 'javascript: window.location.replace(\'/projects/'+span_projectid+'/progression?animation);'
 	    document.getElementById( "play_tk" ).setAttribute( "onClick", url);
@@ -247,9 +256,7 @@ function pickAColor() {
     let available_colors = ['blue', 'cadetblue', 'coral', 'cyan', 'grey', 'green', 'orange', 'khaki', 'magenta', 'pink', 'violet', 'gold', 'maroon', 'olive', 'yellow'];
     var random_color = available_colors[Math.floor(Math.random() * available_colors.length)];
     return random_color;
-
-
-
+}
 // ANIMAÇÃO QUE TÁ GG PARA OS PROFS MAS É UMA BECS RÚSTICA KSKSKS
 // SHOW THE MAP
 let mapdiv = document.getElementById('map');
@@ -306,8 +313,3 @@ mymap.on('click', function(e){
         .setContent("You clicked the map at " + e.latlng.toString())
         .openOn(mymap);
 });
-
-
-
-	
-}
