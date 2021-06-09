@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html>
+    {% load static %}
+    <head>
+        <title>FIRELab</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <link type='text/css' rel="stylesheet" href="{% static 'assets/css/main.css' %}"/>
+        <link type='text/css' rel="stylesheet" href="{% static 'viewmodel/css/404.css' %}"/>
+        <noscript><link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}"/></noscript>
+        {% block extracss %}{% endblock %}
+    </head>
+    <body class="landing is-preload">
+        <div class="center">
+            <img src="{% static 'images/404.gif' %}" alt="Loading..." width="250px" />
+            <h3>Looks like that page doesn't exist...</h3>
+            <div id="bt">
+                <a class="button primary"href="{% url 'index' %}">Go back home</a>
+            </div>
+        </div>
+    </body>
+</html>
+

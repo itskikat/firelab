@@ -1,4 +1,3 @@
-
         let map = document.getElementById("map");
         let animationButtons = document.getElementById("animationButtons");
         let span_projectid = document.getElementById('span_projectid').textContent.trim();

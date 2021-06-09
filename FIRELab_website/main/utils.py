@@ -1,12 +1,31 @@
 import base64
+import os
+
 import numpy as np
 import cv2
 from colormath.color_conversions import convert_color
 from colormath.color_objects import sRGBColor, LabColor
 from colormath.color_diff import delta_e_cie2000
 from osgeo import gdal, osr
-from main.models import Tile, Grid
+from FIRELab_website.settings import MEDIA_ROOT
+from main.models import Tile, Grid, FileInfo, Ortophoto, ImageFrame
 import math
+
+
+def compute_mask(tile_list, cell_size, classification, shape):
+    mask = np.zeros(shape, np.uint8)
+    mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+
+    for tile in tile_list:
+        test_tile = tile.position
+        start_point = (test_tile[0] * cell_size, test_tile[1] * cell_size)
+        end_point = (start_point[0] + cell_size, start_point[1] + cell_size)
+
+        color = classification.hexColor
+        rgb = tuple(int(color[i:i + 2], 16) for i in (0, 2, 4))
+        mask = cv2.rectangle(mask, start_point, end_point, (rgb[2], rgb[1], rgb[0]), -1)
+
+    return mask
 
 
 def opencv_to_base64(img, ext):
@@ -21,6 +40,38 @@ def base64_to_opencv(im_b64):
     im_arr = np.frombuffer(im_bytes, dtype=np.uint8)  # Numpy one-dim array representative of the img
     img = cv2.imdecode(im_arr, flags=cv2.IMREAD_COLOR)
     return img
+
+
+def ortophoto_transform_degrees_to_meters(tif_path, lat, long):
+    src = gdal.Open(tif_path)
+    target = osr.SpatialReference()
+    target.ImportFromWkt(src.GetProjection())
+
+    # The target projection - WGS84 mainly favoured in GPSs
+    source = osr.SpatialReference()
+    source.ImportFromEPSG(4326)
+
+    # Create the transform
+    transform = osr.CoordinateTransformation(source, target)
+    x, y, _ = transform.TransformPoint(lat, long)
+    # first comes longitude and then latitude (and rotation in the end?)
+    return x, y
+
+
+def ortophoto_transform_meters_to_degrees(tif_path, x, y):
+    src = gdal.Open(tif_path)
+    source = osr.SpatialReference()
+    source.ImportFromWkt(src.GetProjection())
+
+    # The target projection - WGS84 mainly favoured in GPSs
+    target = osr.SpatialReference()
+    target.ImportFromEPSG(4326)
+
+    # Create the transform
+    transform = osr.CoordinateTransformation(source, target)
+    lon, lat, _ = transform.TransformPoint(x, y)
+    # first comes longitude and then latitude (and rotation in the end?)
+    return lon, lat
 
 
 def ortophoto_transformation_pixel_to_coordinate(tif_path, x, y):
@@ -128,7 +179,6 @@ def cell_cutter(tif_path, row, column, top_left_x, top_left_y, bottom_right_x, b
                 avgColor=[int(avgColor[0]), int(avgColor[1]), int(avgColor[2])],
                 grid=_grid
             )
-            print(tile)
             tile.save()
 
 
@@ -145,23 +195,6 @@ def draw_grid(mask, step, top_left, bottom_right, line_color=(255, 0, 0), thickn
         y += step
 
     return mask
-
-    # # crop mask
-    # mask = mask[1052:2332, 865:1735]
-    #
-    # scale_percent = 50  # percent of original size
-    # width = int(mask.shape[1] * scale_percent / 100)
-    # height = int(mask.shape[0] * scale_percent / 100)
-    # dim = (width, height)
-    #
-    # # resize image
-    # resized = cv2.resize(mask, dim, interpolation=cv2.INTER_AREA)
-    #
-    # print('Resized Dimensions : ', resized.shape)
-    #
-    # cv2.imshow("Resized image", resized)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
 
 
 def distance(rgb1, rgb2):
@@ -204,8 +237,58 @@ def visually_closest(tile, lab_colors):
 
 
 def simplified_pixel_average(tile_list):
+    if len(tile_list) == 0:
+        return
     return [
         sum([c[0] for c in [t.avgColor for t in tile_list]]) / len(tile_list),
         sum([c[1] for c in [t.avgColor for t in tile_list]]) / len(tile_list),
         sum([c[2] for c in [t.avgColor for t in tile_list]]) / len(tile_list)
     ]
+
+
+def compute_user_quota(user):
+    _file_infos = FileInfo.objects.all().filter(dir__project__owner=user)
+    total_byte_size = 0
+
+    for file in _file_infos:
+        # grid
+        if file.extension == "grid":
+            try:
+                grid = Grid.objects.get(file_info_id=file.id)
+            except Grid.DoesNotExist:
+                continue
+
+            grid_path = os.path.abspath(os.path.join(MEDIA_ROOT, grid.gridded_image.path))
+            grid_size = os.path.getsize(grid_path)
+            total_byte_size += grid_size
+
+        # ortophoto
+        elif file.extension == "tif":
+            try:
+                ortophoto = Ortophoto.objects.get(file_info_id=file.id)
+            except Grid.DoesNotExist:
+                continue
+
+            if ortophoto.content:
+                content_path = os.path.abspath(os.path.join(MEDIA_ROOT, ortophoto.content.path))
+                content_size = os.path.getsize(content_path)
+                total_byte_size += content_size
+
+            if ortophoto.thumbnail:
+                thumbnail_path = os.path.abspath(os.path.join(MEDIA_ROOT, ortophoto.thumbnail.path))
+                thumbnail_size = os.path.getsize(thumbnail_path)
+                total_byte_size += thumbnail_size
+
+        # frams
+        else:
+            try:
+                frame = ImageFrame.objects.get(file_info_id=file.id)
+            except ImageFrame.DoesNotExist:
+                continue
+
+            frame_path = os.path.abspath(os.path.join(MEDIA_ROOT, frame.content.path))
+            frame_size = os.path.getsize(frame_path)
+            total_byte_size += frame_size
+
+    return total_byte_size / (1024 ** 2)
+

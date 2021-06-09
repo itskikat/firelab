@@ -36,10 +36,28 @@ class UploadImage(forms.Form):
 class UploadVideo(forms.Form):
     video = forms.FileField(label="Video")
     frames = forms.IntegerField(label="Number of frames")
+    startingDateTime = forms.DateTimeField()
+    videoOriginDateTime = forms.DateTimeField()
 
     def __init__(self, *args, **kwargs):
         super(UploadVideo, self).__init__(*args, **kwargs)
         self.fields['video'].widget.attrs = ({'class': 'file-upload__input', 'name': 'videoFile', 'id': 'videoFile'})
+
+
+class ModelCreation(forms.Form):
+    nameModel = forms.CharField(max_length=30, label="Model Name")
+    nameClass = forms.CharField(label="Classification Name", max_length=50)
+    minimumPercentage = forms.CharField(label="Minimum Percentage")
+    maximumPercentage = forms.CharField(label="Maximum Percentage")
+    hexColor = forms.CharField(label="Color in Hexadecimal", max_length=20)
+    index = forms.CharField(label="Classification Index")
+
+    def __init__(self, *args, **kwargs):
+        super(ModelCreation, self).__init__(*args, **kwargs)
+        self.fields['nameModel'].widget.attrs = ({'id': 'model_name', 'placeholder': 'Model Name', 'name': 'model_name'})
+        self.fields['nameClass'].widget.attrs = ({'id': 'class_name', 'placeholder': 'Classification Name', 'name': 'class_name'})
+        self.fields['minimumPercentage'].widget.attrs = ({'id': 'minimum_percentage', 'placeholder': 'Minimum %', 'name': 'minimum_percentage', 'class': 'number_input'})
+        self.fields['maximumPercentage'].widget.attrs = ({'id': 'maximum_percentage', 'placeholder': 'Maximum %', 'name': 'maximum_percentage'})
 
 
 class Segmentation(forms.Form):
@@ -71,12 +89,30 @@ class DrawGridForm(forms.Form):
 class PointNames(forms.Form):
     ptNames = forms.CharField()
 
+class UploadOrtophoto(forms.Form):
+    image = forms.FileField(label="Ortophoto")
+
+
+class DrawGridForm(forms.Form):
+    p1 = forms.CharField()
+    p2 = forms.CharField()
+    image_size = forms.CharField()
+    image_id = forms.IntegerField()
+
+
+class ManualClassifierForm(forms.Form):
+    point = forms.CharField()
+    classification_image_size = forms.CharField()
+    classification_index = forms.IntegerField()
+    brush_size = forms.IntegerField(validators=[MinValueValidator(1)])
+    grid = forms.IntegerField()
 
 class Georreferencing(forms.Form):
     marker = forms.BooleanField()
     pixels = forms.CharField()
     geo = forms.CharField()
     frame_id = forms.IntegerField()
+
 
 class UploadCoordFile(forms.Form):
     coords = forms.FileField(label="File with Polygon Coordinates")
@@ -85,4 +121,4 @@ class UploadCoordFile(forms.Form):
     def __init__(self, *args, **kwargs):
         super(UploadCoordFile, self).__init__(*args, **kwargs)
         self.fields['coords'].widget.attrs = ({'class': 'file-upload__input', 'name': 'coordsFile', 'id': 'coordsFile'})
-        
+

@@ -17,7 +17,7 @@
             {{ segmentation.image_id }}
         </div>
         {% csrf_token %}
-        <div id="img_seg"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
+        <div id="img_seg"  style="display: flex; padding-top: {% if video_frames %} 6vh {% else %} 20vh {% endif %}; justify-content: center; align-items: center; ">
         {% if segmented %}
             <img draggable="false" id="workingImage" src={{ segmented }}>
             <img hidden draggable="false" id="hiddenWorkingImage" src={{ image.content.url }}>
@@ -27,17 +27,20 @@
         </div>
     {% endif %}
     </form>
+
+    <p id="output"></p>
+
 	<div class="toolkit">
 		<table>
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
 			<tr>
-				<td id="pen" {% if segmentation.pen.value == True %} style="color: #B55B29" {% endif %} onclick="penOn()"><i class="fa fa-fire fa-lg" aria-hidden="true"></i></td>
-				<td onclick="window.location='/projects/{{ project.id }}/segmentation/save/{{ image.file_info.id }}'"><i class="fas fa-save fa-lg"></i></td>
+				<td title="Segment" id="pen" style="cursor: pointer; {% if segmentation.pen.value == True %} color: #B55B29 {% endif %}" onclick="penOn()"><i class="fa fa-fire fa-lg" aria-hidden="true"></i></td>
+				<td title="Save" style="cursor: pointer" onclick="window.location='/projects/{{ project.id }}/segmentation/save/{{ image.file_info.id }}'"><i class="fas fa-save fa-lg"></i></td>
 			</tr>
 			<tr>
-				<td id="eraser" {% if segmentation.eraser.value == True %} style="color: #B55B29" {% endif %} onclick="penOff()"><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i></td>
-				<td><a onclick="openUpload()"><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></a></td>
+				<td title="Erase" id="eraser" style="cursor: pointer; {% if segmentation.eraser.value == True %} color: #B55B29 {% endif %}" onclick="penOff()"><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i></td>
+				<td><a style="cursor: pointer" title="Upload" onclick="openUpload()"><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></a></td>
 			</tr>
 			<tr>
 				<td><i class="fa fa-search-plus fa-lg" aria-hidden="true"></i></td>
@@ -72,8 +75,19 @@
 {#                    <input type="text" name="video-fpm" id="video-fpm" value="5" style="padding-left: 10px" />#}
                     {{ video_form.frames }}
                 </div>
+
+                <div>
+                    <span id="startingTimestamp"></span><br>
+                    <span id="endingTimestamp"></span>
+                    {{ video_form.startingDateTime }}
+                </div>
+                <div hidden>
+                    {{ video_form.videoOriginDateTime }}
+                </div>
+
+
                 <div style="padding: 1%;">
-                    <input type="submit" id="submit_vd" value="Upload video">
+                    <input type="submit" id="submit_vd" value="Upload video" onclick="openLoadingPopUp()">
                 </div>
             </form>
 
@@ -87,75 +101,145 @@
                 <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
                 <span class="file-upload__label"></span>
                 <div style="padding: 1%;">
-                    <input type="submit" id="submit_bt" value="Upload image">
+                    <input type="submit" id="submit_bt" value="Upload image" onclick="openLoadingPopUp()">
                 </div>
 			</form>
 		</div>
 
 	</div>
-    {% if image.video %}
+    {% if video_frames and video_frames.count != 0 %}
+        <!-- This only appears when there is a video uploaded-->
         <div class="fire_timeline">
-         <p style="display: none" id="open">FIRE Timeline <a id="openT" title="Open Timeline" onclick="openTimeline()"><i id="openTimeline" class="fas fa-angle-up"></i></a></p>
-        <div id="timeline">
-            <div id="title_timeline">
-                <p>FIRE Timeline <a id="closeT" title="Close Timeline" onclick="closeTimeline()"><i id="closeTimeline" class="fas fa-times"></i></a></p>
-                <hr class="solid">
-            </div>
-            <div class="frames_timeline">
-                <table id="frameTable">
-                  <tr>
-                    <td><img src="{{ image.content.url }}"></td>
-                    <td><img src="{{ image.content.url }}"></td>
-                    <td><img src="{{ image.content.url }}"></td>
-                    <td><img src="{{ image.content.url }}"></td>
-                    <td style="width: auto !important;"></td>
-                  </tr>
+             <p style="display: none" id="open">FIRE Timeline <a id="openT" title="Open Timeline" onclick="openTimeline()"><i id="openTimeline" class="fas fa-angle-up"></i></a></p>
+            <div id="timeline">
+                <div id="title_timeline">
+                    <p>FIRE Timeline <a id="closeT" title="Close Timeline" onclick="closeTimeline()"><i id="closeTimeline" class="fas fa-times"></i></a></p>
+                    <hr class="solid">
+                </div>
+                <div class="frames_timeline">
+                    <table id="frameTable">
+                      <tr>
+                          {% for frame in video_frames %}
+                              <td><a title="{{ frame.file_info.name }}.{{ frame.file_info.extension }}" href="/projects/{{ project.id }}/segmentation?id={{ frame.file_info.id }}"><img {% if frame.file_info.id == image.file_info.id %} style="border: 3px solid #771300" {% endif %} src="{{ frame.content.url }}"></a></td>
+                          {% endfor %}
+                          <td style="width: auto !important;"></td>
+                      </tr>
 
-                </table>
+                    </table>
+                </div>
             </div>
+
         </div>
-
-    </div>
     {% endif %}
 
-    {% if error %}
-    <div class="alert alert-danger" role="alert">
-        {{ error }}
-    </div>
-    {% endif %}
+	
 
-    {% block extrajs %}
+    <link rel="stylesheet" href="{% static 'viewmodel/css/fire_seg.css' %}"/>
+    <script type="text/javascript" src="https://unpkg.com/mediainfo.js/dist/mediainfo.min.js"></script>
+    <script src="{% static 'viewmodel/js/fire_seg.js' %}"></script>
+    <script>
+    let workingImage = $("#workingImage")
+    let clicking, path;
+    let maskOn = true
 
-        <script src="{% static 'viewmodel/js/fire_seg.js' %}"></script>
-        <script>
-        workingImage = $("#workingImage");
-        
-        let click_test_1;
-        workingImage.mousedown(function(event) {
-            let selectedFileId = JSON.parse("{{image.file_info.id|escapejs}}");
-            $("#id_image_id").val(selectedFileId);
+     $(document).ready(function () {
+        location.search.substr(1).split("&").forEach(function(item) {
+        let params = item.split("=")
+        if (params[0] === "error" && params[1] === "quota_surpassed") {
+            // place open pop up here
+            console.log("user quato surpassed")
+        }})
+     });
 
-            click_test_1 = true
-            path = []
-            let x = event.pageX - this.offsetLeft;
-            let y = event.pageY - this.offsetTop;
-            path.push( [x, y])
-        });
+    // READ VIDEO FILE METADATA //////////////////////////////////////////////////////////////
+    const fileinput = document.getElementById('videoFile')
+    const output = document.getElementById("output")
+    const startingTimeStamp = document.getElementById("startingTimestamp")
+    const endingTimestamp = document.getElementById("endingTimestamp")
+    const onChangeFile = (mediainfo) => {
+        const file = fileinput.files[0]
+        if (file) {
+            output.value = 'Working…'
+            const getSize = () => file.size
+            const readChunk = (chunkSize, offset) =>
+              new Promise((resolve, reject) => {
+                const reader = new FileReader()
+                reader.onload = (event) => {
+                  if (event.target.error) {
+                    reject(event.target.error)
+                  }
+                  resolve(new Uint8Array(event.target.result))
+                }
+                reader.readAsArrayBuffer(file.slice(offset, offset + chunkSize))
+              })
 
-        workingImage.mousemove(function(event) {
-            if (click_test_1 !== true) return
+            mediainfo.analyzeData(getSize, readChunk).then((result) => {
+                result = result['media']['track']
+                let generalData = result[0]
+                if (generalData['Tagged_Date'] && generalData['Duration']) {
+                    console.log(generalData['Tagged_Date'], generalData['Duration'])
+                    let starting = new Date(generalData['Tagged_Date'].split(" ")[1] + "T" + generalData['Tagged_Date'].split(" ")[2])
+                    console.log(starting.toISOString())
+                    $("#id_videoOriginDateTime").val(starting.toISOString())
+                    startingTimeStamp.innerText = "Starting time: " + starting.toUTCString()
 
-            let x = event.pageX - this.offsetLeft;
-            let y = event.pageY - this.offsetTop;
-            path.push( [x, y])
-        });
+                    let durationInSeconds = generalData['Duration'];
 
-        workingImage.mouseup(function(event) {
-            click_test_1 = false;
-            $("#id_path").val(JSON.stringify(path));
-            document.getElementById("workingImageForm").submit();
-        });
-        </script>
-    {% endblock %}
+                    starting.setSeconds(durationInSeconds.split(".")[0])
+                    starting.setMilliseconds(durationInSeconds.split(".")[1])
+                    endingTimestamp.innerText = "Ending Time: " + starting.toUTCString()
+                }
+                //console.log(result.replace("\t", "").replace(/\s/g,'').split(/[:\n\\]+/))
+              }).catch((error) => {
+                  console.log("An error occurred", error)
+                output.value = `An error occurred: ${error.stack}`
+              })
+          }
+    }
+
+    MediaInfo({ format: 'object' }, (mediainfo) => {
+      fileinput.addEventListener('change', () => onChangeFile(mediainfo))
+    })
+
+    // END OF READ VIDEO FILE METADATA ///////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+
+    $("#maskToggle").click(function (event) {
+        maskOn = !maskOn;
+        if (maskOn) {
+            $("#workingImage").show();
+            $("#hiddenWorkingImage").hide();
+        } else {
+            $("#workingImage").hide();
+            $("#hiddenWorkingImage").show();
+        }
+    });
+
+    workingImage.mousedown(function(event) {
+        let selectedFileId = JSON.parse("{{image.file_info.id|escapejs}}");
+        $("#id_image_id").val(selectedFileId);
+
+        clicking = true
+        path = []
+        let x = event.pageX - this.offsetLeft;
+        let y = event.pageY - this.offsetTop;
+        path.push( [x, y])
+    });
+
+    workingImage.mousemove(function(event) {
+        if (clicking !== true) return
+
+        let x = event.pageX - this.offsetLeft;
+        let y = event.pageY - this.offsetTop;
+        path.push( [x, y])
+    });
+
+    workingImage.mouseup(function(event) {
+        clicking = false;
+        $("#id_path").val(JSON.stringify(path));
+        document.getElementById("workingImageForm").submit();
+    });
+    </script>
 
 {% endblock %}

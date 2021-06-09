@@ -49,11 +49,16 @@
                                     {% comment %} show files of directory {% endcomment %}
                                     {% for f in project_files %}
                                         {% if f.dir == node %}
-                                            {% if f.extension == 'tif' %}
-                                                <a title=" {{ f.get_path }}" onclick="openLoadingPopUp()" style="padding-left: 2em; width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/vegetation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
-                                            {% else %}
-                                                <a title=" {{ f.get_path }}" style="padding-left: 2em; width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/segmentation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
-                                            {% endif %}
+                                            <div class="filename_row">
+                                                <a class="delete_button" onclick='deleteFile("{{ node.project.id}}", "{{ f.id }}")'><i class="fas fa-trash"></i></a>
+                                                {% if f.extension == 'tif' %}
+                                                    <a title=" {{ f.get_path }}" onclick="openLoadingPopUp()" style="padding-left: 1em; width : 80%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/vegetation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
+                                                {% elif f.extension == 'grid' %}
+                                                    <a title=" {{ f.get_path }}" onclick="openLoadingPopUp()" style="padding-left: 1em; width : 80%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/vegetation?grid={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
+                                                {% else %}
+                                                    <a title=" {{ f.get_path }}" style="padding-left: 1em; width : 80%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/segmentation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
+                                                {% endif %}
+                                            </div>
                                         {% endif %}
                                     {% endfor %}
 
@@ -76,30 +81,56 @@
 					</div>
 				</div>
 
+                <!-- POP WHEN DELETE FILE-->
+                            <div class="delete-popup" id="deleteFile" style="height: fit-content; align-self: center;">
+                                <div class="container-delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                    <h4>Are you sure?</h4>
+                                    <p style="margin: 0 0 1.3em 0;">Do you want to delete this file? This process cannot be undone.</p>
+                                    <div class="options">
+                                        <ul class="actions" style="padding-top: 5%; margin-bottom: auto; text-align: center;">
+                                            <li><a id="delete_button" class="button primary create">Delete</a></li>
+                                            <li id="cancel"><a onclick="closeDelete()" class="button cancel">Cancel</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
 			</div>
 
-        <!-- MOVE TO STATIC -->
-        <script>
-            const waiting = document.getElementById("waiting");
+			<!-- MOVE TO STATIC -->
+            <script>
+                const waiting = document.getElementById("waiting");
 
-            function toggleChildren(childrenName) {
-                let dirId = "#" + childrenName + "_children"
-                let iconId = "#" + childrenName + "_icon"
-                let displayType = $(dirId).css("display")
+                function toggleChildren(childrenName) {
+                    let dirId = "#" + childrenName + "_children"
+                    let iconId = "#" + childrenName + "_icon"
+                    let displayType = $(dirId).css("display")
 
-                if (displayType === "none") {
-                     $(dirId).css("display", "block")
-                    $(iconId).attr("class", "fas fa-caret-down")
-                } else {
-                     $(dirId).css("display", "none")
-                    $(iconId).attr("class", "fas fa-caret-right")
+                    if (displayType === "none") {
+                         $(dirId).css("display", "block")
+                        $(iconId).attr("class", "fas fa-caret-down")
+                    } else {
+                         $(dirId).css("display", "none")
+                        $(iconId).attr("class", "fas fa-caret-right")
+                    }
+
                 }
 
-            }
-        </script>
+                function deleteFile(id, file_id) {
+                    document.getElementById("deleteFile").style.display = "flex";
+                    $("#delete_button").attr('href', '/projects/' + id + '/files/delete/' + file_id);
 
-        <!-- CUSTOM SCRIPTS -->
-        <script src="{% static 'viewmodel/js/project_process.js' %}"></script>
-        <script src="{% static 'viewmodel/js/upload.js' %}"></script>
+                }
+
+                function closeDelete() {
+                    document.getElementById("deleteFile").style.display = "none";
+                }
+    </script>
+
+
+    <!-- CUSTOM SCRIPTS -->
+    <script src="{% static 'viewmodel/js/project_process.js' %}"></script>
+    <script src="{% static 'viewmodel/js/upload.js' %}"></script>
 	</body>
 </html>
