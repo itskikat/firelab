@@ -746,7 +746,6 @@ def generate_contour(request, file_id, project_id):
 	# return redirect("/segmentation?id=" + str(file_id)) + "&error=TooManyValues
 	else:
 		vertexes = vertexes[0]
-	print(vertexes)
 	# store polygon on db
 	wkt_list = []
 	for point in vertexes:
@@ -832,6 +831,7 @@ def progression(request, project_id):
 			pts+= p.name+','+str(p.pix).split(';')[1].split('(')[1].split(')')[0]+','+str(p.geo).split(';')[1].split('(')[1].split(')')[0]+';'
 		
 		pts=pts[:-1]
+		print(pts)
 		param = {
 			'frame': frame,
 			'points':pts,
@@ -862,8 +862,10 @@ def progression(request, project_id):
 				return redirect("/projects/" + str(project_id) + "/progression?id="+str(frame_id))
 		except:
 			print("no frame name")
+		
 		param = {
 			'frame': None,
+			'points': None,
 			'project': project,
 			'project_dirs': Directory.objects.all().filter(project_id=project.id),
 			'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
@@ -883,6 +885,14 @@ def progression(request, project_id):
 			_frame = ImageFrame.objects.get(file_info_id=_id)
 			_frame_file = _frame.file_info
 			param['frame'] = _frame
+			pts=""
+			points = PointModel.objects.all().filter(frame=_frame)
+
+			for p in points:
+				pts+= p.name+','+str(p.pix).split(';')[1].split('(')[1].split(')')[0]+','+str(p.geo).split(';')[1].split('(')[1].split(')')[0]+';'
+			
+			pts=pts[:-1]
+			param['points']=pts
 		except ImageFrame.DoesNotExist:
 			return render(request, 'main/fire_progression.html', param)
 

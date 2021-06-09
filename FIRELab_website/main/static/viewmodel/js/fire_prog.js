@@ -113,6 +113,7 @@
 
         $('#SearchPointBtn').click(function () {
             var imagePointsAsString = document.getElementById('frame_points').textContent;
+            console.log(imagePointsAsString);
             var imagePointsArray =imagePointsAsString.split(";"); //each element of the array is like : "a,POINT (2 7),POINT (0 0)"
             for(let i=0; i<imagePointsArray.length;i++){
                 let namePixGeo = imagePointsArray[i].split(',');  //split to access name, pix, geo
@@ -128,7 +129,7 @@
                 }
             }
             if(ptNames.length>0){
-                $("#pixel_table_coords").attr('hidden', true);
+                $("#pixel_table_coords").attr('hidden', false);
             }
             loadPointPopUpDialog.dialog("close");
         });
