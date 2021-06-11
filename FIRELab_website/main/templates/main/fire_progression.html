@@ -40,9 +40,9 @@
             <div id="img_prog"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
                 {% if segmented %}
                     <div hidden id="polygon_georreferenced"> {{ segmented }}></div>
-                    <img draggable="false" id="WorkingImage" src={{ frame.content.url }}>
+                    <img hidden draggable="false" id="WorkingImage" src={{ frame.content.url }}>
                 {% else %}
-                    <img draggable="false" id="workingImage" src={{ frame.content.url }}>
+                    <img hidden draggable="false" id="workingImage" src={{ frame.content.url }}>
                 {% endif %}
             </div>
         {% endif %}
@@ -53,7 +53,7 @@
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
 			<tr>
-				<td id="showImage" onclick="openImages()"><i class="fas fa-image fa-lg"></i></td>
+				<td id="showImage"><i class="fas fa-image fa-lg"></i></td>
 				<td id="zoomIn"><i class="fas fa-search-plus fa-lg"></i></td>
 			</tr>
 			<tr>
@@ -126,29 +126,6 @@
     <span hidden id="span_projectid"> {{ project.id }}</span>
 	  <div id="map" style="height: 750px;" hidden></div>
 
-    <!-- POP WHEN OPEN IMAGES-->
-        <div id="images-popup" hidden>
-         <div id="content">
-             <div class="myGallery" id="gallery">
-                {% if available_frames|length <= 0 %}
-                    <p style="color: white">Please segment an image to get started.</p>
-                {% else %}
-                 {% for frame in available_frames %}
-                      <div class="item" onclick="selectImage({{ frame.file_info.id }})">
-                        <img id="thumbnail_{{ frame.file_info.id }}" src="{{ frame.content.url }}" />
-                        <span class="caption">{{ frame.file_info.name }}.{{ frame.file_info.extension }}</span>
-                      </div>
-                 {% endfor %}
-             {% endif %}
-
-            </div>
-        <div id="actions" style="padding: 5px; float: right">
-            <button type="button" class="button cancel" style="background: transparent !important;" onclick="closeImages()">Close</button>
-            <button type="button" class="button solid primary" onclick="importSelectedImage()">Import</button>
-        </div>
-        </div>
-    </div>
-
 
     <div id="popUpGEO" title="Geo Coord Input">
         <small>Location Name:</small>
@@ -173,7 +150,7 @@
 
     <form action="./progression" method="POST" id="loadImagePopUp" title="Image Finder" style="display:none" role="dialog" class="ui-dialog ui-corner-all ui-widget ui-widget-content ui-front ui-draggable">
         {% csrf_token %}
-        <small>Location Name:</small>
+        <small>Image Name:</small>
         <input id='imageNameToSearch' type='text' name='frame_name' class='form-control'>
         <br>
         <button type="submit" class='btn btn-default'id='searchImageBtn'> SEARCH! </button>
@@ -205,6 +182,5 @@
    
     </script>
     {% endblock %}
-
 
 {% endblock %}

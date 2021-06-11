@@ -1,3 +1,4 @@
+
         let map = document.getElementById("map");
         let animationButtons = document.getElementById("animationButtons");
         let span_projectid = document.getElementById('span_projectid').textContent.trim();
@@ -21,7 +22,6 @@
         var imageNameToSearch = $('#imageNameToSearch');
         var marker = $('#marker');
         var ptNames=[];
-        let selectedImage;
         CoordPopUp.dialog({
             autoOpen: false,
             show: {
@@ -63,29 +63,9 @@
             modal: true,
         });
 
-       function openImages() {
-            document.getElementById("images-popup").style.display = "flex";
-            //blur.style.filter = "blur(2px)";
-        }
-
-        function selectImage(id) {
-            $(".activeFrame").removeClass("activeFrame")
-            let ref = "#thumbnail_" + id;
-            $(ref).addClass("activeFrame")
-            selectedImage = id;
-
-        }
-
-        function importSelectedImage() {
-           if (selectedImage != null) {
-               window.location.href = window.location.href.split("?")[0] + "?id=" + selectedImage;
-           }
-        }
-
-        function closeImages() {
-           document.getElementById("images-popup").style.display = "none";
-           selectedImage = null;
-        }
+        $('#showImage').click(function () {
+            workingImage.toggle();
+        });
 
         $('#cp').click(function () {
             $('#toolkit').toggle();
@@ -174,21 +154,39 @@
             
         });
         
+        function isFloat(n){
+            return Number(n) === n && n % 1 !== 0;
+        }
+        function isInt(n){
+            return Number(n) === n && n % 1 === 0;
+        }
         
 
         $('#submit_geo').click(function () {
             $("#pixel_table_coords").attr('hidden', false);
-            ptNames.push(inputForLocName.val());
-            coords = inputForCoords.val();
-            pixels.push(currPixelPoint);
-            var pointName = inputForLocName.val();
             var coords = inputForCoords.val().split(",");
-            geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
-            table_pixel_coord=pixels[pixels.length-1];
-            table_geo_coord=geocoords[geocoords.length-1];
-            var tr = "<tr>";
-            tr += "<td>"+pointName+"</td>"+"<td>"+table_pixel_coord+"</td>"+"<td>"+table_geo_coord+"</td>"+"</tr>";
-            document.getElementById("pixel_table_coords").innerHTML += tr;
+            if((isFloat(parseFloat(coords[0].trim())) && isFloat(parseFloat(coords[1].trim())) || (isInt(parseFloat(coords[0].trim())) && isInt(parseFloat(coords[1].trim()))))){
+                if(parseFloat(coords[0].trim())<=90 && (parseFloat(coords[1].trim())>=-90) && parseFloat(coords[1].trim())<=180 && (parseFloat(coords[1].trim())>=-180)){
+                    console.log(parseFloat(coords[0].trim()));
+                    ptNames.push(inputForLocName.val());
+                    pixels.push(currPixelPoint);
+                    var pointName = inputForLocName.val();
+                    geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
+                    table_pixel_coord=pixels[pixels.length-1];
+                    table_geo_coord=geocoords[geocoords.length-1];
+                    var tr = "<tr>";
+                    tr += "<td>"+pointName+"</td>"+"<td>"+table_pixel_coord+"</td>"+"<td>"+table_geo_coord+"</td>"+"</tr>";
+                    document.getElementById("pixel_table_coords").innerHTML += tr;
+                }
+                else{
+                    alert("Wrong input");
+                    $("#pixel_table_coords").attr('hidden', true);
+                }
+            }
+            else{
+                alert("Wrong input");
+                $("#pixel_table_coords").attr('hidden', true);
+            }
             CoordPopUp.dialog("close");
         });
       
