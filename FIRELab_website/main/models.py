@@ -97,7 +97,6 @@ class ImageFrame(models.Model):
     polygon = gisModels.PolygonField(blank=True, default=None, null=True)
     geoRefPolygon = gisModels.PolygonField(blank=True, default=None, null=True)
     video = models.ForeignKey(Video, on_delete=models.CASCADE, blank=True, default=None, null=True)
-
     timestamp = models.FloatField(blank=True, default=None, null=True)
 
     def __str__(self):

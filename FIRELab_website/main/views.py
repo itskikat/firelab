@@ -1373,7 +1373,6 @@ def progression(request, project_id):
 
         wkts = None
         if 'animation' in request.GET:
-            print("Entrou animação")
             try:
                 _frames = ImageFrame.objects.filter(file_info__dir__project_id=project_id).order_by('id')
                 # for every frame, check if it has been segmented and georreferenced
@@ -1403,11 +1402,10 @@ def progression(request, project_id):
                    str(p.geo).split(';')[1].split('(')[1].split(')')[0] + ';'
 
         pts = pts[:-1]
-        print(pts)
-        available_frames = ImageFrame.objects.all().filter(
-            file_info__dir__project_id=project.id,
-            file_info__dir__project__owner=request.user,
-            polygon__isnull=False)
+        # available_frames = ImageFrame.objects.all().filter(
+        #     file_info__dir__project_id=project.id,
+        #     file_info__dir__project__owner=request.user,
+        #     polygon__isnull=False)
         param = {
             'frame': frame,
             'points': pts,
@@ -1415,7 +1413,7 @@ def progression(request, project_id):
             'project_dirs': Directory.objects.all().filter(project_id=project.id),
             'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
             'georreferencing': Georreferencing(),
-            'available_frames': available_frames
+            # 'available_frames': available_frames
         }
 
         if wkts:
