@@ -154,21 +154,39 @@
             
         });
         
+        function isFloat(n){
+            return Number(n) === n && n % 1 !== 0;
+        }
+        function isInt(n){
+            return Number(n) === n && n % 1 === 0;
+        }
         
 
         $('#submit_geo').click(function () {
             $("#pixel_table_coords").attr('hidden', false);
-            ptNames.push(inputForLocName.val());
-            coords = inputForCoords.val();
-            pixels.push(currPixelPoint);
-            var pointName = inputForLocName.val();
             var coords = inputForCoords.val().split(",");
-            geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
-            table_pixel_coord=pixels[pixels.length-1];
-            table_geo_coord=geocoords[geocoords.length-1];
-            var tr = "<tr>";
-            tr += "<td>"+pointName+"</td>"+"<td>"+table_pixel_coord+"</td>"+"<td>"+table_geo_coord+"</td>"+"</tr>";
-            document.getElementById("pixel_table_coords").innerHTML += tr;
+            if((isFloat(parseFloat(coords[0].trim())) && isFloat(parseFloat(coords[1].trim())) || (isInt(parseFloat(coords[0].trim())) && isInt(parseFloat(coords[1].trim()))))){
+                if(parseFloat(coords[0].trim())<=90 && (parseFloat(coords[1].trim())>=-90) && parseFloat(coords[1].trim())<=180 && (parseFloat(coords[1].trim())>=-180)){
+                    console.log(parseFloat(coords[0].trim()));
+                    ptNames.push(inputForLocName.val());
+                    pixels.push(currPixelPoint);
+                    var pointName = inputForLocName.val();
+                    geocoords.push([parseFloat(coords[0].trim()), parseFloat(coords[1].trim())]);
+                    table_pixel_coord=pixels[pixels.length-1];
+                    table_geo_coord=geocoords[geocoords.length-1];
+                    var tr = "<tr>";
+                    tr += "<td>"+pointName+"</td>"+"<td>"+table_pixel_coord+"</td>"+"<td>"+table_geo_coord+"</td>"+"</tr>";
+                    document.getElementById("pixel_table_coords").innerHTML += tr;
+                }
+                else{
+                    alert("Wrong input");
+                    $("#pixel_table_coords").attr('hidden', true);
+                }
+            }
+            else{
+                alert("Wrong input");
+                $("#pixel_table_coords").attr('hidden', true);
+            }
             CoordPopUp.dialog("close");
         });
       
