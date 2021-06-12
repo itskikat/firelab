@@ -17,7 +17,7 @@ function openCloseToolkit() {
 }
 
 function openUpload() {
-	var upload = document.getElementById("upload"); 
+	var upload = document.getElementById("upload");
 	if ( window.getComputedStyle(upload, null).getPropertyValue("display") === 'none') {
         upload.style.display = 'block';
     } else {

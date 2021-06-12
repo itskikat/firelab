@@ -1,0 +1,90 @@
+{% extends 'main/base_projects.html' %}
+
+{% load static %}
+
+{% block content %}
+
+{% block extracss %}
+        <link rel="stylesheet" href="{% static 'viewmodel/css/export.css' %}"/>
+    {% endblock %}
+
+
+<div id="fuelmap">
+	<h2 id="title">Export Fuel Map</h2>
+	<div id="content">
+	<p>Export Fuel Map eu sei la</p>
+	<div class="export">
+        <label for="gridFuel">Choose a grid:</label>
+        <select style="width: fit-content; max-width: 50%" name="gridFuel" id="gridFuel">
+        	<option selected disabled>Select a grid to use in the export</option>
+            {% for grid in available_grids %}
+        	    <option value="{{ grid.id }}">{{ grid.file_info.name }}</option>
+            {% endfor %}
+        </select>
+        <div id="export">
+        <button type="button" id="export-fuelmap" class="button solid" onclick="export_fuelMap()">Export</button>
+    </div>
+	</div>
+    </div></div>
+
+
+<div id="disperfire">
+	<h2 id="title">Export DISPERFIRE</h2>
+	<div id="content">
+	<p>Export Disperfire eu sei la</p>
+	<div class="export">
+		<label for="video">Choose a video:</label>
+        <select style="max-width: 50%; width: fit-content" name="video" id="video">
+            <option selected disabled>Select a video to use in the export</option>
+            {% for video in available_videos %}
+                <option value="{{ video.id }}">{{ video.name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="gridDisp">Choose a grid:</label>
+        <select style="max-width: 50%; width: fit-content;" name="gridDisp" id="gridDisp">
+            <option selected disabled>Select a grid to use in the export</option>
+            {% for grid in available_grids %}
+                <option value="{{ grid.id }}">{{ grid.file_info.name }}</option>
+            {% endfor %}
+        </select>
+        <div id="export">
+       <button type="button" id="export-disperfire" class="button solid" onclick="export_progMin()">Export</button>
+   </div>
+	</div>
+</div>
+</div>
+
+    <script>
+        let fuelMap_grid;
+        let progMin_grid;
+        let progMin_video;
+
+        $("#gridFuel").change(function () {
+            fuelMap_grid = $(this).val();
+        })
+
+        function export_fuelMap() {
+            if (fuelMap_grid) {
+                window.location.href = "vegetation/save/" + fuelMap_grid;
+            }
+        }
+
+        $("#gridDisp").change(function () {
+            progMin_grid = $(this).val()
+        })
+
+        $("#video").change(function () {
+            progMin_video = $(this).val()
+        })
+
+        function export_progMin() {
+            if (progMin_video && progMin_grid) {
+                window.location.href = "export/" + progMin_video + "/grid/" + progMin_grid
+            }
+        }
+
+    </script>
+
+
+{% endblock %}

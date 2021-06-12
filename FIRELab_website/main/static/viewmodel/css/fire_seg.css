@@ -299,3 +299,19 @@ ul {
 #openT {
 	padding-left: 1%;
 }
+
+.right {
+
+	height: 100%;
+	overflow-y: auto;
+}
+
+.right::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.right {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

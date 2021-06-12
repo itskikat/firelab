@@ -33,6 +33,9 @@
                                 <tr id="prog">
                                     <td><a href="{% url 'progression' project.id %}">Fire Progression</a></td>
                                 </tr>
+                                <tr id="export">
+                                    <td><a href="{% url 'export_manager' project.id %}">Export Manager</a></td>
+                                </tr>
                             </table>
                         </div>
 
@@ -112,8 +115,13 @@
                             errorType = item.split("=")[1];
                                 if (errorType === "QuotaSurpassed" ) {
                                     errorMessage = "[" + errorType + "] Your user quota was surpassed, delete some files to free up some space."
+                                } else if (errorType === "FrameNotGeoreferenced") {
+                                    errorMessage = "[" + errorType + "] Some frames are not georeferenced and the export is not possible."
                                 }
-                                openWarningPopUp(errorMessage);
+
+                                if (errorMessage) {
+                                    openWarningPopUp(errorMessage);
+                                }
                         }
                     });
                 });

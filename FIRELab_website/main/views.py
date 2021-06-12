@@ -244,10 +244,16 @@ def delete_file(request, project_id, fileinfo_id):
             _ortophoto = Ortophoto.objects.get(file_info_id=fileinfo_id,
                                                file_info__dir__project_id=project_id,
                                                file_info__dir__project__owner=request.user)
+            _grid_list = Grid.objects.all().filter(ortophoto=_ortophoto,
+                                                   file_info__dir__project_id=project_id,
+                                                   file_info__dir__project__owner=request.user)
         except Ortophoto.DoesNotExist:
             return redirect("/projects/" + str(_project.id) + "/process")
 
+        for _grid in _grid_list:
+            _grid.file_info.delete()
         _fileinfo.delete()
+
         print("Deleted ortphoto file successfully")
 
     else:
@@ -282,6 +288,9 @@ def delete_file(request, project_id, fileinfo_id):
 
 
 def vegetation(response, project_id):
+    if not response.user.is_authenticated:
+        return redirect("/login")
+
     try:
         project = Project.objects.get(id=project_id)
     except Project.DoesNotExist:
@@ -368,6 +377,8 @@ def vegetation(response, project_id):
 
                 gridded_image = utils.draw_grid(img, cell_size, top_left, bottom_right)
                 gridded_image[np.where((gridded_image == [0, 0, 0]).all(axis=2))] = [255, 255, 255]
+
+                os.makedirs(os.path.abspath(os.path.join(MEDIA_ROOT, "grids")), exist_ok=True)
 
                 path = os.path.abspath(os.path.join(MEDIA_ROOT, "grids/grid_{}_aux.png".format(_grid.file_info.name)))
                 cv2.imwrite(path, gridded_image)
@@ -1231,6 +1242,10 @@ def export_disperfire_file(request, project_id, video_id, grid_id):
         print("frame", i)
         cur_frame = frame_list[i]
 
+        if cur_frame.geoRefPolygon is None:
+            return redirect("/projects/" + str(project_id) + "/progression?id=" + str(cur_frame.file_info.id) + "&error=FrameNotGeoreferenced")
+
+
         # get outer bounds of bigger polygon
         envelope = cur_frame.geoRefPolygon.envelope
         print('envelope', envelope)
@@ -1537,3 +1552,29 @@ def progression(request, project_id):
 
         param['georreferenced'] = geo_polygon
     return render(request, "main/fire_progression.html", param)
+
+
+def export_manager(request, project_id):
+    if not request.user.is_authenticated:
+        return redirect("/login")
+
+    try:
+        project = Project.objects.get(id=project_id)
+    except Project.DoesNotExist:
+        return redirect("/projects")
+
+    available_grids = Grid.objects.all().filter(file_info__dir__project_id=project.id,
+                                                file_info__dir__project__owner=request.user)
+    available_videos = Video.objects.all().filter(imageframe__file_info__dir__project_id=project.id,
+                                                  imageframe__file_info__dir__project__owner=request.user).distinct()
+
+    param = {
+        'project': project,
+        'project_dirs': Directory.objects.all().filter(project_id=project.id),
+        'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
+        'available_grids': available_grids,
+        'available_videos': available_videos
+    }
+
+    return render(request, "main/export.html", param)
+

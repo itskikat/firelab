@@ -24,7 +24,7 @@ $(document).ready(function () {
                 if(uploadbuttonVideo){
                     uploadbuttonVideo.style.display = "block";
                 }
-             
+
                 return file.name;
             });
 
