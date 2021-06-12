@@ -32,7 +32,7 @@ def createAccountView(request):
     data = {}
     if request.method == 'POST':
         form = CreateAccountForm(request.POST)
-
+        data['form'] = form
         if form.is_valid():
             user = form.save()
             user.refresh_from_db()

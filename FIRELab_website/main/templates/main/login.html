@@ -44,9 +44,11 @@
                                     <div class="row gtr-uniform">
                                         <div class="col-8 col-12-xsmall" style="align-items: center;">
                                             <input type="text" id="id_username" class="form-control form.username" name="username" placeholder="Username">
+                                            {% if form.username.errors %}<span>Please provide a valid username.</span>{% endif %}
                                         </div>
                                         <div class="col-8 col-12-xsmall">
                                             <input type="password" id="id_password" class="form-control" name="password" placeholder="Password" />
+                                            {% if form.password.errors %}<span>Please provide a valid password.</span>{% endif %}
                                         </div>
                                         <div class="col-8">
                                             <ul class="actions" >
