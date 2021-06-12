@@ -45,10 +45,12 @@
                                             {% if form.email.errors %}<span>Please provide a valid email address.</span>{% endif %}
                                         </div>
                                         <div class="col-8 col-12-xsmall">
+                                            {{ form.password1.label_tag }}
                                             {{ form.password1|add_class:'form-control' }}
                                             {% if form.password1.errors %}<span>Please provide a password.</span>{% endif %}
                                         </div>
                                         <div class="col-8 col-12-xsmall">
+                                            {{ form.password2.label_tag }}
                                             {{ form.password2|add_class:'form-control' }}
                                             {% if form.password2.errors %}<span>Please confirm your password.</span>{% endif %}
                                         </div>

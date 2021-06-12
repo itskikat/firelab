@@ -45,7 +45,7 @@
 							<p>{{ user.get_username }}</p>
 						</div>
 						<div id="info">
-							<p>Email: </p>
+							<p>Email: {{ user.get_email }}</p>
 							<p id="space">Storage:</p>
 							<progress id="file" value="{{ storage_relative }}" max="100"></progress>
 							<p id="storage">{{ storage }}GB out of 5GB used</p>
@@ -122,7 +122,7 @@
                 <div class="form-popup" id="myForm" style="align-self: center;">
                     <form id="modelForm" method="POST" action="{% url 'account' %}" class="form-container">
                         {% csrf_token %}
-                        <h1>Create a new Model <i class="fas fa-times" style="padding-left: 35%; cursor: pointer" onclick="closeForm()"></i></h1><!-- TODO add X-->
+                        <h1>Create a new Model <i class="fas fa-times" style="padding-left: 35%; cursor: pointer" onclick="closeForm()"></i></h1>
                         <br>
                         {{ model_creation_form.nameModel.label }}
                         {{ model_creation_form.nameModel }}
@@ -145,7 +145,8 @@
 		                   	 	</div>
 		                   	 	<div class="col-12 col-12-xsmall">
 		                   	 		{{  model_creation_form.hexColor.label }}
-	                        		{{  model_creation_form.hexColor }}
+		                   	 		{{  model_creation_form.hexColor }}
+	                        		
 		                   	 	</div>
 		                   	 	{% comment %}<div class="col-6 col-12-xsmall">
 		                   	 		{{  model_creation_form.index.label }}

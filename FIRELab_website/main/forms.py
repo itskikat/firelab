@@ -59,7 +59,7 @@ class ModelCreation(forms.Form):
         self.fields['nameClass'].widget.attrs = ({'id': 'class_name', 'placeholder': 'Classification Name', 'name': 'class_name'})
         self.fields['minimumPercentage'].widget.attrs = ({'id': 'minimum_percentage', 'placeholder': 'Minimum %', 'name': 'minimum_percentage', 'class': 'number_input'})
         self.fields['maximumPercentage'].widget.attrs = ({'id': 'maximum_percentage', 'placeholder': 'Maximum %', 'name': 'maximum_percentage'})
-
+        
 
 class Segmentation(forms.Form):
     pen = forms.BooleanField()
