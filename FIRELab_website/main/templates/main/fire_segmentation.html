@@ -50,11 +50,13 @@
 				<td><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
 				<td><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
 			</tr>
+            <tr>
+                {% if segmented %}<td><a title="Mask Toggle" id="maskToggle" style="cursor: pointer;"><i class="fas fa-eye fa-lg"></i></a></td>{% endif %}
+                {% if segmented %}<td></td>{% endif %}
+            </tr>
 		</tbody>
 		</table>
-        {% if segmented %}
-            <a id="maskToggle">Mask Toggle</a>
-        {% endif %}
+      
 	</div>
 
 	<div class="upload" id="uploadSeg">

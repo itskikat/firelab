@@ -72,7 +72,8 @@ table tbody tr:nth-child(2n + 1) {
   top: 53%;
   transform: translate(-50%, -50%);
   z-index: 9;
-  width: 520px;
+  width: 650px;
+  max-width: fit-content;
   height: 590px;
 }
 
@@ -143,4 +144,27 @@ a {
 .change:hover {
   border-bottom: 1px solid #771300;
   text-decoration: none;
+}
+
+#icon {
+  padding: 5px;
+  background: rgba(144, 144, 144, 0.25);
+  color: white;
+  border-radius: 3px;
+  min-width: 45px;
+  text-align: center;
+  padding-top: 5%;
+}
+
+.icon-hex {
+  width: 100%;
+  padding: 5px;
+  outline: none;
+}
+
+.wrapIcon {
+  display: -ms-flexbox; /* IE10 */
+  display: flex;
+  width: 100%;
+  margin-bottom: 15px;
 }

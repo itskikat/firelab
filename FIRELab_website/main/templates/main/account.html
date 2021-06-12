@@ -143,9 +143,18 @@
 			                        {{  model_creation_form.maximumPercentage.label }}
 			                        {{  model_creation_form.maximumPercentage }}
 		                   	 	</div>
-		                   	 	<div class="col-12 col-12-xsmall">
+		                   	 	<div class="input-group col-6 col-12-xsmall">
+		                
 		                   	 		{{  model_creation_form.hexColor.label }}
+		                   	 		<div class="wrapIcon">
+		                   	 		<i class="fas fa-hashtag" id="icon"></i>
 		                   	 		{{  model_creation_form.hexColor }}
+	                        		</div>
+		                   	 	</div>
+		                   	 	<div class="col-6 col-12-xsmall">
+		                   	 		Or choose from this picker
+		                   	 		<br>
+		                   	 		<input type="color" name="typeColor" id="typeColor" value="#ffffff">
 	                        		
 		                   	 	</div>
 		                   	 	{% comment %}<div class="col-6 col-12-xsmall">
