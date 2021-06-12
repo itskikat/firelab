@@ -42,6 +42,7 @@ class UploadVideo(forms.Form):
     def __init__(self, *args, **kwargs):
         super(UploadVideo, self).__init__(*args, **kwargs)
         self.fields['video'].widget.attrs = ({'class': 'file-upload__input', 'name': 'videoFile', 'id': 'videoFile'})
+        self.fields['frames'].widget.attrs = ({'id': 'nrFramesInput'})
 
 
 class ModelCreation(forms.Form):
@@ -79,6 +80,9 @@ class ProjectCreation(forms.Form):
 
 class UploadOrtophoto(forms.Form):
     image = forms.FileField(label="Ortophoto")
+    def __init__(self, *args, **kwargs):
+        super(UploadOrtophoto, self).__init__(*args, **kwargs)
+        self.fields['image'].widget.attrs = ({'class': 'file-upload__input', 'name': 'ortophoto', 'id': 'ortophoto'})
 
 
 class PointNames(forms.Form):

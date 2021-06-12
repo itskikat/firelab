@@ -17,13 +17,14 @@ function openCloseToolkit() {
 }
 
 function openUpload() {
-	var upload = document.getElementById("upload");
+	var upload = document.getElementById("uploadVeg"); 
 	if ( window.getComputedStyle(upload, null).getPropertyValue("display") === 'none') {
         upload.style.display = 'block';
     } else {
         upload.style.display = 'none';
     }
 }
+
 
 function openClosePicker() {
 	var picker = document.getElementById("pickerBody");

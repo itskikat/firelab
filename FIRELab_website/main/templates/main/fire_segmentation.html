@@ -57,11 +57,11 @@
         {% endif %}
 	</div>
 
-	<div class="upload" id="upload">
-		<h1>Upload Files</h1>
-		<p>If you have RGB videos or images that were captured during the firing, please use this tool in order to extract the frames or images you wish to be processed:</p>
-		<div class="video">
-			<p id="titles">Video:</p>
+	<div class="upload" id="uploadSeg">
+        <h1>Upload Files</h1>
+        <p>If you have RGB videos or images that were captured during the firing, please use this tool in order to extract the frames or images you wish to be processed:</p>
+        <div class="video">
+            <p id="titles">Video:</p>
             <form method="POST" action="{% url 'uploadVideo' project.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div style="overflow: hidden; padding: 0.1em 0 0 1.8em;">
@@ -71,43 +71,41 @@
                 </div>
 
                 <div style="display: inline-block; padding-top: 1em;">
-                    <p style="display: inline-block; float: left" id="nrFrames">Number of frames:</p>
-{#                    <input type="text" name="video-fpm" id="video-fpm" value="5" style="padding-left: 10px" />#}
+                    <p style="display: inline-block; float: left" id="nrFrames">Number of frames: </p>
                     {{ video_form.frames }}
                 </div>
-
                 <div>
                     <span id="startingTimestamp"></span><br>
                     <span id="endingTimestamp"></span>
-                    <label style="color: black">Extraction starting time:</label>
+                    <div id="startingDateTime" style="display: none">
                     {{ video_form.startingDateTime }}
+                    </div>
                 </div>
-                <div hidden>
+                <div style="display: none">
                     {{ video_form.videoOriginDateTime }}
                 </div>
 
-
                 <div style="padding: 1%;">
-                    <input type="submit" id="submit_vd" value="Upload video" onclick="openLoadingPopUp()">
+                    <input type="submit" id="submit_vd" value="Upload video" style="background-color: #2f3338; color: white" onclick="openLoadingPopUp()">
                 </div>
             </form>
 
-		</div>
-		<br/>
-		<div class="images">
-			<p id="titles">Images:</p>
-			<form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload' project.id%}" enctype="multipart/form-data">
+        </div>
+        <br/>
+        <div class="images">
+            <p id="titles">Images:</p>
+            <form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload' project.id%}" enctype="multipart/form-data">
                 {% csrf_token %}
-                {{ image_form.image }} {#	 <input class="file-upload__input" type="file" name="videoFile" id="videoFile"> #}
+                {{ image_form.image }} {#    <input class="file-upload__input" type="file" accept="image/*" name="videoFile" id="videoFile"> #}
                 <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
                 <span class="file-upload__label"></span>
-                <div style="padding: 1%;">
-                    <input type="submit" id="submit_bt" value="Upload image" onclick="openLoadingPopUp()">
+                <div style="padding-top: 1%;">
+                    <input type="submit" id="submit_bt" value="Upload image" onclick="openLoadingPopUp()" style="width: fit-content; background-color: #2f3338; color: white;">
                 </div>
-			</form>
-		</div>
+            </form>
+        </div>
 
-	</div>
+    </div>
     {% if video_frames and video_frames.count != 0 %}
         <!-- This only appears when there is a video uploaded-->
         <div class="fire_timeline">

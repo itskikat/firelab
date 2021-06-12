@@ -110,32 +110,25 @@
 
     {% endif %}
 
-	<div class="upload" id="upload">
-		<h1>Upload Files</h1>
-		<p>If you already have an orthophoto and a grid (shapefile) of the firing area, and only want to classify the vegetation, please use this automatic classification tool. Submit the files below, in the correct places: </p>
-		<div class="orthophoto">
+	<div class="upload" id="uploadVeg">
+        <h1>Upload Files</h1>
+        <p>If you already have an orthophoto and a grid (shapefile) of the firing area, and only want to classify the vegetation, please use this automatic classification tool. Submit the files below, in the correct places: </p> 
+        <div class="orthophoto">
             <form method="POST" action="{% url 'upload_ortophoto' project.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 <p id="titles">Orthophoto:</p>
-                {{ ortophoto_form.image }}
-                {% comment %}<div style="overflow: hidden; padding: 0.1em 0 0 1em;">
-                    <input class="file-upload__input" type="file" name="videoFile" id="videoFile">
+                <div style="overflow: hidden; padding: 0.1em 0 0 1.8em;">
+                    {{ ortophoto_form.image }}
                     <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
                     <span class="file-upload__label"></span>
-                </div>{% endcomment %}
-                <input type="submit" value="Upload Ortophoto" onclick="openLoadingPopUp()">
+                </div>
+                <div style="padding: 1%; padding-left: 23%">
+                    <input type="submit" id="submit_bt" class="button primary" style="display: none; background-color: #2f3338" value="Upload Ortophoto" onclick="openLoadingPopUp()">
+                </div>
             </form>
-		</div>
-		<br/>
-		<div class="shapefile">
-			<p id="titles">Shapefile:</p>
-			<div style="overflow: hidden; padding: 0.1em 0 0 2.3em;">
-				<input class="file-upload__input" type="file" name="videoFile" id="videoFile">
-                <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
-                <span class="file-upload__label"></span>
-			</div>
-		</div>
-	</div>
+            <span><i class="fas fa-info-circle fa-lg"></i> Uploading an orthophotomap can take a while due to size and resolution of the files.</span>
+        </div>  
+    </div>
 
 
     <!-- CUSTOM SCRIPTS-->

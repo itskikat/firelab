@@ -19,11 +19,11 @@ function openCloseToolkit() {
     }
 }
 
+
 function openUpload() {
-    var upload = document.getElementById("upload");
+    var upload = document.getElementById("uploadSeg");
     if ( window.getComputedStyle(upload, null).getPropertyValue("display") === 'none') {
         upload.style.display = 'block';
-        // img_seg.style.display = 'none';
     } else {
         upload.style.display = 'none';
         img_seg.style.display = 'flex';
