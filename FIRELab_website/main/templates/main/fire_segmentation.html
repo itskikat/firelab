@@ -8,7 +8,7 @@
         <link rel="stylesheet" href="{% static 'viewmodel/css/fire_seg.css' %}"/>
     {% endblock %}
 
-    <form id="workingImageForm" action="./segmentation" method="POST">
+    <form id="workingImageForm" action="./segmentation" method="POST" style="position: absolute; justify-content: center; align-items: center; left: 32%; max-width: 80%">
     {% if image is not None %}
         <div hidden>
             {{ segmentation.pen }}
@@ -17,7 +17,7 @@
             {{ segmentation.image_id }}
         </div>
         {% csrf_token %}
-        <div id="img_seg"  style="display: flex; padding-top: {% if video_frames %} 6vh {% else %} 20vh {% endif %}; justify-content: center; align-items: center; ">
+        <div id="img_seg"  style="display: flex;  padding-top: {% if video_frames %} 6vh {% else %} 20vh {% endif %}; justify-content: center; align-items: center; ">
         {% if segmented %}
             <img draggable="false" id="workingImage" src={{ segmented }}>
             <img hidden draggable="false" id="hiddenWorkingImage" src={{ image.content.url }}>
@@ -27,41 +27,44 @@
         </div>
     {% endif %}
     </form>
+ 
 
     <p id="output"></p>
 
+    {% if image is not None %}
 	<div class="toolkit">
 		<table>
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
 			<tr>
-				<td title="Segment" id="pen" style="cursor: pointer; {% if segmentation.pen.value == True %} color: #B55B29 {% endif %}" onclick="penOn()"><i class="fa fa-fire fa-lg" aria-hidden="true"></i></td>
-				<td title="Save" style="cursor: pointer" onclick="window.location='/projects/{{ project.id }}/segmentation/save/{{ image.file_info.id }}'"><i class="fas fa-save fa-lg"></i></td>
+				<td title="Segment" id="pen" style="cursor: pointer; {% if segmentation.pen.value == True %} color: #B55B29 {% endif %}" onclick="penOn()"><i class="fa fa-fire fa-lg" aria-hidden="true" id="icon-fire"></i></td>
+				<td title="Save" id='imgSave' style="cursor: pointer" onclick="window.location='/projects/{{ project.id }}/segmentation/save/{{ image.file_info.id }}'"><i class="fas fa-save fa-lg" id="icon-save"></i></td>
 			</tr>
 			<tr>
-				<td title="Erase" id="eraser" style="cursor: pointer; {% if segmentation.eraser.value == True %} color: #B55B29 {% endif %}" onclick="penOff()"><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i></td>
-				<td><a style="cursor: pointer" title="Upload" onclick="openUpload()"><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></a></td>
+				<td title="Erase" id="eraser" style="cursor: pointer; {% if segmentation.eraser.value == True %} color: #B55B29 {% endif %}" onclick="penOff()"><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true" id="icon-eraser"></i></td>
+				<td><a style="cursor: pointer" title="Upload" onclick="openUpload()" href="{% url 'segmentation' project.id %}"><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></a></td>
 			</tr>
 			<tr>
-				<td><i class="fa fa-search-plus fa-lg" aria-hidden="true"></i></td>
-				<td><i class="fa fa-search-minus fa-lg" aria-hidden="true"></i></td>
+				<td id="imgExpand"><a title="Make image bigger"><i class="fa fa-search-plus fa-lg" aria-hidden="true" id="icon-plus"></i></a></td>
+				<td id="imgReduce"><a title="Make image smaller"><i class="fa fa-search-minus fa-lg" aria-hidden="true" id="icon-minus"></i></a></td>
 			</tr>
 			<tr>
-				<td><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
-				<td><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
+				<td id="imgMove"><a><i class="fas fa-expand-arrows-alt fa-lg" id="icon-move"></i></a></td>
+				<td><i class="fa fa-question-circle fa-lg" aria-hidden="true" onclick="openTutorial()" id="icon-tutorial" style="cursor: pointer;"></i></td>
 			</tr>
             <tr>
-                {% if segmented %}<td><a title="Mask Toggle" id="maskToggle" style="cursor: pointer;"><i class="fas fa-eye fa-lg"></i></a></td>{% endif %}
+                {% if segmented %}<td id="imgMask"><a title="Mask Toggle" id="maskToggle" style="cursor: pointer;"><i class="fas fa-eye fa-lg"></i></a></td>{% endif %}
                 {% if segmented %}<td></td>{% endif %}
             </tr>
 		</tbody>
 		</table>
-      
 	</div>
+    {% endif %}
+
 
 	<div class="upload" id="uploadSeg">
         <h1>Upload Files</h1>
-        <p>If you have RGB videos or images that were captured during the firing, please use this tool in order to extract the frames or images you wish to be processed:</p>
+        <p>If you already have uploaded images or videos you would like to work with, please select them from the [Project] - Images or Frames section in the left. <br>If you have RGB videos or images that were captured during the firing, please use this tool in order to extract the frames or images you wish to be processed:</p>
         <div class="video">
             <p id="titles">Video:</p>
             <form method="POST" action="{% url 'uploadVideo' project.id %}" enctype="multipart/form-data">
@@ -71,10 +74,9 @@
                     <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
                     <span class="file-upload__label"></span>
                 </div>
-
                 <div style="display: inline-block; padding-top: 1em;">
-                    <p style="display: inline-block; float: left" id="nrFrames">Number of frames: </p>
-                    {{ video_form.frames }}
+                    <p style="display: inline-block; float: left; margin-right: 1%; margin-top: 0; padding-top: 0" id="nrFrames">Number of frames per minute: </p>
+                        {{ video_form.frames }}
                 </div>
                 <div>
                     <span id="startingTimestamp"></span><br>
@@ -86,12 +88,10 @@
                 <div style="display: none">
                     {{ video_form.videoOriginDateTime }}
                 </div>
-
                 <div style="padding: 1%;">
                     <input type="submit" id="submit_vd" value="Upload video" style="background-color: #2f3338; color: white" onclick="openLoadingPopUp()">
                 </div>
             </form>
-
         </div>
         <br/>
         <div class="images">
@@ -108,6 +108,8 @@
         </div>
 
     </div>
+   
+
     {% if video_frames and video_frames.count != 0 %}
         <!-- This only appears when there is a video uploaded-->
         <div class="fire_timeline">
@@ -133,6 +135,29 @@
         </div>
     {% endif %}
 
+
+    <!-- TUTORIAL -->
+    {% if image is not None %}
+    <div class="tooltip-wrapper stepOne" id="tutorial">
+        <div class="tooltip">
+            <div class="tooltip-title">
+                <div class="steps"><a onclick="closeTutorial()" style="cursor: pointer"><i id="closeTutorial" class="fas fa-times" title="Stop tutorial"></i></a><a onclick="goBack()" style="cursor: pointer"><i class="fas fa-chevron-left" title="Previous Step" id="goBack"></i></a><a onclick="next()" style="cursor: pointer"><i class="fas fa-chevron-right" title="Next Step" id="nextStep"></i></a></div>
+                <div class="tips" id="tips">Click <i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i> and select the points of no interest</div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="tooltip-wrapper stepZero noImg" id="tutorial">
+        <div class="tooltip">
+            <div class="tooltip-title">
+                <div class="steps"><a onclick="closeTutorial()" style="cursor: pointer"><i id="closeTutorial" class="fas fa-times" title="Stop tutorial"></i></a>
+                    <a onclick="goBack()" style="cursor: pointer"><i class="fas fa-chevron-left" title="Previous Step" id="goBack"></i></a><a onclick="next()" style="cursor: pointer"><i class="fas fa-chevron-right" title="Next Step" id="nextStep"></i></a></div>
+                <div class="tips" id="tips">Click <i class="fa fa-folder-open fa-lg" aria-hidden="true"></i> to upload a video or image</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
 	
 
     <link rel="stylesheet" href="{% static 'viewmodel/css/fire_seg.css' %}"/>
@@ -144,6 +169,15 @@
     let maskOn = true
 
      $(document).ready(function () {
+        let isImageLoaded = document.getElementById('workingImage');
+        if (!isImageLoaded) {
+            openUpload();
+        }
+        else  {
+            openTutorial();
+        }
+       
+
         location.search.substr(1).split("&").forEach(function(item) {
         let params = item.split("=")
         if (params[0] === "error" && params[1] === "quota_surpassed") {
