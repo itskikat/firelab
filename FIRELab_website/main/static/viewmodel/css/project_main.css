@@ -8,7 +8,8 @@
 }
 
 .projDirs {
-	height: 45vh;
+	max-height: 45vh;
+	height: 35vh;
 	overflow: auto;
 }
 
@@ -17,4 +18,3 @@
     display: none;
 }
 
-#

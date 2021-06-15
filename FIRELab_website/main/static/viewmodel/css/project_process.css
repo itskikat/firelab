@@ -27,6 +27,10 @@
 	visibility: hidden
 }
 
+body {
+	overflow-y: none;
+}
+
 
 .split {
 		-moz-align-items: center;
@@ -214,4 +218,22 @@ button {
   padding: 15px;
   background-color: #2f3338;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+
+
+.right {
+	height: 100%;
+	overflow-y: auto;
+}
+
+
+.right::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.right {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }

@@ -72,7 +72,7 @@ function openTutorial() {
 function closeTutorial() {
    tutorial.style.display = "none";
    step = 0;
-   tips.innerHTML = "Click <i class='fas fa-folder-open fa-lg' ></i> here to upload a video or image";
+   tips.innerHTML = "Click <i class='fas fa-folder-open fa-lg' ></i> here to upload an orthophotomap";
   
  
 }
@@ -82,48 +82,41 @@ function next() {
     step++;
     console.log(step);
     if (step === 1) {
- 
-       tips.innerHTML = "Click <i class='fa fa-fire-extinguisher fa-lg' ></i> and select the points of no interest in the image";
+       tips.innerHTML = "Click <i class='fa fa-border-all fa-lg' ></i> and mark two points in the map to create a grid.";
       tutorial.classList.remove("stepZero");
     }
     if (step === 2) {
       
-      tips.innerHTML = "Click <i class='fa fa-fire fa-lg'></i> to start selecting the burnt area in the image";
+      tips.innerHTML = "Click <i class='fa fa-leaf fa-lg'></i> and characterize a few cells by clicking on a color in the table below and picking one or various cells";
 
     }
     else if (step === 3) {
    
-        tips.innerHTML = "Click <i class='fa fa-fire-extinguisher fa-lg' ></i> when you want to unselect some area in the image";
+        tips.innerHTML = "Click <i class='fas fa-tree fa-lg' ></i> to automatically characterize the vegetation";
       
     }
     else if (step === 4) {
       
-        tips.innerHTML = "Click <i class='fa fa-search-plus fa-lg'></i>  when you want to make the image bigger";
+        tips.innerHTML = "Click <i class='fa fa-eraser fa-lg'></i>  when you want to erase already characterized cells.";
 
     }
     else if (step === 5) {
     
-        tips.innerHTML = "Click  <i class='fa fa-search-minus fa-lg'></i> when you want to make the image smaller";
+        tips.innerHTML = "Click  <i class='fa fa-search-plus fa-lg'></i> when you want to make the image bigger";
        
     }
     else if (step === 6) {
       
-        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to move the image";
+        tips.innerHTML = "Click <i class='fa fa-search-minus fa-lg'></i> when you want to make the image smaller";
        
     }
     else if (step === 7) {
   
-        tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the results.";
+        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize.";
  
     }
     else if (step === 8) {
-        if (document.getElementById('imgMask') != null) {
-      tips.innerHTML = "Click <i class='fas fa-eye fa-lg'></i> if you want to toggle the mask. The icon should appear when you start segmentating.";
-        }
-        else {
-      
-            closeTutorial();
-        }
+        tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the results.";
     }
 
     else if (step === 9) {
@@ -145,30 +138,43 @@ function goBack() {
       tips.innerHTML = "Click <i class='fas fa-folder-open fa-lg' ></i> here to upload a video or image";
     }
     if (step === 1) {
-      tips.innerHTML = "Click <i class='fa fa-fire-extinguisher fa-lg' ></i> and select the points of no interest";   
+      tips.innerHTML = "Click <i class='fa fa-border-all fa-lg' ></i> and mark two points in the map to create a grid.";
     }
     if (step === 2) {
-      tips.innerHTML = "Click <i class='fa fa-fire fa-lg' ></i> to start selecting the burnt area";
+      tips.innerHTML = "Click <i class='fa fa-leaf fa-lg'></i> and characterize a few cells by clicking on a color in the table below and picking one or various cells";
+
     }
     else if (step === 3) {
-        tips.innerHTML = "Click <i class='fa fa-fire-extinguisher fa-lg' ></i> when you want to unselect some area";
+        tips.innerHTML = "Click <i class='fas fa-tree fa-lg' ></i> to automatically characterize the vegetation";
      
     }
     else if (step === 4) {
-        tips.innerHTML = "Click <i class='fa fa-search-plus fa-lg'></i>  when you want to make the image bigger";
+        tips.innerHTML = "Click <i class='fa fa-eraser fa-lg'></i>  when you want to erase already characterized cells.";
    
     }
     else if (step === 5) {
-        tips.innerHTML = "Click  <i class='fa fa-search-minus fa-lg'></i> when you want to make the image smaller";
+        tips.innerHTML = "Click  <i class='fa fa-search-plus fa-lg'></i> when you want to make the image bigger";
       
     }
     else if (step === 6) {
-        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to move the image";
+        tips.innerHTML = "Click <i class='fa fa-search-minus fa-lg'></i> when you want to make the image smaller";
 
     }
     else if (step === 7) {
-        tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the image.";
+        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize.";
  
     }
+    else if (step === 8) {
+      tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the results.";
+    }
 
+}
+
+
+function openColorPicker() {
+  document.getElementById("colorPicker").style.display = "flex";
+}
+
+function closeColorPicker() {
+  document.getElementById("colorPicker").style.display = "none";
 }

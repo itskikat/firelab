@@ -167,7 +167,7 @@ function next() {
     }
     else if (step === 6) {
       
-        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to move the image";
+        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize the image";
        
     }
     else if (step === 7) {
@@ -222,7 +222,7 @@ function goBack() {
       
     }
     else if (step === 6) {
-        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to move the image";
+        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize the image";
 
     }
     else if (step === 7) {
