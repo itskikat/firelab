@@ -28,11 +28,11 @@
             </div>
             {% if gridded_image %}
                 <div id="img_ortophoto"  style="display: flex; padding-top: 6%; justify-content: center; align-items: center; ">
-                    <img style="width: 40%" draggable="false" id="workingImage" src={{ gridded_image }}>
+                    <img style="width: 40%; transform-origin: top left;" draggable="false" id="workingImage" src={{ gridded_image }}>
                 </div>
             {% else %}
                 <div id="img_ortophoto"  style="display: flex; padding-top: 6%; justify-content: center; align-items: center; ">
-                    <img style="width: 40%" draggable="false" id="workingImage" src={{ image.thumbnail.url }}>
+                    <img style="width: 40%; transform-origin: top left;" draggable="false" id="workingImage" src={{ image.thumbnail.url }}>
                 </div>
             {% endif %}
         {% endif %}
@@ -172,22 +172,11 @@
         let clicking = false;
         let brush = [];
         let queryDict = {};
-        let scaleSize;
+        let scaleSize, leftScroll, topScroll;
         let img_seg = document.getElementById("workingImage")
+        let localStorageId;
 
         $(document).ready(function () {
-            scaleSize = localStorage.getItem("scaleSize");
-            if (scaleSize == null) {
-                localStorage.setItem("scaleSize", "1.1");
-                scaleSize = 1;
-            } else {
-                scaleSize = parseFloat(scaleSize);
-            }
-
-            if (img_seg !== null && img_seg !== undefined) {
-                img_seg.style.transform = "scale(" + scaleSize + ")";
-            }
-
              let isImageLoaded = document.getElementById("workingImage");
              if (!isImageLoaded) {
                  openUpload();
@@ -196,6 +185,10 @@
              }
 
             location.search.substr(1).split("&").forEach(function(item) {
+                if (item.includes("grid") || item.includes("id")) {
+                    localStorageId = item.split("=")[1]
+                }
+
                 if (!item.includes("selected") && !item.includes("brush") && !item.includes("error")) {
                     queryDict[item.split("=")[0]] = item.split("=")[1]
                 } else {
@@ -236,6 +229,30 @@
 
             let selectedLayerId = "#" + selectedLayer + "_layer"
             $(selectedLayerId).css("background-color", "grey")
+
+            // Handle scale and scroll previous position
+            scaleSize = localStorage.getItem("scaleSize_" + localStorageId);
+            if (scaleSize == null) {
+                localStorage.setItem("scaleSize_" + localStorageId, "1.1");
+                scaleSize = 1;
+            } else {
+                scaleSize = parseFloat(scaleSize);
+            }
+
+            if (img_seg !== null && img_seg !== undefined) {
+                img_seg.style.transform = "scale(" + scaleSize + ")";
+            }
+
+            leftScroll = localStorage.getItem("leftScroll_" + localStorageId);
+            topScroll = localStorage.getItem("topScroll_" + localStorageId);
+            if (leftScroll !== null && leftScroll !== undefined) {
+                $(".right").scrollLeft(leftScroll);
+            }
+            if (topScroll !== null && topScroll !== undefined) {
+                $(".right").scrollTop(topScroll);
+            }
+
+
         });
 
         function manualSelect() {
@@ -265,6 +282,11 @@
             }
 
         }
+
+        $(".right").scroll(function () {
+            localStorage.setItem("leftScroll_" + localStorageId, $(this).scrollLeft());
+            localStorage.setItem("topScroll_" + localStorageId, $(this).scrollTop());
+        })
 
          workingImage.mousedown(function(event) {
             clicking = true
@@ -459,7 +481,7 @@
                 img_seg.style.transform = "scale(" + scaleSize + ")";
                 img_seg.style.transition = "transform 0.25s ease";
             }
-            localStorage.setItem("scaleSize", String(scaleSize));
+            localStorage.setItem("scaleSize_" + localStorageId, String(scaleSize));
 
         }
 
@@ -472,14 +494,14 @@
             }
             img_seg.style.transform = "scale(" + scaleSize + ")";
             img_seg.style.transition = "transform 0.25s ease";
-            localStorage.setItem("scaleSize", String(scaleSize));
+            localStorage.setItem("scaleSize_" + localStorageId, String(scaleSize));
         }
 
         function fitToScreen() {
             scaleSize = 1;
             img_seg.style.transform = "scale(" + scaleSize + ")";
             img_seg.style.transition = "transform 0.25s ease";
-            localStorage.setItem("scaleSize", String(scaleSize));
+            localStorage.setItem("scaleSize_" + localStorageId, String(scaleSize));
         }
         // END OF IMAGE ZOOM ///////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////

@@ -77,7 +77,7 @@
                 <div style="display: inline-block; padding-top: 1em;">
                     <p style="display: inline-block; float: left" id="nrFrames">Number of frames: </p>
                     {{ video_form.frames }}
-                    <p style="display: inline-block; float: right; font-weight: bold; padding: .5em 0 0 1em; font-size: 14px;">(per minute)</p>
+                    <p style="display: inline-block; float: right; font-weight: bold; padding: 0 0 0 1em; font-size: 14px;">(per minute)</p>
                 </div>
                 <div>
                     <span id="startingTimestamp"></span><br>
@@ -169,22 +169,11 @@
     let workingImage = $("#workingImage")
     let clicking, path;
     let scaleSize;
-    let maskOn = true
+    let maskOn = true;
+    let localStorageId;
+
 
      $(document).ready(function () {
-         scaleSize = localStorage.getItem("scaleSize");
-            if (scaleSize == null) {
-                localStorage.setItem("scaleSize", "1.1");
-                scaleSize = 1;
-            } else {
-                scaleSize = parseFloat(scaleSize);
-            }
-
-            if (img_seg !== null && img_seg !== undefined) {
-                img_seg.style.transform = "scale(" + scaleSize + ")";
-            }
-
-
          let isImageLoaded = document.getElementById("workingImage");
          if (!isImageLoaded) {
              openUpload();
@@ -197,7 +186,33 @@
         if (params[0] === "error" && params[1] === "quota_surpassed") {
             // place open pop up here
             console.log("user quato surpassed")
-        }})
+        } else if (params[0] === "id") {
+            localStorageId = params[1];
+        }
+        })
+
+         // Handle scale and scroll previous position
+         scaleSize = localStorage.getItem("scaleSize_" + localStorageId);
+            if (scaleSize == null) {
+                localStorage.setItem("scaleSize_" + localStorageId, "1.1");
+                scaleSize = 1;
+            } else {
+                scaleSize = parseFloat(scaleSize);
+            }
+
+            if (img_seg !== null && img_seg !== undefined) {
+                img_seg.style.transform = "scale(" + scaleSize + ")";
+            }
+
+            leftScroll = localStorage.getItem("leftScroll_" + localStorageId);
+            topScroll = localStorage.getItem("topScroll_" + localStorageId);
+            if (leftScroll !== null && leftScroll !== undefined) {
+                $(".right").scrollLeft(leftScroll);
+            }
+            if (topScroll !== null && topScroll !== undefined) {
+                $(".right").scrollTop(topScroll);
+            }
+
      });
 
     // READ VIDEO FILE METADATA //////////////////////////////////////////////////////////////
@@ -287,6 +302,11 @@
     });
 
     // IMAGE ZOOM //////////////////////////////////////////////////////////////
+       $(".right").scroll(function () {
+            localStorage.setItem("leftScroll_" + localStorageId, $(this).scrollLeft());
+            localStorage.setItem("topScroll_" + localStorageId, $(this).scrollTop());
+        })
+
         function imgSmall() {
             if (scaleSize == 1.1) {
                 scaleSize = scaleSize - 0.1;
@@ -298,7 +318,7 @@
                 img_seg.style.transform = "scale(" + scaleSize + ")";
                 img_seg.style.transition = "transform 0.25s ease";
             }
-            localStorage.setItem("scaleSize", String(scaleSize));
+            localStorage.setItem("scaleSize_" + localStorageId, String(scaleSize));
 
         }
 
@@ -311,14 +331,14 @@
             }
             img_seg.style.transform = "scale(" + scaleSize + ")";
             img_seg.style.transition = "transform 0.25s ease";
-            localStorage.setItem("scaleSize", String(scaleSize));
+            localStorage.setItem("scaleSize_" + localStorageId, String(scaleSize));
         }
 
         function fitToScreen() {
             scaleSize = 1;
             img_seg.style.transform = "scale(" + scaleSize + ")";
             img_seg.style.transition = "transform 0.25s ease";
-            localStorage.setItem("scaleSize", String(scaleSize));
+            localStorage.setItem("scaleSize_" + localStorageId, String(scaleSize));
         }
         // END OF IMAGE ZOOM ///////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////
