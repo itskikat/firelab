@@ -528,6 +528,7 @@ def vegetation(response, project_id):
             _file_info.save()
 
             utils.cell_cutter(ortophoto_path, row, column, p1_x, p1_y, p2_x, p2_y, _grid.id)
+            return redirect("/projects/" + str(project_id) + "/vegetation?grid=" + str(_file_info.id))
 
         # Manual classification of a tile on the grid
         if manual_classifier_form.is_valid():
@@ -570,14 +571,17 @@ def vegetation(response, project_id):
             classification = manual_classifier_form.cleaned_data['classification_index']
             brush_size = manual_classifier_form.cleaned_data['brush_size'] - 1
             cell_size = _grid.cell_size
+            print(brush_path[0])
             affected_points = []
             for point in brush_path:
 
                 # check if point is inside the grid
                 if point[0] < top_left_pixels[0] or point[0] > bottom_right_pixels[0]:
+                    print("out of width")
                     continue
 
                 if point[1] < top_left_pixels[1] or point[1] > bottom_right_pixels[1]:
+                    print("out of heigth")
                     continue
 
                 # compute the offset of the point to the top left
@@ -758,7 +762,7 @@ def upload_orthphoto(request, project_id):
             if user_quota + file_size_mb >= 5 * 1024:
                 return redirect("/projects/" + str(project_id) + "/vegetation?error=QuotaSurpassed")
 
-            name, extension = request.FILES['image'].name.split('.')
+            name, extension = request.FILES['image'].name.rsplit('.', 1)
             start = time.time()
 
             try:
@@ -803,7 +807,7 @@ def upload_orthphoto(request, project_id):
 
                 print("Uploaded tiff ortophoto {}.{}".format(name, extension))
                 print("Ellapsed time: {}s".format(time.time() - start))
-                return redirect("/projects/" + str(project_id) + "/vegetation")
+                return redirect("/projects/" + str(project_id) + "/vegetation?id=" + str(_file_info.id))
 
     else:
         ortophoto_form = UploadOrtophoto()
@@ -840,7 +844,7 @@ def upload(request, project_id):
             if user_quota + file_size_mb >= 5 * 1024:
                 return redirect("/projects/" + str(project_id) + "/segmentation?error=QuotaSurpassed")
 
-            name, extension = request.FILES['image'].name.split('.')
+            name, extension = request.FILES['image'].name.rsplit('.', 1)
 
             try:
                 # file already exists in the server
@@ -869,6 +873,7 @@ def upload(request, project_id):
             # save mask in the previously created image
             _image.mask = mask_encoded
             _image.save()
+            return redirect("/projects/" + str(project_id) + "/segmentation?id=" + str(_image.file_info.id))
 
     return redirect("/projects/" + str(project_id) + "/segmentation")
 
@@ -892,7 +897,7 @@ def upload_video(request, project_id):
             if user_quota + file_size_mb >= 5 * 1024:
                 return redirect("/projects/" + str(project_id) + "/segmentation?error=QuotaSurpassed")
 
-            name, extension = request.FILES['video'].name.split('.')
+            name, extension = request.FILES['video'].name.rsplit('.', 1)
             frame_number = request.POST['frames']
             originTimestamp = request.POST['videoOriginDateTime']
             startingTimestamp = request.POST['startingDateTime']
@@ -931,6 +936,7 @@ def upload_video(request, project_id):
                 parent=Directory.objects.get(project__id=project.id, name="Frames")
             )
             frames_dir.save()
+            first_frame = None
             temp = skipFrames
             try:
                 while video_capture.isOpened() and cur_frame < max_frames - temp:
@@ -970,6 +976,9 @@ def upload_video(request, project_id):
                             _frame.mask = mask_encoded
                             _frame.save()
 
+                            if frame_index == 1:
+                                first_frame = _frame
+
                             frame_index += 1
                         cur_frame += 1
             finally:
@@ -977,7 +986,8 @@ def upload_video(request, project_id):
                 # delete content from model and from file system
                 video.content.delete()
                 print(video.content)
-                print("Done")
+                if first_frame is not None:
+                    return redirect("/projects/" + str(project_id) + "/segmentation?id=" + str(first_frame.file_info.id))
 
     return redirect("/projects/" + str(project_id) + "/segmentation")
 
