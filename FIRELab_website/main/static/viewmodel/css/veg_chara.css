@@ -301,117 +301,6 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 
-/*TUTORIAL */
-.tooltip-wrapper {
-	display: none;
-	position: absolute;
-	overflow: visible;
-	width: 3%;
-	height: 3%;
-	top: 0;
-	padding-top: 6%;
-	right: 18.3%;
-	animation: 1s linear;
-}
-
-.first {
-	padding-top: 3%;
-	
-}
-
-.second {
-	position: absolute;
-	overflow: visible;
-	width: 3%;
-	height: 3%;
-	top: 0;
-	padding-top: 6.5%;
-	animation: 1s linear;
-}
-
-.third {
-	padding-top: 10%;
-}
-
-.fourth {
-	padding-top: 13.5%;
-}
-
-.fifth {
-	padding-top: 16.5%;
-}
-
-.sixth {
-	right: 14.5%;
-	padding-top: 3%;
-}
-
-.seventh {
-	right: 14.5%;
-	padding-top: 6.5%;
-}
-.eight {
-	right: 14.5%;
-	padding-top: 13.5%;
-}
-
-.stepZero {
-	right: 14.5%;
-	padding-top: 10%;
-}
-
-.tooltip-wrapper .tooltip {
-	position: absolute;
-	width: 190px;
-	height: 75px;
-	background: #B55B29;
-	color: #ffffff;
-	border-radius: 0.5em;
-}
-
-
-.tooltip-wrapper .tooltip:before {
-	content:"";
-	width: 0;
-	height: 0;
-	position: absolute;
-}
-
-.tooltip-wrapper .tooltip:before {
-	right: -1em;
-	top: 18px;
-	border-top: 0.5em solid transparent;
-	border-bottom: 0.5em solid transparent;
-	border-left: 1.0em solid #B55B29;
-}
-
-.tooltip-wrapper .tooltip .tooltip-title .tips {
-	font-size: 12px;
-	padding-left: 13%;
-	padding-top: 0.5%;
-	line-height: 18px;
-	margin: 0;
-
-}
-
-.tooltip-wrapper .tooltip .tooltip-title .steps {
-	height: 20px;
-	font-size: 12px;
-}
-
-#closeTutorial {
-	padding-left: 5%;
-	color: #E4C3B1;
-}
-
-#nextStep {
-	padding-left: 10%;
-}
-
-#goBack {
-	padding-left: 65%;
-	color: #E4C3B1;
-}
 
 /* GRID POINTS COLOR */
 
@@ -438,4 +327,59 @@ input[type=number]::-webkit-outer-spin-button {
   padding: 15px;
   background-color: #2f3338;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+
+/*TUTORIAL */
+.tooltip-wrapper {
+	display: none;
+	position: absolute;
+	overflow: visible;
+	width: 3%;
+	height: 3%;
+	top: 50%;
+	right: 1%;
+	animation: 1s linear;
+}
+
+
+.tooltip-wrapper .tooltip {
+	position: absolute;
+	width: 200px;
+	padding: 0;
+	height: fit-content;
+	right: 1%;
+	min-height: 80px;
+	background: #B55B29;
+	color: #ffffff;
+	border-radius: 0.5em;
+}
+
+
+.tooltip-wrapper .tooltip .tooltip-title .tips {
+	font-size: 13px;
+	padding-left: 13%;
+	padding-top: 0.5%;
+	line-height: 18px;
+	margin: 0;
+
+}
+
+.tooltip-wrapper .tooltip .tooltip-title .steps {
+	height: 20px;
+	font-size: 12px;
+}
+
+#closeTutorial {
+	padding-left: 5%;
+	color: #E4C3B1;
+}
+
+#nextStep {
+	padding-left: 10%;
+}
+
+#goBack {
+	padding-left: 65%;
+	color: #E4C3B1;
 }

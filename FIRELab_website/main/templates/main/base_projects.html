@@ -10,6 +10,7 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     	<link rel="stylesheet" href="{% static 'assets/css/projects.css' %}"/>
 		<link rel="stylesheet" href="{% static 'viewmodel/css/project_process.css' %}"/>
+        <link rel="stylesheet" href="/static/viewmodel/css/project_main.css" />
 		<noscript><link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}" /></noscript>
         {% block extracss %}{% endblock %}
 	</head>
@@ -39,7 +40,7 @@
                             </table>
                         </div>
 
-                        <div style="color: white">
+                        <div style="color: white" class="projDirs">
                         {% recursetree project_dirs %}
                             <div {% if node.parent is not None %} style="padding-left: 2em" {% endif %}>
                                 {% comment %} show directory name {% endcomment %}

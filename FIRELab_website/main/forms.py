@@ -50,7 +50,7 @@ class ModelCreation(forms.Form):
     nameClass = forms.CharField(label="Classification Name", max_length=50, required=False)
     minimumPercentage = forms.CharField(label="Minimum Percentage", required=False)
     maximumPercentage = forms.CharField(label="Maximum Percentage", required=False)
-    hexColor = forms.CharField(label="Color in Hexadecimal", max_length=20, required=False)
+    hexColor = forms.CharField(label="Type color in Hexadecimal", max_length=20, required=False)
     previously_added = forms.CharField()
 
     def __init__(self, *args, **kwargs):
@@ -59,6 +59,7 @@ class ModelCreation(forms.Form):
         self.fields['nameClass'].widget.attrs = ({'id': 'class_name', 'placeholder': 'Classification Name', 'name': 'class_name'})
         self.fields['minimumPercentage'].widget.attrs = ({'id': 'minimum_percentage', 'placeholder': 'Minimum %', 'name': 'minimum_percentage', 'class': 'number_input'})
         self.fields['maximumPercentage'].widget.attrs = ({'id': 'maximum_percentage', 'placeholder': 'Maximum %', 'name': 'maximum_percentage'})
+        self.fields['hexColor'].widget.attrs = ({'class': 'icon-hex','placeholder': 'ffffff'})
 
 
 class Segmentation(forms.Form):

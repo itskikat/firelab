@@ -1,3 +1,6 @@
+
+
+
 /* sidenav */
 .left table #seg td {
 		  background-color:  #ffffff;  
@@ -314,4 +317,81 @@ ul {
 .right {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+}
+
+
+/*TUTORIAL */
+.tooltip-wrapper {
+	display: none;
+	position: absolute;
+	overflow: visible;
+	width: 3%;
+	height: 3%;
+	top: 55%;
+	right: 1%;
+	animation: 1s linear;
+}
+
+
+.tooltip-wrapper .tooltip {
+	position: absolute;
+	width: 200px;
+	padding: 0;
+	height: fit-content;
+	right: 1%;
+	min-height: 80px;
+	background: #B55B29;
+	color: #ffffff;
+	border-radius: 0.5em;
+}
+
+
+.tooltip-wrapper .tooltip .tooltip-title .tips {
+	font-size: 13px;
+	padding-left: 13%;
+	padding-top: 0.5%;
+	line-height: 18px;
+	margin: 0;
+
+}
+
+.tooltip-wrapper .tooltip .tooltip-title .steps {
+	height: 20px;
+	font-size: 12px;
+}
+
+#closeTutorial {
+	padding-left: 5%;
+	color: #E4C3B1;
+}
+
+#nextStep {
+	padding-left: 10%;
+}
+
+#goBack {
+	padding-left: 65%;
+	color: #E4C3B1;
+}
+
+#nrFramesInput {
+	width: 15%;
+}
+
+#nrFramesInput:focus {
+	border: #ffffff;
+}
+
+input[type="number"]:focus,
+    select:focus,
+    textarea:focus {
+      box-shadow: 0 0 0 2px #ffffff;
+}
+
+form {
+	margin: 0 !important;
+}
+
+.tdsSet {
+	background-color: white;
 }

@@ -45,3 +45,18 @@ function closeFormEmail() {
   document.getElementById("changeEmail").style.display = "none";
   blur.style.filter = "none";
 }
+
+
+var hexPicker = document.getElementById("typeColor");
+var hexColor = document.getElementById("id_hexColor");
+
+hexPicker.addEventListener('input', function(){
+           
+            hexColor.value = hexPicker.value.replace("#", "");
+        });
+
+hexColor.addEventListener('input', function(){
+           
+            hexPicker.value = '#' + hexColor.value;
+        });
+
