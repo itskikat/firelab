@@ -35,20 +35,20 @@
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
 			<tr>
-				<td title="Segment" id="pen" style="cursor: pointer; {% if segmentation.pen.value == True %} color: #B55B29 {% endif %}" onclick="penOn()"><i class="fa fa-fire fa-lg" aria-hidden="true"></i></td>
-				<td title="Save" style="cursor: pointer" onclick="window.location='/projects/{{ project.id }}/segmentation/save/{{ image.file_info.id }}'"><i class="fas fa-save fa-lg"></i></td>
+				<td title="Segment" id="pen" style="cursor: pointer; {% if segmentation.pen.value == True %} color: #B55B29 {% endif %}" {% if image is not None %} onclick="penOn()" {% endif %}><i class="fa fa-fire fa-lg" aria-hidden="true"></i></td>
+				<td title="Save" style="cursor: pointer" {% if image is not None %} onclick="window.location='/projects/{{ project.id }}/segmentation/save/{{ image.file_info.id }}'" {% endif %}><i class="fas fa-save fa-lg"></i></td>
 			</tr>
 			<tr>
-				<td title="Erase" id="eraser" style="cursor: pointer; {% if segmentation.eraser.value == True %} color: #B55B29 {% endif %}" onclick="penOff()"><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i></td>
-				<td><a style="cursor: pointer" title="Upload" onclick="openUpload()"><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></a></td>
+				<td title="Erase" id="eraser" style="cursor: pointer; {% if segmentation.eraser.value == True %} color: #B55B29 {% endif %}" {% if image is not None %} onclick="penOff()" {% endif %}><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i></td>
+				<td><a style="cursor: pointer" title="Upload" href="{% url 'segmentation' project.id %}"><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></a></td>
 			</tr>
 			<tr>
-				<td><i class="fa fa-search-plus fa-lg" aria-hidden="true"></i></td>
-				<td><i class="fa fa-search-minus fa-lg" aria-hidden="true"></i></td>
+				<td title="Zoom In"><i {% if image is not None %} onclick="enlargeImg()" {% endif %} class="fa fa-search-plus fa-lg" aria-hidden="true"></i></td>
+				<td title="Zoom Out"><i {% if image is not None %} onclick="imgSmall()" {% endif %} class="fa fa-search-minus fa-lg" aria-hidden="true"></i></td>
 			</tr>
 			<tr>
-				<td><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
-				<td><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
+				<td title="Reset Zoom"><i {% if image is not None %} onclick="fitToScreen()" {% endif %} class="fas fa-expand-arrows-alt fa-lg"></i></td>
+				<td title="Helpp"><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
 			</tr>
 		</tbody>
 		</table>
@@ -73,11 +73,13 @@
                 <div style="display: inline-block; padding-top: 1em;">
                     <p style="display: inline-block; float: left" id="nrFrames">Number of frames: </p>
                     {{ video_form.frames }}
+                    <p style="display: inline-block; float: right; font-weight: bold; padding: .5em 0 0 1em; font-size: 14px;">(per minute)</p>
                 </div>
                 <div>
                     <span id="startingTimestamp"></span><br>
                     <span id="endingTimestamp"></span>
                     <div id="startingDateTime" style="display: none">
+                    <p>Time to start extraction:</p>
                     {{ video_form.startingDateTime }}
                     </div>
                 </div>
@@ -94,7 +96,7 @@
         <br/>
         <div class="images">
             <p id="titles">Images:</p>
-            <form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload' project.id%}" enctype="multipart/form-data">
+            <form style="overflow: hidden; padding: 0.1em 0 0 1em;" method="POST" action="{% url 'upload' project.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ image_form.image }} {#    <input class="file-upload__input" type="file" accept="image/*" name="videoFile" id="videoFile"> #}
                 <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
@@ -139,9 +141,28 @@
     <script>
     let workingImage = $("#workingImage")
     let clicking, path;
+    let scaleSize;
     let maskOn = true
 
      $(document).ready(function () {
+         scaleSize = localStorage.getItem("scaleSize");
+            if (scaleSize == null) {
+                localStorage.setItem("scaleSize", "1.1");
+                scaleSize = 1;
+            } else {
+                scaleSize = parseFloat(scaleSize);
+            }
+
+            if (img_seg !== null && img_seg !== undefined) {
+                img_seg.style.transform = "scale(" + scaleSize + ")";
+            }
+
+
+         let isImageLoaded = document.getElementById("workingImage");
+         if (!isImageLoaded) {
+             openUpload();
+         }
+
         location.search.substr(1).split("&").forEach(function(item) {
         let params = item.split("=")
         if (params[0] === "error" && params[1] === "quota_surpassed") {
@@ -218,16 +239,15 @@
 
         clicking = true
         path = []
-        let x = event.pageX - this.offsetLeft;
-        let y = event.pageY - this.offsetTop;
+        let x = event.offsetX;
+        let y = event.offsetY;
         path.push( [x, y])
     });
 
     workingImage.mousemove(function(event) {
         if (clicking !== true) return
-
-        let x = event.pageX - this.offsetLeft;
-        let y = event.pageY - this.offsetTop;
+        let x = event.offsetX;
+        let y = event.offsetY;
         path.push( [x, y])
     });
 
@@ -236,6 +256,43 @@
         $("#id_path").val(JSON.stringify(path));
         document.getElementById("workingImageForm").submit();
     });
+
+    // IMAGE ZOOM //////////////////////////////////////////////////////////////
+        function imgSmall() {
+            if (scaleSize == 1.1) {
+                scaleSize = scaleSize - 0.1;
+                img_seg.style.transform = "scale(" + scaleSize + ")";
+                img_seg.style.transition = "transform 0.25s ease";
+            }
+            else if (scaleSize > 1.1) {
+                scaleSize = scaleSize - 0.2;
+                img_seg.style.transform = "scale(" + scaleSize + ")";
+                img_seg.style.transition = "transform 0.25s ease";
+            }
+            localStorage.setItem("scaleSize", String(scaleSize));
+
+        }
+
+        function enlargeImg() {
+            if (scaleSize == 1.0) {
+                scaleSize = scaleSize + 0.1;
+            }
+            else {
+                scaleSize = scaleSize + 0.2;
+            }
+            img_seg.style.transform = "scale(" + scaleSize + ")";
+            img_seg.style.transition = "transform 0.25s ease";
+            localStorage.setItem("scaleSize", String(scaleSize));
+        }
+
+        function fitToScreen() {
+            scaleSize = 1;
+            img_seg.style.transform = "scale(" + scaleSize + ")";
+            img_seg.style.transition = "transform 0.25s ease";
+            localStorage.setItem("scaleSize", String(scaleSize));
+        }
+        // END OF IMAGE ZOOM ///////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
     </script>
 
 {% endblock %}

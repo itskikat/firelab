@@ -27,11 +27,11 @@
                 {{ grid_draw.cell_size }}
             </div>
             {% if gridded_image %}
-                <div id="img_ortophoto"  style="display: flex; padding-top: 1%; justify-content: center; align-items: center; ">
+                <div id="img_ortophoto"  style="display: flex; padding-top: 6%; justify-content: center; align-items: center; ">
                     <img style="width: 40%" draggable="false" id="workingImage" src={{ gridded_image }}>
                 </div>
             {% else %}
-                <div id="img_ortophoto"  style="display: flex; padding-top: 1%; justify-content: center; align-items: center; ">
+                <div id="img_ortophoto"  style="display: flex; padding-top: 6%; justify-content: center; align-items: center; ">
                     <img style="width: 40%" draggable="false" id="workingImage" src={{ image.thumbnail.url }}>
                 </div>
             {% endif %}
@@ -65,24 +65,23 @@
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
 			<tr>
-				<td onclick="openBrushSetings()"><i title="Manually classify" style="cursor: pointer" class="fas fa-leaf fa-lg" {% if grid %} onclick="manualSelect()" {% endif %}></i></td>
-				<td><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
+				<td><i id="manualSelectionLeaf" title="Manually classify" style="cursor: pointer" class="fas fa-leaf fa-lg" {% if grid %} onclick="manualSelect()" {% endif %}></i></td>
+				<td title="Reset Zoom" onclick="fitToScreen()" style="cursor: pointer"><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
 			</tr>
 			<tr>
 				<td><a title="Auto classify" style="cursor: pointer" {% if grid %} onclick="openLoadingPopUp()" href="{% url 'auto_classifier' project.id grid.id %}" {% endif %}><i class="fas fa-tree fa-lg"></i></a></td>
-				<td><a title="Save fuel map" style="cursor: pointer" {% if grid %} href="{% url 'export_fuel_map' project.id grid.id %}" {% endif %}><i class="fas fa-save fa-lg" ></i></a></td>
+				<td><a title="Save fuel map" style="cursor: pointer" {% if grid %} onclick="openWarningPopUp('Your fuelmap is being generated and will be downloaded as soon as it\'s ready.')" href="{% url 'export_fuel_map' project.id grid.id %}" {% endif %}><i class="fas fa-save fa-lg" ></i></a></td>
 			</tr>
 			<tr>
-				<td><i class="fas fa-eraser fa-lg"></i></td>
-				<td><a title="Upload ortophoto" style="cursor: pointer" onclick="openUpload()"><i class="fa fa-folder-open fa-lg"></i></a></td>
-			</tr>
-			<tr>
-				<td><i class="fa fa-search-plus fa-lg" aria-hidden="true"></i></td>
-				<td><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
-			</tr>
-			<tr>
-				<td><i class="fa fa-search-minus fa-lg" aria-hidden="true"></i></td>
+				<td><a title="Upload ortophoto" style="cursor: pointer" href="{% url 'vegetation' project.id %}" ><i class="fa fa-folder-open fa-lg"></i></a></td>
                 <td title="Draw Grid" onclick="drawGrid()" style="cursor: pointer"><i class="fa fa-border-all fa-lg" id="grid" style="color: black"></i></td>
+			</tr>
+			<tr>
+				<td title="Zoom In"><i class="fa fa-search-plus fa-lg" style="cursor: pointer" onclick="enlargeImg()" aria-hidden="true"></i></td>
+				<td title="Help"><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
+			</tr>
+			<tr>
+				<td title="Zoom Out"><i class="fa fa-search-minus fa-lg" style="cursor: pointer" onclick="imgSmall()" aria-hidden="true"></i></td>
 			</tr>
 		</tbody>
 		</table>
@@ -90,12 +89,15 @@
 
     {% if not gridded_image %}
     <div class="gridPop" id="gridPop">
-        <div class="cell"><p> Cell size: <input id="cell_size_input" type="number" min="1" max="20" step="1" value="5" style="color: black"></p></div>
+        <div class="cell"><p> Cell size: <input id="cell_size_input" type="number" min="1" max="20" step="1" value="5" style="color: black"> meters</p></div>
        <div class="models">
        <select name="model" id="model" title="If you don't pick a model, a default one will be used." style="width: 152px; height: 40px; font-size: 13px;">
-          <option selected disabled>Choose model</option>
            {% for model in available_models %}
-          <option value="{{ model.id }}">{{ model.name }}</option>
+               {% if model.name == "FARSITE" %}
+                   <option selected value="{{ model.id }}">{{ model.name }}</option>
+               {% else %}
+                   <option value="{{ model.id }}">{{ model.name }}</option>
+               {% endif %}
            {% endfor %}
         </select>
     </div>
@@ -144,8 +146,27 @@
         let clicking = false;
         let brush = [];
         let queryDict = {};
+        let scaleSize;
+        let img_seg = document.getElementById("workingImage")
 
         $(document).ready(function () {
+            scaleSize = localStorage.getItem("scaleSize");
+            if (scaleSize == null) {
+                localStorage.setItem("scaleSize", "1.1");
+                scaleSize = 1;
+            } else {
+                scaleSize = parseFloat(scaleSize);
+            }
+
+            if (img_seg !== null && img_seg !== undefined) {
+                img_seg.style.transform = "scale(" + scaleSize + ")";
+            }
+
+             let isImageLoaded = document.getElementById("workingImage");
+             if (!isImageLoaded) {
+                 openUpload();
+             }
+
             location.search.substr(1).split("&").forEach(function(item) {
                 if (!item.includes("selected") && !item.includes("brush") && !item.includes("error")) {
                     queryDict[item.split("=")[0]] = item.split("=")[1]
@@ -153,6 +174,7 @@
                     if (item.includes("brush")) {
                         brushSize = item.split("=")[1]
                         manualSelectOn = true
+                        $("#manualSelectionLeaf").css("color", "#B55B29")
                         openBrushSetings()
                     }
 
@@ -189,7 +211,13 @@
         });
 
         function manualSelect() {
+            openBrushSetings()
             manualSelectOn = !manualSelectOn
+            let color = "black";
+            if (manualSelectOn) {
+                color = "#B55B29";
+            }
+            $("#manualSelectionLeaf").css("color", color)
         }
 
         function drawGrid() {
@@ -213,22 +241,21 @@
          workingImage.mousedown(function(event) {
             clicking = true
             brush = []
-            let x = event.pageX - this.offsetLeft;
-            let y = event.pageY - this.offsetTop;
+            let x = ((event.offsetX));
+            let y = ((event.offsetY));
             brush.push( [x, y])
         });
 
         workingImage.mousemove(function(event) {
             if (clicking !== true) return
 
-            let x = event.pageX - this.offsetLeft;
-            let y = event.pageY - this.offsetTop;
+            let x = ((event.offsetX));
+            let y = ((event.offsetY));
             brush.push( [x, y])
         });
 
         workingImage.mouseup(function(event) {
             let image = document.getElementById("workingImage");
-            console.log(manualSelectOn)
             if (gridDrawOn && selectedPointsTotal < 2) {
                 console.log("place icon")
                 let x = event.pageX - this.offsetLeft;
@@ -296,18 +323,17 @@
                     points.style.display = "flex";
                 }
             } else if (manualSelectOn === true) {
-                    console.log("here")
-                let x = event.pageX - this.offsetLeft;
-                let y = event.pageY - this.offsetTop;
+                let x = ((event.offsetX));
+                let y = ((event.offsetY));
 
                 clicking = false;
                 brush.push([x, y]);
                 $("#id_point").val(JSON.stringify([...new Set(brush)]));
-
-                $("#id_classification_image_size").val(String(image.width) + ", " + String(image.height))
+                $("#id_classification_image_size").val(String(image.width) + ", " + String(image.height));
                 $("#id_classification_index").val(selectedLayer)
                 $("#id_grid").val(JSON.parse("{{grid.file_info.id|escapejs}}"));
                 $("#id_brush_size").val(brushSize)
+                openLoadingPopUp();
                 document.getElementById("manualClassification").submit();
             }
         });
@@ -340,6 +366,7 @@
         
 
         function createGrid() {
+            openLoadingPopUp();
             document.getElementById("workingImageForm").submit();
             grid.style.color = "black";
         }
@@ -391,6 +418,43 @@
         $("#brushSettings").change(function (){
             brushSize = $("#brushSettings").val()
         })
+
+        // IMAGE ZOOM //////////////////////////////////////////////////////////////
+        function imgSmall() {
+            if (scaleSize == 1.1) {
+                scaleSize = scaleSize - 0.1;
+                img_seg.style.transform = "scale(" + scaleSize + ")";
+                img_seg.style.transition = "transform 0.25s ease";
+            }
+            else if (scaleSize > 1.1) {
+                scaleSize = scaleSize - 0.2;
+                img_seg.style.transform = "scale(" + scaleSize + ")";
+                img_seg.style.transition = "transform 0.25s ease";
+            }
+            localStorage.setItem("scaleSize", String(scaleSize));
+
+        }
+
+        function enlargeImg() {
+            if (scaleSize == 1.0) {
+                scaleSize = scaleSize + 0.1;
+            }
+            else {
+                scaleSize = scaleSize + 0.2;
+            }
+            img_seg.style.transform = "scale(" + scaleSize + ")";
+            img_seg.style.transition = "transform 0.25s ease";
+            localStorage.setItem("scaleSize", String(scaleSize));
+        }
+
+        function fitToScreen() {
+            scaleSize = 1;
+            img_seg.style.transform = "scale(" + scaleSize + ")";
+            img_seg.style.transition = "transform 0.25s ease";
+            localStorage.setItem("scaleSize", String(scaleSize));
+        }
+        // END OF IMAGE ZOOM ///////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
 
     </script>
 
