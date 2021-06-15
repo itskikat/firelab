@@ -117,7 +117,7 @@
 
 	<div class="upload" id="uploadVeg">
         <h1>Upload Files</h1>
-        <p>If you already have uploaded orthophotomaps you would like to work with, please select them from the [Project] - Orthophoto section in the left. <br>If you already have an orthophoto and a grid (shapefile) of the firing area, and only want to classify the vegetation, please use this automatic classification tool. Submit the files below, in the correct places: </p> 
+        <p>If you already have uploaded orthophotomaps that you would like to work with, please select them from the [Project] - Orthophoto section in the left. <br>If you already have an orthophoto and a grid (shapefile) of the firing area, and only want to classify the vegetation, please use this automatic classification tool. Submit the files below, in the correct places: </p> 
         <div class="orthophoto">
             <form method="POST" action="{% url 'upload_ortophoto' project.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -140,8 +140,8 @@
     <div class="tooltip-wrapper stepOne" id="tutorial">
         <div class="tooltip">
             <div class="tooltip-title">
-                <div class="steps"><a onclick="closeTutorial()"><i id="closeTutorial" class="fas fa-times" title="Stop tutorial"></i></a><a onclick="goBack()"><i class="fas fa-chevron-left" title="Previous Step" id="goBack"></i></a><a onclick="next()"><i class="fas fa-chevron-right" title="Next Step" id="nextStep">Click here to select two points in the image to make a grid</i></a></div>
-                <div class="tips" id="tips"></div>
+                <div class="steps"><a onclick="closeTutorial()" style="cursor: pointer"><i id="closeTutorial" class="fas fa-times" title="Stop tutorial"></i></a><a onclick="goBack()" style="cursor: pointer"><i class="fas fa-chevron-left" title="Previous Step" id="goBack"></i></a><a onclick="next()" style="cursor: pointer"><i class="fas fa-chevron-right" title="Next Step" id="nextStep"></i></a></div>
+                <div class="tips" id="tips">Click <i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i> and select the points of no interest</div>
             </div>
         </div>
     </div>
@@ -149,9 +149,9 @@
     <div class="tooltip-wrapper stepZero noImg" id="tutorial">
         <div class="tooltip">
             <div class="tooltip-title">
-                <div class="steps"><a onclick="closeTutorial()"><i id="closeTutorial" class="fas fa-times" title="Stop tutorial"></i></a>
-                    <a onclick="goBack()"><i class="fas fa-chevron-left" title="Previous Step" id="goBack"></i></a><a onclick="next()"><i class="fas fa-chevron-right" title="Next Step" id="nextStep"></i></a></div>
-                <div class="tips" id="tips">Click here to upload an image</div>
+                <div class="steps"><a onclick="closeTutorial()" style="cursor: pointer"><i id="closeTutorial" class="fas fa-times" title="Stop tutorial"></i></a>
+                    <a onclick="goBack()" style="cursor: pointer"><i class="fas fa-chevron-left" title="Previous Step" id="goBack"></i></a><a onclick="next()" style="cursor: pointer"><i class="fas fa-chevron-right" title="Next Step" id="nextStep"></i></a></div>
+                <div class="tips" id="tips">Click <i class="fa fa-folder-open fa-lg" aria-hidden="true"></i> to upload a video or image</div>
             </div>
         </div>
     </div>
@@ -173,6 +173,13 @@
         let queryDict = {};
 
         $(document).ready(function () {
+            let isImageLoaded = document.getElementById('workingImage');
+        if (!isImageLoaded) {
+            openUpload();
+        }
+        else  {
+            openTutorial();
+        }
             location.search.substr(1).split("&").forEach(function(item) {
                 if (!item.includes("selected") && !item.includes("brush") && !item.includes("error")) {
                     queryDict[item.split("=")[0]] = item.split("=")[1]

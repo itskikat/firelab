@@ -53,6 +53,7 @@ function openClosePicker() {
 
 
 //TUTORIAL
+
 const tutorial = document.getElementById("tutorial");
 const tips = document.getElementById("tips");
 const goback = document.getElementById("goBack");
@@ -61,26 +62,19 @@ var step = 1;
 var className;
 
 function openTutorial() {
+    
   goback.style.color = "transparent";
     console.log(tutorial.className);
    tutorial.style.display = "flex";
-   if (tutorial.className === "tooltip-wrapper stepZero noImg") {
-    step = 0;
-   }
+  
 }
 
 function closeTutorial() {
    tutorial.style.display = "none";
-   tutorial.classList.remove(className);
-   tips.innerHTML = "Click here and select the image";
-   console.log(tutorial.className);
-   if (tutorial.className === "tooltip-wrapper noImg" || tutorial.className === "tooltip-wrapper stepZero noImg") {
-    step = 0;
-    tutorial.classList.add("stepZero");
-   }
-   else {
-    step = 1;
-   }
+   step = 0;
+   tips.innerHTML = "Click <i class='fas fa-folder-open fa-lg' ></i> here to upload a video or image";
+  
+ 
 }
 
 function next() {
@@ -88,111 +82,93 @@ function next() {
     step++;
     console.log(step);
     if (step === 1) {
-       tips.innerHTML = "Click here to select two points in the image to make a grid";
-      tutorial.classList.add("first"); 
+ 
+       tips.innerHTML = "Click <i class='fa fa-fire-extinguisher fa-lg' ></i> and select the points of no interest in the image";
       tutorial.classList.remove("stepZero");
-      className = "first";  
     }
     if (step === 2) {
-      tips.innerHTML = "Click here to do the characterization automatically";
-      tutorial.classList.add("second"); 
-      tutorial.classList.remove("first");
-      className = "second"; 
+      
+      tips.innerHTML = "Click <i class='fa fa-fire fa-lg'></i> to start selecting the burnt area in the image";
+
     }
     else if (step === 3) {
-        tutorial.classList.remove("second"); 
-        tips.innerHTML = "Click here to select a square from the grid";
-       tutorial.classList.add("third");   
-       className = "third";
+   
+        tips.innerHTML = "Click <i class='fa fa-fire-extinguisher fa-lg' ></i> when you want to unselect some area in the image";
+      
     }
     else if (step === 4) {
-        tutorial.classList.remove("third"); 
-        tips.innerHTML = "Click here to erase any color of a certain square";
-       tutorial.classList.add("fourth");   
-       className = "fourth";
+      
+        tips.innerHTML = "Click <i class='fa fa-search-plus fa-lg'></i>  when you want to make the image bigger";
+
     }
     else if (step === 5) {
-        tutorial.classList.remove("fourth"); 
-        tips.innerHTML = "Click here when you want to make the image bigger";
-       tutorial.classList.add("fifth");   
-       className = "fifth";
+    
+        tips.innerHTML = "Click  <i class='fa fa-search-minus fa-lg'></i> when you want to make the image smaller";
+       
     }
     else if (step === 6) {
-        tutorial.classList.remove("fifth"); 
-        tips.innerHTML = "Click here when you want to make the image smaller";
-        className = "sixth";
-       tutorial.classList.add("sixth");   
+      
+        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to move the image";
+       
     }
     else if (step === 7) {
-        tutorial.classList.remove("sixth"); 
-        tips.innerHTML = "Click here when you want to move the image";
-        className = "seventh";
-       tutorial.classList.add("seventh");   
+  
+        tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the results.";
+ 
     }
     else if (step === 8) {
-        tutorial.classList.remove(className); 
-        tips.innerHTML = "Click here when you are done and want to save the image";
-        className = "eight";
-       tutorial.classList.add("eight");   
+        if (document.getElementById('imgMask') != null) {
+      tips.innerHTML = "Click <i class='fas fa-eye fa-lg'></i> if you want to toggle the mask. The icon should appear when you start segmentating.";
+        }
+        else {
+      
+            closeTutorial();
+        }
+    }
+
+    else if (step === 9) {
+        closeTutorial();
     }
     
+
 }
 
+//refactor nisto
 function goBack() {
     step--;
-    tutorial.classList.remove(className);
-    console.log(tutorial.classList);
-    console.log(step);
+  
     if (step === 0 || (step === 1 && !tutorial.classList.contains('noImg'))) {
         goback.style.color = "transparent";
-        console.log("oi");
+        
     }
     if (step === 0) {
-      tips.innerHTML = "Click here to upload a video or image";
-      tutorial.classList.add("stepZero"); 
-      className = "stepZero";
+      tips.innerHTML = "Click <i class='fas fa-folder-open fa-lg' ></i> here to upload a video or image";
     }
     if (step === 1) {
-      tips.innerHTML = "Click here and select the image to segment";
-      tutorial.classList.add("first"); 
-      tutorial.classList.remove("stepZero");
-      className = "first";  
+      tips.innerHTML = "Click <i class='fa fa-fire-extinguisher fa-lg' ></i> and select the points of no interest";   
     }
     if (step === 2) {
-      tips.innerHTML = "Click here to start selecting the burnt area";
-      tutorial.classList.add("second"); 
-      tutorial.classList.remove("first");
-      className = "second"; 
+      tips.innerHTML = "Click <i class='fa fa-fire fa-lg' ></i> to start selecting the burnt area";
     }
     else if (step === 3) {
-        tutorial.classList.remove("second"); 
-        tips.innerHTML = "Click here when you want to unselect some area";
-       tutorial.classList.add("third");   
-       className = "third";
+        tips.innerHTML = "Click <i class='fa fa-fire-extinguisher fa-lg' ></i> when you want to unselect some area";
+     
     }
     else if (step === 4) {
-        tutorial.classList.remove("third"); 
-        tips.innerHTML = "Click here when you want to make the image bigger";
-       tutorial.classList.add("fourth");   
-       className = "fourth";
+        tips.innerHTML = "Click <i class='fa fa-search-plus fa-lg'></i>  when you want to make the image bigger";
+   
     }
     else if (step === 5) {
-        tutorial.classList.remove("fourth"); 
-        tips.innerHTML = "Click here when you want to make the image smaller";
-       tutorial.classList.add("fifth");   
-       className = "fifth";
+        tips.innerHTML = "Click  <i class='fa fa-search-minus fa-lg'></i> when you want to make the image smaller";
+      
     }
     else if (step === 6) {
-        tutorial.classList.remove("fifth"); 
-        tips.innerHTML = "Click here when you want to move the image";
-        className = "sixth";
-       tutorial.classList.add("sixth");   
+        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to move the image";
+
     }
     else if (step === 7) {
-        tutorial.classList.remove("sixth"); 
-        tips.innerHTML = "Click here when you are done and want to save the image.";
-        className = "seventh";
-       tutorial.classList.add("seventh");   
+        tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the image.";
+ 
     }
 
 }

@@ -8,7 +8,7 @@
         <link rel="stylesheet" href="{% static 'viewmodel/css/fire_seg.css' %}"/>
     {% endblock %}
 
-    <form id="workingImageForm" action="./segmentation" method="POST" style="position: absolute; justify-content: center; align-items: center; left: 32%; max-width: 80%">
+    <form id="workingImageForm" action="./segmentation" method="POST" style="justify-content: center; align-items: center; left: 32%;">
     {% if image is not None %}
         <div hidden>
             {{ segmentation.pen }}
