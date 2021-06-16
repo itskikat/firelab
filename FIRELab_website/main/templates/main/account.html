@@ -45,8 +45,8 @@
 							<p>{{ user.get_username }}</p>
 						</div>
 						<div id="info">
-							<p>Email: {{ user.get_email }}</p>
-							<p id="space">Storage:</p>
+							<p><i class="fas fa-envelope"></i> Email: {{ user.email }}</p>
+							<p id="space"><i class="fas fa-cloud"></i> Storage:</p>
 							<progress id="file" value="{{ storage_relative }}" max="100"></progress>
 							<p id="storage">{{ storage }}GB out of 5GB used</p>
 						</div>
