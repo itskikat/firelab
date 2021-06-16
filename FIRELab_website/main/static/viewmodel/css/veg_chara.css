@@ -19,6 +19,10 @@
 	
 }
 
+.right a {
+	cursor: pointer;
+}
+
 .right {
 
 	height: 100%;

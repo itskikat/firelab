@@ -28,11 +28,11 @@
             </div>
             {% if gridded_image %}
                 <div id="img_ortophoto"  style="padding-left:20%; padding-top: 2%; justify-content: center; align-items: center; ">
-                    <img style="max-width: 45%; transform-origin: top left;" draggable="false" id="workingImage" src={{ gridded_image }}>
+                    <img style="max-width: 47%; transform-origin: top left;" draggable="false" id="workingImage" src={{ gridded_image }}>
                 </div>
             {% else %}
                 <div id="img_ortophoto"  style="padding-left: 20%;padding-top: 2%; justify-content: center; align-items: center; ">
-                    <img style="max-width: 45%; transform-origin: top left;" draggable="false" id="workingImage" src={{ image.thumbnail.url }}>
+                    <img style="max-width: 47%; transform-origin: top left;" draggable="false" id="workingImage" src={{ image.thumbnail.url }}>
                 </div>
             {% endif %}
         {% endif %}
@@ -67,8 +67,8 @@
             <caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
             <tbody id="toolkit">
             <tr>
-                <td onclick="openBrushSetings()"><i title="Manually classify" style="cursor: pointer" class="fas fa-leaf fa-lg" {% if grid %} onclick="manualSelect()" {% endif %}></i></td>
-                <td><a title="Resize"><i class="fas fa-expand-arrows-alt fa-lg"></i></a></td>
+                <a onclick="openBrushSetings()" title="Manually Classify"><td onclick="openBrushSetings()"><i title="Manually classify" style="cursor: pointer" class="fas fa-leaf fa-lg" {% if grid %} onclick="manualSelect()" {% endif %}></i></a></td>
+                <td><a title="Resize"><i class="fas fa-expand-arrows-alt fa-lg"></i></td></a>
             </tr>
             <tr>
                 <td><a title="Auto classify" style="cursor: pointer" {% if grid %} onclick="openLoadingPopUp()" href="{% url 'auto_classifier' project.id grid.id %}" {% endif %}><i class="fas fa-tree fa-lg"></i></a></td>

@@ -22,24 +22,40 @@
 
 /* Toolkit */
 .right .toolkit {
-	width: 8%;
-	height: 40%;
-	position:absolute;
-   	top:0;
-   	right:1em;
-	padding-top: 1em;
+  width: 8%;
+  height: 40%;
+  position:absolute;
+    top:0;
+    right:1em;
+  padding-top: 1em;
+}
+
+.right .toolkit td {
+  padding: 12px;
+}
+
+#pixel_table_coords {
+  width: 45%;
+  border-collapse: collapse;
+  border-spacing: 0 0;
+  border: 2px solid #771300;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
 .pixel_table table tr {
-   font-size: 12px;
+   font-size: 13px;
    font-weight:normal;
    margin: 0;
    padding: 0;
    border: 0;
 }
 #head_Of_Coord_Table {
-    font-size: 12px;
+    font-size: 14px;
     font-weight:bold;
+}
+
+.right a {
+  cursor: pointer;
 }
 
 
@@ -51,16 +67,13 @@
 
 
 .toolkit table {
-	background-color: #ffffff; 
-	border-color: #000000;
-	text-align: center;
-	border-collapse: collapse;
-	border-spacing: 0 0px;
-	border: 2px solid black;
-	box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-
+  background-color: #ffffff; 
+  text-align: center;
+  border-collapse: collapse;
+  border-spacing: 0 0;
+  border: 2px solid black;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
-
 
 .toolkit table caption {
 	text-align: left;
@@ -213,4 +226,67 @@ input[type="text"]:focus,
 .right {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+}
+
+
+/*TUTORIAL */
+.tooltip-wrapper {
+  position: absolute;
+  overflow: visible;
+  width: 3%;
+  height: 3%;
+  top: 64%;
+  right: 1%;
+  animation: 1s linear;
+}
+
+.right .toolkit td {
+  cursor: pointer;
+}
+
+.tooltip-wrapper .tooltip {
+  position: absolute;
+  width: 200px;
+  padding: 0;
+  height: fit-content;
+  right: 1%;
+  min-height: 80px;
+  background: #B55B29;
+  color: #ffffff;
+  border-radius: 0.5em;
+}
+
+
+.tooltip-wrapper .tooltip .tooltip-title .tips {
+  font-size: 13px;
+  padding-left: 13%;
+  padding-top: 0.5%;
+  line-height: 18px;
+  margin: 0;
+
+}
+
+a {
+  text-decoration: none;
+  border: none;
+
+}
+
+.tooltip-wrapper .tooltip .tooltip-title .steps {
+  height: 20px;
+  font-size: 12px;
+}
+
+#closeTutorial {
+  padding-left: 5%;
+  color: #E4C3B1;
+}
+
+#nextStep {
+  padding-left: 10%;
+}
+
+#goBack {
+  padding-left: 65%;
+  color: #E4C3B1;
 }

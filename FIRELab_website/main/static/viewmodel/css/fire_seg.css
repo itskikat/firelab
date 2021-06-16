@@ -327,9 +327,13 @@ ul {
 	overflow: visible;
 	width: 3%;
 	height: 3%;
-	top: 50%;
+	top: 53%;
 	right: 1%;
 	animation: 1s linear;
+}
+
+.right a {
+  cursor: pointer;
 }
 
 
