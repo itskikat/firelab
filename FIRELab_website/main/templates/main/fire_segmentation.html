@@ -38,7 +38,7 @@
 			<tbody id="toolkit">
 			<tr>
 				<td title="Segment" id="pen" style="cursor: pointer; {% if segmentation.pen.value == True %} color: #B55B29 {% endif %}" {% if image is not None %} onclick="penOn()" {% endif %}><i class="fa fa-fire fa-lg" aria-hidden="true"></i></td>
-				<td title="Save" style="cursor: pointer" {% if image is not None %} onclick="window.location='/projects/{{ project.id }}/segmentation/save/{{ image.file_info.id }}'" {% endif %}><i class="fas fa-save fa-lg"></i></td>
+                <td><a title="Save" style="cursor: pointer" {% if image is not None %} href="{% url 'save_contour' project.id image.file_info.id %}"  onclick="openUpload()" {% endif %}><i class="fas fa-save fa-lg"></i></a></td>
 			</tr>
 			<tr>
 				<td title="Erase" id="eraser" style="cursor: pointer; {% if segmentation.eraser.value == True %} color: #B55B29 {% endif %}" {% if image is not None %} onclick="penOff()" {% endif %}><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i></td>
@@ -298,6 +298,7 @@
     workingImage.mouseup(function(event) {
         clicking = false;
         $("#id_path").val(JSON.stringify(path));
+        openLoadingPopUp();
         document.getElementById("workingImageForm").submit();
     });
 
