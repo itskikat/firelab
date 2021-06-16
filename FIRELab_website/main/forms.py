@@ -43,6 +43,7 @@ class UploadVideo(forms.Form):
         super(UploadVideo, self).__init__(*args, **kwargs)
         self.fields['video'].widget.attrs = ({'class': 'file-upload__input', 'name': 'videoFile', 'id': 'videoFile'})
         self.fields['frames'].widget.attrs = ({'id': 'nrFramesInput'})
+        self.fields['startingDateTime'].widget.attrs = ({'class': 'stDateTime'})
 
 
 class ModelCreation(forms.Form):

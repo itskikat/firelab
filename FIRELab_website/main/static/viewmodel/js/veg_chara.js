@@ -135,7 +135,7 @@ function goBack() {
         
     }
     if (step === 0) {
-      tips.innerHTML = "Click <i class='fas fa-folder-open fa-lg' ></i> here to upload a video or image";
+      tips.innerHTML = "Click <i class='fas fa-folder-open fa-lg' ></i> here to upload an orthophotomap";
     }
     if (step === 1) {
       tips.innerHTML = "Click <i class='fa fa-border-all fa-lg' ></i> and mark two points in the map to create a grid.";
@@ -177,4 +177,9 @@ function openColorPicker() {
 
 function closeColorPicker() {
   document.getElementById("colorPicker").style.display = "none";
+}
+
+function closeGridPopUp() {
+  document.getElementById("createGridHelp").style.display = "flex";
+  document.getElementById("gridPop").style.display = "none";
 }

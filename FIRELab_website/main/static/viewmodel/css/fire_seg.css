@@ -327,7 +327,7 @@ ul {
 	overflow: visible;
 	width: 3%;
 	height: 3%;
-	top: 55%;
+	top: 50%;
 	right: 1%;
 	animation: 1s linear;
 }
@@ -394,4 +394,9 @@ form {
 
 .tdsSet {
 	background-color: white;
+}
+
+.stDateTime {
+	width: fit-content !important;
+	height: fit-content !important;
 }

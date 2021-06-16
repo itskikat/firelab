@@ -14,7 +14,7 @@
 	height: 40%;
 	position:absolute;
    	top:0;
-   	right:1em;
+   	right: 1em;
 	padding-top: 1em;
 	
 }
@@ -40,13 +40,12 @@
 	display: none;
 	position:absolute;
 	bottom: 1%;
-	left: 25%;
+	left: 30%;
 }
 
 .models {
 	position:absolute;
-	top: 22%;
-	left: 1%;
+	padding-top: 1%;
 }
 
 .cell {
@@ -61,15 +60,14 @@
 
 #explained {
  	padding-left: 1%;
-	padding-top: 2em;
+
 }
 
 #explained p {
 	font-size: 11px; 
 	height: 1%; 
-	padding-top: 23%; 
 	padding-bottom: 0; 
-	line-height: 2;
+	line-height: 1.5;
 }
 
 .gridPop p {
@@ -81,14 +79,15 @@
 }
 
 .gridPop {
+    width: 30%;
+	height: 34%;
 	display: none;
-    width: 24%;
-	height: 38%;
-	position: absolute;
-	bottom: 1%;
-   	right: 1em;
+  	position: absolute;
+  	background-color: white;
+  	right: 1%;
+  	bottom: 0;
 	border:2px solid black;
-	box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
 
 }
 
@@ -342,7 +341,7 @@ input[type=number]::-webkit-outer-spin-button {
 	overflow: visible;
 	width: 3%;
 	height: 3%;
-	top: 50%;
+	top: 52%;
 	right: 1%;
 	animation: 1s linear;
 }
@@ -387,4 +386,12 @@ input[type=number]::-webkit-outer-spin-button {
 #goBack {
 	padding-left: 65%;
 	color: #E4C3B1;
+}
+
+#createGridHelp {
+	right: 1%;
+	bottom: 28%;
+	position: absolute;
+	font-size: 13px;
+	display: none;
 }
