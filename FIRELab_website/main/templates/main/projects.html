@@ -161,7 +161,12 @@
         <script>
             function showInfo(id, name, description, creation, modification) {
                 $("#project_name").text(name);
-                $("#project_description").text("Description: " + description);
+                if (description != "") {
+                    $("#project_description").text("Description: " + description);
+                }
+                else {
+                   $("#project_description").text(""); 
+                }
                 $("#dates").text("Created on: " + creation);
                 $("#modification_date").text("Last modified on: " + modification);
                 $(".actions").show();

@@ -27,11 +27,11 @@
                 {{ grid_draw.cell_size }}
             </div>
             {% if gridded_image %}
-                <div id="img_ortophoto"  style="display: flex; padding-top: 6%; justify-content: center; align-items: center; ">
+                <div id="img_ortophoto"  style="display: flex; padding-top: 2%; justify-content: center; align-items: center; ">
                     <img style="width: 40%; transform-origin: top left;" draggable="false" id="workingImage" src={{ gridded_image }}>
                 </div>
             {% else %}
-                <div id="img_ortophoto"  style="display: flex; padding-top: 6%; justify-content: center; align-items: center; ">
+                <div id="img_ortophoto"  style="display: flex; padding-top: 2%; justify-content: center; align-items: center; ">
                     <img style="width: 40%; transform-origin: top left;" draggable="false" id="workingImage" src={{ image.thumbnail.url }}>
                 </div>
             {% endif %}
@@ -92,25 +92,48 @@
 
     {% if not gridded_image %}
     <div class="gridPop" id="gridPop">
-        <div class="cell"><p> Cell size: <input id="cell_size_input" type="number" min="1" max="20" step="1" value="5" style="color: black"> meters</p></div>
-       <div class="models">
-       <select name="model" id="model" title="If you don't pick a model, a default one will be used." style="width: 152px; height: 40px; font-size: 13px;">
-           {% for model in available_models %}
-               {% if model.name == "FARSITE" %}
-                   <option selected value="{{ model.id }}">{{ model.name }}</option>
-               {% else %}
-                   <option value="{{ model.id }}">{{ model.name }}</option>
-               {% endif %}
-           {% endfor %}
-        </select>
-    </div>
+        <div class="row gtr-uniform">
+            <div class="col-4 col-12-xsmall">
+                <div class="cell"><p> Cell size: <input type="number" min="1" max="20" step="1" value="5" style="color: black"></p></div>
+            </div>
+            <div class="col-8 col-12-xsmall" style="padding-left: 25%; padding-right: 0">
+                <i class="fas fa-thumbtack" style="color: #771300;padding-top: 10%"><a style="font-size: 14px; cursor: pointer;" onclick="openColorPicker()"> Change Points Color</a></i>
+            </div>
             
-    <div id="explained" >
-        <p style="font-size: 12px;"><i class="fas fa-info-circle fa-sm"></i>To edit a point click on it (the color should change to blue) and then click again to set (the color should change to pink).</p>
+        </div>
+       <div class="models">
+           <select name="model" id="model" title="If you don't pick a model, a default one will be used." style="width: 152px; height: 40px; font-size: 13px;">
+              <option selected disabled>Choose model</option>
+              <option value="disperfire">DISPERFIRE</option>
+              <option value="firesite">FIRESITE</option>
+          </select>
+       </div>
+            
+    <div id="explained">
+        <p style="font-size: 12px; padding-top: 28px"><i class="fas fa-info-circle fa-sm"></i>Make sure you pick the color first clicking on  Change Points Color. To edit a point click on it (the color should change) and then click again to set (the color should change once again).</p>
     </div>
     <div class="points" id="points">
         <a  class="button primary" onclick="createGrid()">Draw Grid</a>
     </div>
+    </div>
+
+    <div class="colorPicker-popup" id="colorPicker" style="align-self: center;">
+        <div class="container-colorPicker">
+            <div id="inputs">
+                <p style="padding-top: 2%">Select the Grid Points Colors:</p>
+            <label for="setColor">Select the color to set the points on the grid:</label>
+            <input type="color" id="setColor" name="setColor" value="#FF69B4">
+            <br>
+            <label for="changeColor">Select the color to change the points on the grid:</label>
+            <input type="color" id="changeColor" name="changeColor" value="#69ffff">
+            </div>
+            <div class="options">
+                <ul class="actions" style="margin-bottom: 0;">
+                    <li><a class="button primary create" onclick="closeColorPicker()">Save</a></li>
+                    <li id="cancel"><a onclick="closeColorPicker()" class="button cancel">Cancel</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
 
     {% endif %}
@@ -142,7 +165,7 @@
         <div class="tooltip">
             <div class="tooltip-title">
                 <div class="steps"><a onclick="closeTutorial()" style="cursor: pointer"><i id="closeTutorial" class="fas fa-times" title="Stop tutorial"></i></a><a onclick="goBack()" style="cursor: pointer"><i class="fas fa-chevron-left" title="Previous Step" id="goBack"></i></a><a onclick="next()" style="cursor: pointer"><i class="fas fa-chevron-right" title="Next Step" id="nextStep"></i></a></div>
-                <div class="tips" id="tips">Click <i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i> and select the points of no interest</div>
+                <div class="tips" id="tips">Click <i class="fa fa-border-all fa-lg" aria-hidden="true"></i> and mark two points in the map to create a grid.</div>
             </div>
         </div>
     </div>
@@ -265,6 +288,28 @@
             $("#manualSelectionLeaf").css("color", color)
         }
 
+
+        //color grid points
+        var pColor = null;
+        var cColor = null;
+        if (document.getElementById("setColor") != null && document.getElementById("changeColor") != null) {
+        var pointsColor = document.getElementById("setColor");
+        var changePoints = document.getElementById("changeColor");
+         if (pointsColor.value != null && changePoints.value != null) {
+               pColor = pointsColor.value;
+               cColor = changePoints.value;
+           }
+            pointsColor.addEventListener("input", function() {
+                    pColor = pointsColor.value;
+
+                }, false);
+
+               changePoints.addEventListener("input", function() {
+                    cColor = changePoints.value;
+
+                }, false);
+           }
+
         function drawGrid() {
             var gridPop = document.getElementById("gridPop");
             gridPop.style.display = "block";
@@ -319,7 +364,7 @@
                 i.style.display = "block";
                 i.style.left = event.pageX + 'px';
                 i.id = "icon_" + selectedPointsTotal;
-                i.style.color = "#FF69B4";
+                i.style.color = pColor;
                 i.style.zIndex = "2";
                 i.style.top = event.pageY + 'px';
                 i.style.width = "20px";
@@ -342,11 +387,11 @@
                             count++;
                         }
                         if (count === 1) {
-                            icon_1.style.color = "#69FFB4";
-                            icon_2.style.color = "#FF69B4";
+                            icon_1.style.color = cColor;
+                            icon_2.style.color = pColor;
                             document.addEventListener("click", change);
                         } else if (count === 2) {
-                            icon_1.style.color = "#FF69B4";
+                            icon_1.style.color = pColor;
                             document.removeEventListener("click", change);
                             count = 0;
                         }
@@ -359,11 +404,11 @@
                         }
 
                         if (count2 === 1) {
-                            icon_2.style.color = "#69FFB4";
-                            icon_1.style.color = "#FF69B4";
+                            icon_2.style.color = cColor;
+                            icon_1.style.color = pColor;
                             document.addEventListener("click", change2);
                         } else if (count2 === 2) {
-                            icon_2.style.color = "#FF69B4";
+                            icon_2.style.color = pColor;
                             document.removeEventListener("click", change2);
                             count2 = 0;
                         }

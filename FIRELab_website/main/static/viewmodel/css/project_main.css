@@ -8,7 +8,8 @@
 }
 
 .projDirs {
-	height: 45vh;
+	height: 35%;
+	max-height: 45%;
 	overflow: auto;
 }
 
@@ -16,5 +17,3 @@
 .projDirs::-webkit-scrollbar {
     display: none;
 }
-
-#

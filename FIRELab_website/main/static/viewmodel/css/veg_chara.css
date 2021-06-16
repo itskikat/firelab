@@ -61,7 +61,7 @@
 
 #explained {
  	padding-left: 1%;
-	padding-top: 1em;
+	padding-top: 2em;
 }
 
 #explained p {
@@ -85,7 +85,7 @@
     width: 24%;
 	height: 38%;
 	position: absolute;
-	bottom: 8%;
+	bottom: 1%;
    	right: 1em;
 	border:2px solid black;
 	box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
@@ -176,6 +176,10 @@ a {
 	font-size: 20px;
 }
 
+body {
+	position: relative;
+}
+
 p, input, button{
     vertical-align:middle;
 }
@@ -187,12 +191,13 @@ p, input, button{
 }
 
 .right .picker {
-	bottom: 0;
-	position: fixed;
+	word-break: break-all;
+	bottom: 28%;
 	right: 1%;
+	position: fixed;
 	height: 8%;
 	width: 20%;
-	padding-bottom: 18%;
+
 }
 
 table.scroll {
@@ -219,8 +224,9 @@ table.scroll tbody,
 table.scroll thead tr { display: block; }
 
 table.scroll tbody {
+	word-break: break-all;
 	width: 100%;
-    height: 30vh;
+    height: 25vh;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -310,7 +316,6 @@ input[type=number]::-webkit-outer-spin-button {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  z-index: 9;
   width: 500px;
   height: 350px;
   background-color: #2f3338;
