@@ -67,25 +67,23 @@
             <caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
             <tbody id="toolkit">
             <tr>
-                <a onclick="openBrushSetings()" title="Manually Classify"><td onclick="openBrushSetings()"><i title="Manually classify" style="cursor: pointer" class="fas fa-leaf fa-lg" {% if grid %} onclick="manualSelect()" {% endif %}></i></a></td>
-                <td><a title="Resize"><i class="fas fa-expand-arrows-alt fa-lg"></i></td></a>
+                <td><i id="manualSelectionLeaf" title="Manually classify" style="cursor: pointer" class="fas fa-leaf fa-lg" {% if grid %} onclick="manualSelect()" {% endif %}></i></td>
+                <td title="Reset Zoom" onclick="fitToScreen()" style="cursor: pointer"><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
             </tr>
             <tr>
                 <td><a title="Auto classify" style="cursor: pointer" {% if grid %} onclick="openLoadingPopUp()" href="{% url 'auto_classifier' project.id grid.id %}" {% endif %}><i class="fas fa-tree fa-lg"></i></a></td>
-                <td><a title="Save fuel map" style="cursor: pointer" {% if grid %} href="{% url 'export_fuel_map' project.id grid.id %}" {% endif %}><i class="fas fa-save fa-lg" ></i></a></td>
+                <td><a title="Save fuel map" style="cursor: pointer" {% if grid %} onclick="openWarningPopUp('Your fuelmap is being generated and will be downloaded as soon as it\'s ready.')" href="{% url 'export_fuel_map' project.id grid.id %}" {% endif %}><i class="fas fa-save fa-lg" ></i></a></td>
             </tr>
             <tr>
-                <td><i class="fas fa-eraser fa-lg"></i></td>
-                <td><a title="Upload ortophoto" style="cursor: pointer" onclick="openUpload()"><i class="fa fa-folder-open fa-lg"></i></a></td>
+                <td><a title="Upload ortophoto" style="cursor: pointer" href="{% url 'vegetation' project.id %}" ><i class="fa fa-folder-open fa-lg"></i></a></td>
+                <td title="Draw Grid" onclick="drawGrid()" style="cursor: pointer"><i class="fa fa-border-all fa-lg" id="grid" style="color: black"></i></td>
             </tr>
             <tr>
-                <td><i class="fa fa-search-plus fa-lg" aria-hidden="true"></i></td>
-                 <td title="Draw Grid" onclick="drawGrid()" style="cursor: pointer"><i class="fa fa-border-all fa-lg" id="grid" style="color: black"></i></td>
+                <td title="Zoom In"><i class="fa fa-search-plus fa-lg" style="cursor: pointer" id="plusImg" onclick="enlargeImg()" aria-hidden="true"></i></td>
+                <td title="Help"><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
             </tr>
             <tr>
-                <td><i class="fa fa-search-minus fa-lg" aria-hidden="true"></i></td>
-                <td style="cursor: pointer"><a title="Help" onclick="openTutorial()"><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></a></td>
-               
+                <td title="Zoom Out"><i class="fa fa-search-minus fa-lg" style="cursor: pointer" onclick="imgSmall()" id="minusImg" aria-hidden="true"></i></td>
             </tr>
         </tbody>
         </table>
@@ -117,7 +115,7 @@
        </div>
             
     <div id="explained">
-        <p style="font-size: 12px;"><i class="fas fa-info-circle fa-sm"></i>Make sure you pick the color first clicking on  Change Points Color. To edit a point click on it (the color should change) and then click again to set (the color should change once again).</p>
+        <p style="font-size: 12px;"><i class="fas fa-info-circle fa-sm"></i>Make sure you pick the color first clicking on  Change Points Color. To edit a point click on it (the color changes) and then click again to set (the color changes once again). After marking the first point and until creating a grid, zooming in and out is disabled.</p>
     </div>
     <div class="points" id="points">
         <a  class="button primary" onclick="createGrid()">Draw Grid</a>
@@ -362,8 +360,8 @@
             let image = document.getElementById("workingImage");
             if (gridDrawOn && selectedPointsTotal < 2) {
                 console.log("place icon")
-                let x = event.pageX - this.offsetLeft;
-                let y = event.pageY - this.offsetTop;
+                let x = event.offsetX;
+                let y = event.offsetY;
                 selectedPointsTotal++;
 
                 //icon position
@@ -384,9 +382,14 @@
 
                 if (selectedPointsTotal === 1) {
                     $("#id_p1").val(String(x) + ", " + String(y))
+                    document.getElementById('plusImg').removeAttribute("onclick");
+                    document.getElementById('minusImg').removeAttribute("onclick");
                 } else if (selectedPointsTotal === 2) {
                     $("#id_p2").val(String(x) + ", " + String(y))
                     $("#id_image_size").val(String(image.width) + ", " + String(image.height))
+                    document.getElementById("")
+                    document.getElementById('plusImg').removeAttribute("onclick");
+                    document.getElementById('minusImg').removeAttribute("onclick");
 
                     icon_1 = document.getElementById("icon_1");
                     icon_2 = document.getElementById("icon_2");
@@ -473,6 +476,8 @@
             openLoadingPopUp();
             document.getElementById("workingImageForm").submit();
             grid.style.color = "black";
+            document.getElementById('plusImg').addAttribute("onclick");
+            document.getElementById('minusImg').addAttribute("onclick");
         }
 
         function setSelectedLayer(layer) {

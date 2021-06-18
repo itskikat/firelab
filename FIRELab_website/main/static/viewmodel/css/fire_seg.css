@@ -56,6 +56,10 @@
 
 }
 
+.toolkit td {
+	cursor: pointer;
+}
+
 #upload {
 	padding: 2em 0em 0em 1em;
 }

@@ -23,6 +23,10 @@
 	cursor: pointer;
 }
 
+.toolkit td {
+	cursor: pointer;
+}
+
 .right {
 
 	height: 100%;
@@ -43,8 +47,9 @@
 .points {
 	display: none;
 	position:absolute;
-	bottom: 1%;
 	left: 30%;
+	padding-top: 2%;
+	margin-bottom: 1%;
 }
 
 .models {
@@ -71,6 +76,7 @@
 	font-size: 11px; 
 	height: 1%; 
 	padding-bottom: 0; 
+	margin-bottom: 0!important;
 	line-height: 1.5;
 }
 
@@ -84,15 +90,35 @@
 
 .gridPop {
     width: 30%;
-	height: 34%;
+	height: fit-content;
+	overflow-y: auto;
 	display: none;
   	position: absolute;
   	background-color: white;
   	right: 1%;
-  	bottom: 0;
+  	bottom: 1%;
 	border:2px solid black;
 	box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
 
+}
+
+.gridPop::-webkit-scrollbar {
+  width: 9px;
+}
+
+/* Track */
+.gridPop::-webkit-scrollbar-track {
+  background: #f1f1f1;  
+}
+ 
+/* Handle */
+.gridPop::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+
+/* Handle on hover */
+.gridPop::-webkit-scrollbar-thumb:hover {
+  background: #555; 
 }
 
 .toolkit table {
