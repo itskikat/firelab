@@ -95,31 +95,27 @@ function next() {
         tips.innerHTML = "Click <i class='fas fa-tree fa-lg' ></i> to automatically characterize the vegetation";
       
     }
+    
     else if (step === 4) {
-      
-        tips.innerHTML = "Click <i class='fa fa-eraser fa-lg'></i>  when you want to erase already characterized cells";
-
-    }
-    else if (step === 5) {
     
         tips.innerHTML = "Click  <i class='fa fa-search-plus fa-lg'></i> when you want to make the image bigger";
        
     }
-    else if (step === 6) {
+    else if (step === 5) {
       
         tips.innerHTML = "Click <i class='fa fa-search-minus fa-lg'></i> when you want to make the image smaller";
        
     }
-    else if (step === 7) {
+    else if (step === 6) {
   
         tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize the image";
  
     }
-    else if (step === 8) {
+    else if (step === 7) {
         tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the results";
     }
 
-    else if (step === 9) {
+    else if (step === 8) {
         closeTutorial();
     }
     
@@ -149,22 +145,18 @@ function goBack() {
      
     }
     else if (step === 4) {
-        tips.innerHTML = "Click <i class='fa fa-eraser fa-lg'></i>  when you want to erase already characterized cells";
-   
-    }
-    else if (step === 5) {
         tips.innerHTML = "Click  <i class='fa fa-search-plus fa-lg'></i> when you want to make the image bigger";
       
     }
-    else if (step === 6) {
+    else if (step === 5) {
         tips.innerHTML = "Click <i class='fa fa-search-minus fa-lg'></i> when you want to make the image smaller";
 
     }
-    else if (step === 7) {
+    else if (step === 6) {
         tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize the image";
  
     }
-    else if (step === 8) {
+    else if (step === 7) {
       tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the results";
     }
 

@@ -221,9 +221,9 @@ p, input, button{
 
 .right .picker {
 	word-break: break-all;
-	bottom: 28%;
+	bottom: 25%;
 	right: 1%;
-	position: fixed;
+	position: absolute;
 	height: 8%;
 	width: 20%;
 
