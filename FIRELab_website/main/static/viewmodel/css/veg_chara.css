@@ -265,8 +265,25 @@ tbody td:last-child, thead th:last-child {
     border-bottom: none !important;
 }
 
+
+
 table.scroll tbody::-webkit-scrollbar {
-  display: none;
+  width: 10px;
+}
+
+/* Track */
+table.scroll tbody::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+ 
+/* Handle */
+table.scroll tbody::-webkit-scrollbar-thumb {
+ background: #555; 
+}
+
+/* Handle on hover */
+table.scroll tbody::-webkit-scrollbar-thumb:hover {
+  background: #2f3338; 
 }
 
 
