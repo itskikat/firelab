@@ -82,7 +82,7 @@ function next() {
     step++;
     console.log(step);
     if (step === 1) {
-       tips.innerHTML = "Click <i class='fa fa-border-all fa-lg' ></i> and mark two points in the map to create a grid.";
+       tips.innerHTML = "Click <i class='fa fa-border-all fa-lg' ></i> and mark two points in the map to create a grid";
       tutorial.classList.remove("stepZero");
     }
     if (step === 2) {
@@ -95,31 +95,27 @@ function next() {
         tips.innerHTML = "Click <i class='fas fa-tree fa-lg' ></i> to automatically characterize the vegetation";
       
     }
+    
     else if (step === 4) {
-      
-        tips.innerHTML = "Click <i class='fa fa-eraser fa-lg'></i>  when you want to erase already characterized cells.";
-
-    }
-    else if (step === 5) {
     
         tips.innerHTML = "Click  <i class='fa fa-search-plus fa-lg'></i> when you want to make the image bigger";
        
     }
-    else if (step === 6) {
+    else if (step === 5) {
       
         tips.innerHTML = "Click <i class='fa fa-search-minus fa-lg'></i> when you want to make the image smaller";
        
     }
-    else if (step === 7) {
+    else if (step === 6) {
   
-        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize.";
+        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize the image";
  
     }
-    else if (step === 8) {
-        tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the results.";
+    else if (step === 7) {
+        tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the results";
     }
 
-    else if (step === 9) {
+    else if (step === 8) {
         closeTutorial();
     }
     
@@ -135,10 +131,10 @@ function goBack() {
         
     }
     if (step === 0) {
-      tips.innerHTML = "Click <i class='fas fa-folder-open fa-lg' ></i> here to upload a video or image";
+      tips.innerHTML = "Click <i class='fas fa-folder-open fa-lg' ></i> here to upload an orthophotomap";
     }
     if (step === 1) {
-      tips.innerHTML = "Click <i class='fa fa-border-all fa-lg' ></i> and mark two points in the map to create a grid.";
+      tips.innerHTML = "Click <i class='fa fa-border-all fa-lg' ></i> and mark two points in the map to create a grid";
     }
     if (step === 2) {
       tips.innerHTML = "Click <i class='fa fa-leaf fa-lg'></i> and characterize a few cells by clicking on a color in the table below and picking one or various cells";
@@ -149,20 +145,19 @@ function goBack() {
      
     }
     else if (step === 4) {
-        tips.innerHTML = "Click <i class='fa fa-eraser fa-lg'></i>  when you want to erase already characterized cells.";
-   
-    }
-    else if (step === 5) {
         tips.innerHTML = "Click  <i class='fa fa-search-plus fa-lg'></i> when you want to make the image bigger";
       
     }
-    else if (step === 6) {
+    else if (step === 5) {
         tips.innerHTML = "Click <i class='fa fa-search-minus fa-lg'></i> when you want to make the image smaller";
 
     }
-    else if (step === 7) {
-        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize.";
+    else if (step === 6) {
+        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize the image";
  
+    }
+    else if (step === 7) {
+      tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the results";
     }
     else if (step === 8) {
       tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the results.";
@@ -175,6 +170,16 @@ function openColorPicker() {
   document.getElementById("colorPicker").style.display = "flex";
 }
 
+
+function openColorPicker() {
+  document.getElementById("colorPicker").style.display = "flex";
+}
+
 function closeColorPicker() {
   document.getElementById("colorPicker").style.display = "none";
+}
+
+function closeGridPopUp() {
+  document.getElementById("createGridHelp").style.display = "flex";
+  document.getElementById("gridPop").style.display = "none";
 }

@@ -56,6 +56,10 @@
 
 }
 
+.toolkit td {
+	cursor: pointer;
+}
+
 #upload {
 	padding: 2em 0em 0em 1em;
 }
@@ -327,9 +331,13 @@ ul {
 	overflow: visible;
 	width: 3%;
 	height: 3%;
-	top: 55%;
+	top: 53%;
 	right: 1%;
 	animation: 1s linear;
+}
+
+.right a {
+  cursor: pointer;
 }
 
 
@@ -394,4 +402,9 @@ form {
 
 .tdsSet {
 	background-color: white;
+}
+
+.stDateTime {
+	width: fit-content !important;
+	height: fit-content !important;
 }

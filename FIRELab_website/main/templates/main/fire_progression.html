@@ -45,24 +45,24 @@
 
 	<div class="toolkit">
 		<table>
-			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit"><i id="close" class="fas fa-times"></i></a></caption>
+			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
 			<tr>
 				<td id="showImage" onclick="openImages()"><i class="fas fa-image fa-lg"></i></td>
 				<td id="zoomIn"><i class="fas fa-search-plus fa-lg"></i></td>
 			</tr>
 			<tr>
-				<td id="marker" onclick="markerOn()"><i class="fas fa-map-marker-alt fa-lg"></i></td>
-				<td id="zoomOut"><i class="fas fa-search-minus fa-lg"></i></td>
+				<td id="marker" onclick="markerOn()"><i class="fa fa-map-marker-alt fa-lg"></i></td>
+				<td id="zoomOut"><i class="fa fa-search-minus fa-lg"></i></td>
 			</tr>
 			<tr>
-                <td id="play_tk" onclick="window.location.replace('/projects/{{ project.id }}/progression?animation');" style="cursor: pointer;"><i class="fas fa-play fa-lg"></i></td>
-                <td onclick="saveCoords()"><i class="fas fa-save fa-lg" aria-hidden="true"></i></td>
+                <td id="play_tk" onclick="window.location.replace('/projects/{{ project.id }}/progression?animation');" style="cursor: pointer;"><i class="fa fa-play fa-lg"></i></td>
+                <td onclick="saveCoords()"><i class="fa fa-save fa-lg" aria-hidden="true"></i></td>
 			</tr>
 			<tr>
 				<!-- <td id="stack"><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td> -->
                 <td id="undo"><a ><i class="fa fa-undo" aria-hidden="true"></i></a></td>
-				<td id="help"><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
+				<td id="help" title="Help"><a onclick="openTutorial()"><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></a></td>
 			</tr>
 			<tr>
 				<td><i class="fas fa-expand-arrows-alt fa-lg" aria-hidden="true"></i></td>
@@ -70,8 +70,22 @@
 		</tbody>
 		</table>
 	</div>
+
+    <!-- TUTORIAL -->
+    <div class="tooltip-wrapper stepOne" id="tutorial">
+        <div class="tooltip">
+            <div class="tooltip-title">
+                <div class="steps"><a onclick="closeTutorial()" style="cursor: pointer"><i id="closeTutorial" class="fas fa-times" title="Stop tutorial"></i></a><a onclick="goBack()" style="cursor: pointer"><i class="fas fa-chevron-left" title="Previous Step" id="goBack" style="color: transparent"></i></a><a onclick="next()" style="cursor: pointer"><i class="fas fa-chevron-right" title="Next Step" id="nextStep"></i></a></div>
+                <div class="tips" id="tips">Click <i class='fa fa-folder-open fa-lg' ></i> and input the name of the image to work on.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIXEL Table -->
     <div class="pixel_table">
+
         <table hidden id="pixel_table_coords">
+            <caption style="font-weight: bold; color: #771300">Pixel Table</caption>
             <tr id="head_Of_Coord_Table">
                 <td>
                     Location Name
@@ -80,7 +94,7 @@
                     Pixel coords
                 </td>
                 <td>
-                    Geo Coords
+                    Geo Coords (lat, long)
                 </td>
             </tr>
         </table>

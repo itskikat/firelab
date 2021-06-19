@@ -15,7 +15,7 @@
             </div>
         {% endif %}
     </form>
-    <form id="workingImageForm" action="./vegetation" method="POST">
+    <form id="workingImageForm" action="./vegetation" method="POST" style="justify-content: center; align-items: center;">
         {% csrf_token %}
         {% if image %}
             <div hidden>
@@ -27,12 +27,12 @@
                 {{ grid_draw.cell_size }}
             </div>
             {% if gridded_image %}
-                <div id="img_ortophoto"  style="display: flex; padding-top: 6%; justify-content: center; align-items: center; ">
-                    <img style="width: 40%; transform-origin: top left;" draggable="false" id="workingImage" src={{ gridded_image }}>
+                <div id="img_ortophoto"  style="padding-left:20%; padding-top: 2%; justify-content: center; align-items: center; ">
+                    <img style="max-width: 47%; transform-origin: top left;" draggable="false" id="workingImage" src={{ gridded_image }}>
                 </div>
             {% else %}
-                <div id="img_ortophoto"  style="display: flex; padding-top: 6%; justify-content: center; align-items: center; ">
-                    <img style="width: 40%; transform-origin: top left;" draggable="false" id="workingImage" src={{ image.thumbnail.url }}>
+                <div id="img_ortophoto"  style="padding-left: 20%;padding-top: 2%; justify-content: center; align-items: center; ">
+                    <img style="max-width: 47%; transform-origin: top left;" draggable="false" id="workingImage" src={{ image.thumbnail.url }}>
                 </div>
             {% endif %}
         {% endif %}
@@ -67,49 +67,58 @@
      
         
 		<table>
-			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
-			<tbody id="toolkit">
-			<tr>
-				<td><i id="manualSelectionLeaf" title="Manually classify" style="cursor: pointer" class="fas fa-leaf fa-lg" {% if grid %} onclick="manualSelect()" {% endif %}></i></td>
-				<td title="Reset Zoom" onclick="fitToScreen()" style="cursor: pointer"><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
-			</tr>
-			<tr>
-				<td><a title="Auto classify" style="cursor: pointer" {% if grid %} onclick="openLoadingPopUp()" href="{% url 'auto_classifier' project.id grid.id %}" {% endif %}><i class="fas fa-tree fa-lg"></i></a></td>
-				<td><a title="Save fuel map" style="cursor: pointer" {% if grid %} onclick="openWarningPopUp('Your fuelmap is being generated and will be downloaded as soon as it\'s ready.')" href="{% url 'export_fuel_map' project.id grid.id %}" {% endif %}><i class="fas fa-save fa-lg" ></i></a></td>
-			</tr>
-			<tr>
-				<td><a title="Upload ortophoto" style="cursor: pointer" href="{% url 'vegetation' project.id %}" ><i class="fa fa-folder-open fa-lg"></i></a></td>
+            <caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
+            <tbody id="toolkit">
+            <tr>
+                <td><i id="manualSelectionLeaf" title="Manually classify" style="cursor: pointer" class="fas fa-leaf fa-lg" {% if grid %} onclick="manualSelect()" {% endif %}></i></td>
+                <td title="Reset Zoom" onclick="fitToScreen()" style="cursor: pointer"><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
+            </tr>
+            <tr>
+                <td><a title="Auto classify" style="cursor: pointer" {% if grid %} onclick="openLoadingPopUp()" href="{% url 'auto_classifier' project.id grid.id %}" {% endif %}><i class="fas fa-tree fa-lg"></i></a></td>
+                <td><a title="Save fuel map" style="cursor: pointer" {% if grid %} onclick="openWarningPopUp('Your fuelmap is being generated and will be downloaded as soon as it\'s ready.')" href="{% url 'export_fuel_map' project.id grid.id %}" {% endif %}><i class="fas fa-save fa-lg" ></i></a></td>
+            </tr>
+            <tr>
+                <td><a title="Upload ortophoto" style="cursor: pointer" href="{% url 'vegetation' project.id %}" ><i class="fa fa-folder-open fa-lg"></i></a></td>
                 <td title="Draw Grid" onclick="drawGrid()" style="cursor: pointer"><i class="fa fa-border-all fa-lg" id="grid" style="color: black"></i></td>
-			</tr>
-			<tr>
-				<td title="Zoom In"><i class="fa fa-search-plus fa-lg" style="cursor: pointer" onclick="enlargeImg()" aria-hidden="true"></i></td>
-				<td title="Help"><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
-			</tr>
-			<tr>
-				<td title="Zoom Out"><i class="fa fa-search-minus fa-lg" style="cursor: pointer" onclick="imgSmall()" aria-hidden="true"></i></td>
-			</tr>
-		</tbody>
-		</table>
+            </tr>
+            <tr>
+                <td title="Zoom In"><i class="fa fa-search-plus fa-lg" style="cursor: pointer" id="plusImg" onclick="enlargeImg()" aria-hidden="true"></i></td>
+                <td title="Help"><i class="fa fa-question-circle fa-lg" aria-hidden="true" onclick="openTutorial()"></i></td>
+            </tr>
+            <tr>
+                <td title="Zoom Out"><i class="fa fa-search-minus fa-lg" style="cursor: pointer" onclick="imgSmall()" id="minusImg" aria-hidden="true"></i></td>
+            </tr>
+        </tbody>
+        </table>
 	</div>
     {% endif %}
 
     {% if not gridded_image %}
+    <div id="createGridHelp"><a style="cursor: pointer;" onclick="drawGrid()">Create Grid Helper <i id="openGridPop" class="fas fa-angle-down"></i></a></div>
     <div class="gridPop" id="gridPop">
-        <div class="cell"><p> Cell size: <input id="cell_size_input" type="number" min="1" max="20" step="1" value="5" style="color: black"> meters</p></div>
-       <div class="models">
-       <select name="model" id="model" title="If you don't pick a model, a default one will be used." style="width: 152px; height: 40px; font-size: 13px;">
-           {% for model in available_models %}
-               {% if model.name == "FARSITE" %}
-                   <option selected value="{{ model.id }}">{{ model.name }}</option>
-               {% else %}
-                   <option value="{{ model.id }}">{{ model.name }}</option>
-               {% endif %}
-           {% endfor %}
-        </select>
-    </div>
+        <div class="row gtr-uniform">
+            <div class="col-4 col-12-xsmall">
+                <div class="cell"><p> Cell size (m): <input type="number" min="1" max="20" step="1" value="5" style="color: black"></p></div>
+            </div>
+            <div class="col-6 col-12-xsmall" style="padding-left: 20%; padding-right: 0">
+                <div class="models">
+                   <select name="model" id="model" title="If you don't pick a model, a default one will be used." style="width: fit-content; height: 40px; font-size: 13px;">
+                      <option selected disabled>Choose model</option>
+                      <option value="disperfire">DISPERFIRE</option>
+                      <option value="firesite">FIRESITE</option>
+                  </select>
+               </div>
+            </div>
+            <div class="col-2 col-12-xsmall">
+                <a title="Close Grid Pop up" onclick="closeGridPopUp()" style="cursor: pointer;"><i id="closeGridPop" class="fas fa-times" style="float: right"></i></a>
+            </div>     
+        </div>
+       <div class="colorPopUpPicker">
+           <i class="fas fa-thumbtack" style="color: #771300;padding-top: 10%"><a style="font-size: 14px; cursor: pointer;" onclick="openColorPicker()"> Change Points Color</a></i>
+       </div>
             
     <div id="explained">
-        <p style="font-size: 12px; padding-top: 28px"><i class="fas fa-info-circle fa-sm"></i>Make sure you pick the color first clicking on  Change Points Color. To edit a point click on it (the color should change) and then click again to set (the color should change once again).</p>
+        <p style="font-size: 12px;"><i class="fas fa-info-circle fa-sm"></i>Make sure you pick the color first clicking on  Change Points Color. To edit a point click on it (the color changes) and then click again to set (the color changes once again). After marking the first point and until creating a grid, zooming in and out is disabled.</p>
     </div>
     <div class="points" id="points">
         <a  class="button primary" onclick="createGrid()">Draw Grid</a>
@@ -294,25 +303,25 @@
         var pointsColor = document.getElementById("setColor");
         var changePoints = document.getElementById("changeColor");
          if (pointsColor.value != null && changePoints.value != null) {
-       pColor = pointsColor.value;
-       cColor = changePoints.value;
-   }
-    pointsColor.addEventListener("input", function() {
-            pColor = pointsColor.value;
+               pColor = pointsColor.value;
+               cColor = changePoints.value;
+           }
+            pointsColor.addEventListener("input", function() {
+                    pColor = pointsColor.value;
 
-        }, false);
+                }, false);
 
-       changePoints.addEventListener("input", function() {
-            cColor = changePoints.value;
+               changePoints.addEventListener("input", function() {
+                    cColor = changePoints.value;
 
-        }, false);
-   }
-      
-      
+                }, false);
+           }
 
         function drawGrid() {
+            document.getElementById("createGridHelp").style.display = "none";
             var gridPop = document.getElementById("gridPop");
             gridPop.style.display = "block";
+
             var grid = document.getElementById("grid");
             if (grid.style.color === "black") {
                 grid.style.color = "#B55B29";
@@ -353,8 +362,8 @@
             let image = document.getElementById("workingImage");
             if (gridDrawOn && selectedPointsTotal < 2) {
                 console.log("place icon")
-                let x = event.pageX - this.offsetLeft;
-                let y = event.pageY - this.offsetTop;
+                let x = event.offsetX;
+                let y = event.offsetY;
                 selectedPointsTotal++;
 
                 //icon position
@@ -364,7 +373,7 @@
                 i.style.display = "block";
                 i.style.left = event.pageX + 'px';
                 i.id = "icon_" + selectedPointsTotal;
-               i.style.color = pColor;
+                i.style.color = pColor;
                 i.style.zIndex = "2";
                 i.style.top = event.pageY + 'px';
                 i.style.width = "20px";
@@ -375,9 +384,14 @@
 
                 if (selectedPointsTotal === 1) {
                     $("#id_p1").val(String(x) + ", " + String(y))
+                    document.getElementById('plusImg').removeAttribute("onclick");
+                    document.getElementById('minusImg').removeAttribute("onclick");
                 } else if (selectedPointsTotal === 2) {
                     $("#id_p2").val(String(x) + ", " + String(y))
                     $("#id_image_size").val(String(image.width) + ", " + String(image.height))
+                    document.getElementById("")
+                    document.getElementById('plusImg').removeAttribute("onclick");
+                    document.getElementById('minusImg').removeAttribute("onclick");
 
                     icon_1 = document.getElementById("icon_1");
                     icon_2 = document.getElementById("icon_2");
@@ -464,6 +478,8 @@
             openLoadingPopUp();
             document.getElementById("workingImageForm").submit();
             grid.style.color = "black";
+            document.getElementById('plusImg').addAttribute("onclick");
+            document.getElementById('minusImg').addAttribute("onclick");
         }
 
         function setSelectedLayer(layer) {

@@ -29,9 +29,24 @@
   text-align: center;
 }
 
-.delete-popup .options {
-  padding: 0em 0em 0em 6em;
+.delete-popup ul.actions {
+  margin: 0 !important;
 }
+
+.delete-popup li {
+  margin:0 auto;
+  display:block;
+}
+
+.form-popup li {
+
+  display:block;
+}
+
+.form-popup ul.actions {
+  margin: 0 !important;
+}
+
 
 .container-delete {
   width: 100%;
@@ -50,11 +65,7 @@
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
-.form-container .actions {
-  padding-top: 0.5em;
-  padding-left: 0.3em;
 
-}
 
 .form-container #create {
   right: 0;

@@ -8,13 +8,27 @@
 }
 
 .projDirs {
-	max-height: 45vh;
-	height: 35vh;
+	height: 35%;
+	max-height: 45%;
 	overflow: auto;
 }
 
 
 .projDirs::-webkit-scrollbar {
-    display: none;
+  width: 10px;
 }
 
+/* Track */
+.projDirs::-webkit-scrollbar-track {
+  background: #871803; 
+}
+ 
+/* Handle */
+.projDirs::-webkit-scrollbar-thumb {
+  background: #2f3338; 
+}
+
+/* Handle on hover */
+.projDirs::-webkit-scrollbar-thumb:hover {
+  background: #2a2e33; 
+}
