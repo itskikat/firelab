@@ -1,0 +1,153 @@
+{box-sizing: border-box;}
+
+
+.right .actions .button {
+  font-size: 15px;
+}
+
+/* The popup form - hidden by default */
+.form-popup {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9;
+  width: 500px;
+  height: 340px;
+}
+
+.delete-popup {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9;
+  width: 500px;
+  height: 250px;
+  text-align: center;
+}
+
+.delete-popup ul.actions {
+  margin: 0 !important;
+}
+
+.delete-popup li {
+  margin:0 auto;
+  display:block;
+}
+
+.form-popup li {
+
+  display:block;
+}
+
+.form-popup ul.actions {
+  margin: 0 !important;
+}
+
+
+.container-delete {
+  width: 100%;
+  height: 100%;
+  padding: 15px;
+  background-color: #2f3338;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Add styles to the form container */
+.form-container {
+  width: 100%;
+  height: 100%;
+  padding: 15px;
+  background-color: #2f3338;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+
+
+.form-container #create {
+  right: 0;
+}
+
+/* Full-width input fields */
+.form-container input[type=text] {
+  width: 100%;
+  padding: 15px;
+  margin: 5px 0 22px 0;
+  border: none;
+  background: #383d42;
+}
+
+
+input[type="text"]:focus,
+    select:focus,
+    textarea:focus {
+      box-shadow: 0 0 0 2px #ffffff;
+}
+
+.button {
+  box-shadow: 0 0 0 2px #383d42;
+}
+
+
+.information .delete {
+  float: right;
+  padding-top: 4em;
+  padding-right: 3em;
+  font-size: 16px;
+
+}
+
+
+.delete .button {
+  box-shadow: 0 0 0 2px #2f3338;
+  
+}
+
+
+.information h2 {
+  margin: 0;
+  display: inline-block;
+}
+
+.information #dates {
+  padding-top: 0.5em;
+  margin: 0;
+}
+
+
+@media screen and (max-width: 980px) {
+
+        .information .delete {
+          padding-top: 3em;
+          padding-right: 1em;
+        }
+
+        .delete .button {
+          font-size: 10px;
+        }
+
+        
+
+
+    }
+
+    @media screen and (max-width: 736px) {
+
+      .information .delete {
+          padding-top: 3em;
+          padding-right: 1em;
+        }
+
+        .delete .button {
+          font-size: 10px;
+        }
+
+      .actions .work {
+        font-size: 14px !important;
+      }
+
+    }
+

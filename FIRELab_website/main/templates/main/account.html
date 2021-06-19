@@ -1,0 +1,295 @@
+<!DOCTYPE HTML>
+<html>
+    {% load static %}
+	<head>
+		<title>FIRELab - Account</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="static/assets/css/projects.css"/>
+		<link rel="stylesheet" href="static/viewmodel/css/account.css"/>
+		<link rel="icon"href="{% static 'favicon.png' %}">
+		<noscript><link rel="stylesheet" href="static/assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+        {% include 'main/warning_popup.html' %}
+		<!-- Page Wrapper -->
+			<div id="page-wrapper">
+                <form id="logoutForm" action="/logout" method="GET" hidden>
+                    {% csrf_token %}
+                </form>
+
+				<!-- Header -->
+					<header id="header">
+						<h1><a href="{% url 'index' %}">Firelab</a></h1>
+						<nav id="nav">
+							<ul>
+								<li class="special">
+									<a href="#menu" class="menuToggle"><span>Menu</span></a>
+									<div id="menu">
+										<ul>
+											<li><a href="{% url 'index' %}">Home</a></li>
+											<li><a href="{% url 'projects' %}">My Projects</a></li>
+											<li><a href="{% url 'account' %}">My account & Settings</a></li>
+											<li><a href="javascript:document.getElementById('logoutForm').submit()">Log out</a></li>
+										</ul>
+									</div>
+								</li>
+							</ul>
+						</nav>
+					</header>
+
+				<!-- Main -->
+				<div class="split" id="blur">
+					<div class="left">
+						<div class="user">
+							<i class="fas fa-user fa-6x"></i>
+							<p>{{ user.get_username }}</p>
+						</div>
+						<div id="info">
+							<p><i class="fas fa-envelope"></i> Email: {{ user.email }}</p>
+							<p id="space"><i class="fas fa-cloud"></i> Storage:</p>
+							<progress id="file" value="{{ storage_relative }}" max="100"></progress>
+							<p id="storage">{{ storage }}GB out of 5GB used</p>
+						</div>
+						
+					</div>
+					
+					<div class="right">
+						<h3>Settings</h3>
+						<p><i class="fas fa-key"></i><a onclick="openChangePassword()" class="change"> Change Password</a></p>
+						<p><i class="fas fa-envelope"></i><a onclick="openChangeEmail()" class="change"> Change Email</a></p>
+						<hr>
+						<h3>Other Settings</h3>
+						<p style="margin-bottom: 1%">Vegetation Characterization Models</p><a class="button primary" onclick="openForm()">Create Model</a>
+						
+						<div id="createModels" style="padding-top: 2%">
+							<table style="width: 90%; " id="models">
+									<thead>
+										<tr>
+									    <th style="padding-bottom: 0">Model Name</th>
+									    <th style="padding-bottom: 0">Classification List</th>
+									 </tr>
+									</thead>
+								  <tbody>
+
+                                    {% for model in user_models %}
+
+									  	<tr>
+                                            <td>{{ model.name }}</td>
+                                            <td>
+                                                <table id="modelsList">
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Minimal %</th>
+                                                        <th>Maximum %</th>
+                                                        <th>Hexadecimal Color</th>
+                                                        <th>Classification Index</th>
+                                                    </tr>
+                                                    {% for classification in user_classifications %}
+                                                        {% if classification.model == model %}
+                                                        <tr>
+                                                            <td>{{ classification.name }}</td>
+                                                            <td>{{ classification.minPercentage }}</td>
+                                                            <td>{{ classification.maxPercentage }}</td>
+                                                            <td>#{{ classification.hexColor }}</td>
+                                                            <td>{{ classification.classificationIndex }}</td>
+                                                        </tr>
+                                                        {% endif %}
+                                                    {% endfor %}
+
+                                                </table>
+                                            </td>
+										</tr>
+
+                                    {% endfor %}
+								  </tbody>
+
+                                    <tfoot>
+                                        <tr>
+                                            <th style="padding-top : 0">Model Name</th>
+                                            <th style="padding-top: 0">Classification List</th>
+                                        </tr>
+                                    </tfoot>
+
+
+							</table>
+						</div>
+						
+					</div>
+						
+				</div>
+
+				<!-- POP WHEN CREATE MODEL-->
+                <div class="form-popup" id="myForm" style="align-self: center;">
+                    <form id="modelForm" method="POST" action="{% url 'account' %}" class="form-container">
+                        {% csrf_token %}
+                        <h1>Create a new Model <i class="fas fa-times" style="padding-left: 35%; cursor: pointer" onclick="closeForm()"></i></h1>
+                        <br>
+                        {{ model_creation_form.nameModel.label }}
+                        {{ model_creation_form.nameModel }}
+                        <br>
+                        <p style="margin-bottom: 0; font-weight: bold">Classification List</p>
+                        <div id="classAdded"></div>
+                        <div id="classList">
+	              
+	                        {{  model_creation_form.nameClass.label }}
+	                        {{  model_creation_form.nameClass }}
+	                        <br>
+	                        <div class="row gtr-uniform">
+		                        <div class="col-6 col-12-xsmall">
+			                        {{  model_creation_form.minimumPercentage.label }}
+			                        {{  model_creation_form.minimumPercentage }}
+		                    	</div>
+		                        <div class="col-6 col-12-xsmall">
+			                        {{  model_creation_form.maximumPercentage.label }}
+			                        {{  model_creation_form.maximumPercentage }}
+		                   	 	</div>
+		                   	 	<div class="input-group col-6 col-12-xsmall">
+		                
+		                   	 		{{  model_creation_form.hexColor.label }}
+		                   	 		<div class="wrapIcon">
+		                   	 		<i class="fas fa-hashtag" id="icon"></i>
+		                   	 		{{  model_creation_form.hexColor }}
+	                        		</div>
+		                   	 	</div>
+		                   	 	<div class="col-6 col-12-xsmall">
+		                   	 		Or choose from this picker
+		                   	 		<br>
+		                   	 		<input type="color" name="typeColor" id="typeColor" value="#ffffff">
+	                        		
+		                   	 	</div>
+		                   	 	{% comment %}<div class="col-6 col-12-xsmall">
+		                   	 		{{  model_creation_form.index.label }}
+                                    {{  model_creation_form.index }}
+		                   	 	</div>{% endcomment %}
+                                <div hidden>
+                                    {{ model_creation_form.previously_added }}
+                                </div>
+	                   		</div>
+
+                        </div>
+
+                        <ul class="actions" style="padding-left: 4%;margin-bottom: auto; padding-top: 5%">
+                            <li><button onclick="submitForm()" class="button primary create">Create</button></li>
+                     		<li id="cancel"><a onclick="addClass()" class="button cancel">New classification</a></li>
+                        </ul>
+                  </form>
+                </div>
+
+
+                <!-- POP When Change Password -->
+                <div class="form-popup-password" id="passwordChange" style="align-self: center;">
+                    <form method="POST" action="{% url 'account' %}" class="form-container-password">
+                        {% csrf_token %}
+                        <h1>Change Password</h1>
+                        
+
+                        <ul class="actions" style="padding-left: 4%;margin-bottom: auto; padding-top: 5%">
+                            <input type="submit" class="button primary create" value="Change Password">
+                     		<li id="cancel"><a onclick="closeFormPassword()" class="button cancel">Cancel</a></li>
+                        </ul>
+                  </form>
+                </div>
+
+                <!-- POP When Change Email -->
+                <div class="form-popup-password" id="changeEmail" style="align-self: center;">
+                    <form method="POST" action="{% url 'account' %}" class="form-container-password">
+                        {% csrf_token %}
+                        <h1>Change Email</h1>
+
+
+                        <ul class="actions" style="padding-left: 4%;margin-bottom: auto; padding-top: 5%">
+                            <input type="submit" class="button primary create" value="Change Email">
+                     		<li id="cancel"><a onclick="closeFormEmail()" class="button cancel">Cancel</a></li>
+                        </ul>
+                  </form>
+                </div>
+
+			</div>
+
+		    <!-- Scripts -->
+			<script src="static/assets/js/jquery.min.js"></script>
+			<script src="static/assets/js/jquery.scrollex.min.js"></script>
+			<script src="static/assets/js/jquery.scrolly.min.js"></script>
+			<script src="static/assets/js/browser.min.js"></script>
+			<script src="static/assets/js/breakpoints.min.js"></script>
+			<script src="static/assets/js/util.js"></script>
+			<script src="static/assets/js/main.js"></script>
+			<!-- CUSTOM SCRIPTS-->
+			<script src="static/viewmodel/js/account.js"></script>
+
+			<script>
+                let errorType, errorMessage;
+                const warning_popup = document.getElementById("warning_popup");
+                let classificationList = [];
+
+                $(document).ready(function () {
+                    location.search.substr(1).split("&").forEach(function(item) {
+                        if (item.includes("error")) {
+                            errorType = item.split("=")[1];
+                                if (errorType === "MismatchedPercentages" ) {
+                                    errorMessage = "[" + errorType + "] The percentages of some classification don't match.."
+                                } else if (errorType === "PercentageBiggerThan100" ) {
+                                    errorMessage = "[" + errorType + "] The percentages of one or more classes is bigger than 100%."
+                                } else if (errorType === "NegativePercentage" ) {
+                                    errorMessage = "[" + errorType + "] The percentages of one or more classes is negative."
+                                }
+                                openWarningPopUp(errorMessage);
+                        }
+                    });
+                });
+
+                function openWarningPopUp(msg) {
+                    const element = document.getElementById("msg");
+                    element.innerHTML = msg;
+                    warning_popup.style.display = "flex";
+                    blur.style.filter = "blur(2px)";
+                    setTimeout(function() { closePopUp(); }, 10000);
+                }
+
+                function closePopUp() {
+                    errorType = null;
+                    errorMessage = null;
+
+                    warning_popup.style.display = "none";
+                    blur.style.filter = "none";
+                }
+
+                function submitForm() {
+                    $("#id_previously_added").val(JSON.stringify(classificationList));
+                    $("#modelForm").submit();
+                }
+
+				function addClass() {
+					var className = $("#class_name").val();
+					var minimumPercentage = $("#minimum_percentage").val();
+					var maximumPercentage = $("#maximum_percentage").val();
+					var hexColor = $("#id_hexColor").val();
+					// var index = $("#id_index").val();
+
+                    classificationList.push({
+                        "class_name": className,
+                        "min_percentage": minimumPercentage,
+                        "max_percentage": maximumPercentage,
+                        "hex": hexColor
+                    })
+
+					var classification = document.createElement('p');
+					classification.style.marginBottom = "1.5%";
+					classification.innerText = "Name: " + className + "; Minimum %: " + minimumPercentage + "; Maximum %: " + maximumPercentage + "; Color: " + hexColor;
+					document.getElementById("classAdded").appendChild(classification);
+
+					//clear classfication list form
+					document.getElementById("class_name").value = "";
+					document.getElementById("minimum_percentage").value = "";
+					document.getElementById("maximum_percentage").value = "";
+					document.getElementById("id_hexColor").value = "";
+					// document.getElementById("id_index").value = "";
+
+
+				}
+			</script>
+
+
+	</body>
+</html>

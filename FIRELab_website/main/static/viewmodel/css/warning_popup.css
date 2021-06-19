@@ -1,0 +1,19 @@
+.popup {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9;
+  width: 500px;
+  height: fit-content;
+  text-align: center;
+}
+
+.container-popup {
+  width: 100%;
+  height: 100%;
+  padding: 15px;
+  background-color: #2f3338;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}

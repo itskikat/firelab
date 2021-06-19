@@ -1,0 +1,443 @@
+/* sidenav */
+.left table #veg td {
+		  background-color:  #ffffff;  
+		}
+
+		.left table #veg a {
+			color: #771300;
+		}
+
+
+/* Toolkit */
+.right .toolkit {
+	width: 8%;
+	height: 40%;
+	position:absolute;
+   	top:0;
+   	right: 1em;
+	padding-top: 1em;
+	
+}
+
+.right a {
+	cursor: pointer;
+}
+
+.toolkit td {
+	cursor: pointer;
+}
+
+.right {
+	height: 100%;
+	overflow-y: auto;
+}
+
+
+.right::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.right {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+
+.points {
+	display: none;
+	position:absolute;
+	left: 30%;
+	padding-top: 2%;
+	margin-bottom: 1%;
+}
+
+.models {
+	position:absolute;
+	padding-top: 1%;
+}
+
+.cell {
+	position: absolute;
+	top: 3%;
+	left: 1%;
+}
+
+.points a {
+	font-size: 12px; 
+}
+
+#explained {
+ 	padding-left: 1%;
+}
+
+#explained p {
+	font-size: 11px; 
+	height: 1%; 
+	padding-bottom: 0; 
+	margin-bottom: 0!important;
+	line-height: 1.5;
+}
+
+.gridPop p {
+	font-size: 13px; 
+	height: 0.5%; 
+	padding-top: 0; 
+	padding-bottom: 0; 
+	line-height: 2;
+}
+
+.gridPop {
+    width: 30%;
+	height: fit-content;
+	overflow-y: auto;
+	display: none;
+  	position: absolute;
+  	background-color: white;
+  	right: 1%;
+  	bottom: 1%;
+	border:2px solid black;
+	box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
+
+}
+
+.gridPop::-webkit-scrollbar {
+  width: 9px;
+}
+
+/* Track */
+.gridPop::-webkit-scrollbar-track {
+  background: #f1f1f1;  
+}
+ 
+/* Handle */
+.gridPop::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+
+/* Handle on hover */
+.gridPop::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
+.toolkit table {
+	background-color: #ffffff; 
+	border-color: #000000;
+	text-align: center;
+	border-collapse: collapse;
+	border-spacing: 0 0px;
+	border: 2px solid black;
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+
+}
+
+
+
+.toolkit table caption {
+	text-align: left;
+	font-weight: bold;
+}
+
+.toolkit table caption i {
+	padding-left: 1em;
+}
+
+a {
+	text-decoration: none;
+	border: none;
+
+}
+
+.toolkit table td {
+			background-color: #ffffff; 
+			color: #000000;
+		}
+
+#upload {
+	padding: 2em 0em 0em 1em;
+}
+
+.file-upload {
+    font-size: 10px;
+}
+
+.file-upload__input {
+    display: none;
+}
+
+#file-upload__button {
+    -webkit-appearance: none;
+    outline: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.file-upload__label {
+    align-items: center;
+    max-width: 250px;
+    font-size: 0.95em;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.upload {
+	display: none;
+	max-width: 750px;
+	padding: 4em 0 0 2em;
+}
+
+
+
+.wrapper {
+	padding: 0 0 0 0 !important;
+}
+
+.upload {
+	display: none;
+	max-width: 700px;
+	padding: 4em 0 0 2em;
+}
+
+.upload h1 {
+	color: #771300;
+	font-size: 20px;
+}
+
+body {
+	position: relative;
+}
+
+p, input, button{
+    vertical-align:middle;
+}
+
+.upload #titles {
+	padding-top: 0.4em;
+	float: left;
+	font-weight: bold;
+}
+
+.right .picker {
+	word-break: break-all;
+	bottom: 25%;
+	right: 1%;
+	position: absolute;
+	height: 8%;
+	width: 20%;
+
+}
+
+table.scroll {
+    background-color: #ffffff;
+	border-color: #000000;
+	text-align: left;
+	border-collapse: collapse;
+	border-spacing: 0 0px;
+	border: 2px solid black;
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+
+}
+
+table.scroll tr {
+	outline: thin solid;
+}
+
+table.scroll td {
+	width: 100vh;
+}
+
+
+table.scroll tbody,
+table.scroll thead tr { display: block; }
+
+table.scroll tbody {
+	word-break: break-all;
+	width: 100%;
+    height: 25vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+tbody td:last-child, thead th:last-child {
+    border-right: none !important;
+    border-bottom: none !important;
+}
+
+
+
+table.scroll tbody::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+table.scroll tbody::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+ 
+/* Handle */
+table.scroll tbody::-webkit-scrollbar-thumb {
+ background: #555; 
+}
+
+/* Handle on hover */
+table.scroll tbody::-webkit-scrollbar-thumb:hover {
+  background: #2f3338; 
+}
+
+
+table.scroll .box {
+	border: none;
+	padding: 0;
+	box-sizing: border-box !important;
+	float: right;
+	width: 25px !important;
+	height: 25px !important;
+	border-radius: 0 !important;
+	margin: 0 !important;
+}
+
+.red {
+  background-color: #FF1414;
+}
+
+.green {
+	background-color: #58d383;
+}
+
+.dark-green {
+	background-color: #14502D;
+}
+
+.yellow {
+	background-color: #F0DE7A;
+}
+
+
+#pickertable tr i {
+	float: right;
+	padding-top: 3%;
+	padding-right: 1%;
+	padding-left: 5%;
+}
+
+#pickertable caption i {
+	padding-left: 70%;
+}
+
+#uploadOrtophoto {
+	background-color: #771300 !important;
+}
+
+select:focus {
+    outline: none !important;
+    border:2px solid #771300;
+    box-shadow: 0 0 2px #771300;
+}
+
+input[type="number"] {
+  outline: none !important;
+    border:2px solid #771300;
+    box-shadow: 0 0 1px #771300;
+}
+
+input[type="number"] {
+  -webkit-appearance: textfield;
+     -moz-appearance: textfield;
+          appearance: textfield;
+}
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none;
+}
+
+
+
+/* GRID POINTS COLOR */
+
+.colorPicker-popup {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  height: 350px;
+  background-color: #2f3338;
+  color: white;
+}
+
+#inputs {
+	padding-left: 3%;
+}
+
+.container-delete {
+  width: 100%;
+  height: 100%;
+  padding: 15px;
+  background-color: #2f3338;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+
+/*TUTORIAL */
+.tooltip-wrapper {
+	display: none;
+	position: absolute;
+	overflow: visible;
+	width: 3%;
+	height: 3%;
+	top: 52%;
+	right: 1%;
+	animation: 1s linear;
+}
+
+
+.tooltip-wrapper .tooltip {
+	position: absolute;
+	width: 200px;
+	padding: 0;
+	height: fit-content;
+	right: 1%;
+	min-height: 80px;
+	background: #B55B29;
+	color: #ffffff;
+	border-radius: 0.5em;
+}
+
+
+.tooltip-wrapper .tooltip .tooltip-title .tips {
+	font-size: 13px;
+	padding-left: 13%;
+	padding-top: 0.5%;
+	line-height: 18px;
+	margin: 0;
+
+}
+
+.tooltip-wrapper .tooltip .tooltip-title .steps {
+	height: 20px;
+	font-size: 12px;
+}
+
+#closeTutorial {
+	padding-left: 5%;
+	color: #E4C3B1;
+}
+
+#nextStep {
+	padding-left: 10%;
+}
+
+#goBack {
+	padding-left: 65%;
+	color: #E4C3B1;
+}
+
+#createGridHelp {
+	right: 1%;
+	bottom: 28%;
+	position: absolute;
+	font-size: 13px;
+	display: none;
+}

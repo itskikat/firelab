@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<!--
+	Spectral by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>FIRELab - Projects</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/projects.css"/>
+		<link rel="stylesheet" href="viewmodel/css/project_process.css"/>
+		<link rel="stylesheet" href="viewmodel/css/veg_chara.css"/>
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<!-- Page Wrapper -->
+			<div id="page-wrapper">
+
+				<!-- Header -->
+					
+
+				<!-- Main -->
+				<div class="split">
+					<div class="left">
+						<table>
+							<h2>FIRELab</h2>
+							<tr id="veg">
+								<td><a href="vegetation_characterization.html">Vegetation Characterization</a></td>
+							</tr>
+							<tr id="seg">
+								<td><a href="fire_segmentation.html">Fire Segmentation</a></td>
+							</tr>
+							<tr id="prog">
+								<td><a href="fire_progression.html">Fire Progression</a></td>
+							</tr>
+						</table>
+						<div class="actions">
+							<a href="projects.html" class="leave"><i class="fas fa-arrow-circle-left"></i> Leave</a>
+						</div>
+					</div>
+					<div class="right">
+						<div class="toolkit">
+							<table>
+								<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit" onclick="openCloseToolkit()"><i id="close" class="fas fa-times"></i></a></caption>
+								<tbody id="toolkit">
+								<tr>
+									<td><i class="fas fa-leaf fa-lg"></i></td>
+									<td><i class="fas fa-expand-arrows-alt fa-lg"></i></td>
+								</tr>
+								<tr>
+									<td><i class="fas fa-tree fa-lg"></i></td>
+									<td><i class="fas fa-save fa-lg"></i></td>
+								</tr>
+								<tr>
+									<td><i class="fas fa-eraser fa-lg"></i></td>
+									<td><a onclick="openUpload()"><i class="fa fa-folder-open fa-lg"></i></a></td>
+								</tr>
+								<tr>
+									<td><i class="fa fa-search-plus fa-lg" aria-hidden="true"></i></td>
+									<td><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
+								</tr>
+								<tr>
+									<td><i class="fa fa-search-minus fa-lg" aria-hidden="true"></i></td>
+									<td></td>
+								</tr>
+							</tbody>
+							</table>
+						</div>
+
+						<div class="upload" id="upload">
+							<h1>Upload Files</h1>
+							<p>If you already have an orthophoto and a grid (shapefile) of the firing area, and only want to classify the vegetation, please use this automatic classification tool. Submit the files below, in the correct places: </p> 
+							<div class="orthophoto">
+								<p id="titles">Orthophoto:</p>
+								<div style="overflow: hidden; padding: 0.1em 0 0 1em;">
+									<input class="file-upload__input" type="file" name="videoFile" id="videoFile">
+	                                <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
+	                                <span class="file-upload__label"></span>
+								</div>
+							</div>
+							<br/>
+							<div class="shapefile">
+								<p id="titles">Shapefile:</p>
+								<div style="overflow: hidden; padding: 0.1em 0 0 2.3em;">
+									<input class="file-upload__input" type="file" name="videoFile" id="videoFile">
+	                                <button type="button" id="file-upload__button" class="button icon solid fa-download">Choose File</button>
+	                                <span class="file-upload__label"></span>
+								</div>
+							</div>
+							
+						</div>
+							 
+						
+					</div>
+				</div>
+					
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script src="assets/js/projects.js"></script>
+			<!-- CUSTUM SCRIPTS-->
+			<script src="viewmodel/js/veg_chara.js"></script>
+			<script src="viewmodel/js/project_process.js"></script>
+			<script src="viewmodel/js/upload.js"></script>
+
+	</body>
+</html>

@@ -1,0 +1,62 @@
+/* sidenav */
+.left table #export td {
+		  background-color:  #ffffff;
+		}
+
+		.left table #export a {
+			color: #771300;
+		}
+
+.right {
+	width: 100% !important;
+	height: 100%;
+	overflow-y: auto;
+}
+
+.right::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.right {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+#disperfire {
+	padding-top: 3%;
+}
+h2 {
+	color: black;
+}
+
+label {
+	color: black;
+}
+
+select {
+	width: 22%;
+	border:2.5px solid #771300;
+	outline: none;
+}
+
+input[type="text"]:focus,
+		input[type="password"]:focus,
+		input[type="email"]:focus,
+		select:focus,
+		textarea:focus {
+			box-shadow: 0 0 0 1px #771300;
+		}
+
+#content {
+	padding-left: 2%;
+}
+
+#fuelmap {
+	padding-top: 2%;
+}
+
+#export {
+	padding-top: 3%;
+}
+

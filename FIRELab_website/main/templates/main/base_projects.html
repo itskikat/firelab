@@ -1,0 +1,178 @@
+{% load mptt_tags %}
+
+<!DOCTYPE HTML>
+<html>
+    {% load static %}
+	<head>
+		<title>FIRELab - Projects</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    	<link rel="stylesheet" href="{% static 'assets/css/projects.css' %}"/>
+		<link rel="stylesheet" href="{% static 'viewmodel/css/project_process.css' %}"/>
+        <link rel="stylesheet" href="/static/viewmodel/css/project_main.css" />
+        <link rel="icon"href="{% static 'favicon.png' %}">
+		<noscript><link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}" /></noscript>
+        {% block extracss %}{% endblock %}
+	</head>
+    {% include 'main/warning_popup.html' %}
+	<body class="is-preload">
+        {% include 'main/loading_popup.html' %}
+		<!-- Page Wrapper -->
+			<div id="page-wrapper">
+				<!-- Main -->
+				<div class="split" id="blur">
+					<div class="left">
+                        <h2>FIRELab</h2>
+                        <div class="options">
+                            <table>
+                                <tr id="veg">
+                                    <td><a href="{% url 'vegetation' project.id %}">Vegetation Characterization</a></td>
+                                </tr>
+                                <tr id="seg">
+                                    <td><a href="{% url 'segmentation' project.id %}">Fire Segmentation</a></td>
+                                </tr>
+                                <tr id="prog">
+                                    <td><a href="{% url 'progression' project.id %}">Fire Progression</a></td>
+                                </tr>
+                                <tr id="export">
+                                    <td><a href="{% url 'export_manager' project.id %}">Export Manager</a></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div style="color: white" class="projDirs">
+                        {% recursetree project_dirs %}
+                            <div {% if node.parent is not None %} style="padding-left: 2em" {% endif %}>
+                                {% comment %} show directory name {% endcomment %}
+                                {% if node.parent is None %}
+                                    <a title=" {{ node.project.name }}" style="width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" onclick="toggleChildren('{{ node.name }}')"><i id="{{ node.name }}_icon" class="fas fa-caret-down" aria-hidden="true"></i>[Project] {{ node.project.name }}</a>
+                                {% else %}
+                                    <a title=" {{ node.get_path }}" style="width : 100%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" onclick="toggleChildren('{{ node.name }}')"><i id="{{ node.name }}_icon" class="fas fa-caret-down" aria-hidden="true"></i>{{ node.name }}</a>
+                                {% endif %}
+
+                                <div id="{{ node.name }}_children">
+                                    {% comment %} show files of directory {% endcomment %}
+                                    {% for f in project_files %}
+                                        {% if f.dir == node %}
+                                            <div class="filename_row">
+                                                <a class="delete_button" title="Delete" onclick='deleteFile("{{ node.project.id}}", "{{ f.id }}")'><i class="fas fa-trash" style="cursor: pointer;"></i></a>
+                                                {% if f.extension == 'tif' %}
+                                                    <a title=" {{ f.get_path }}" onclick="openLoadingPopUp()" style="padding-left: 1em; width : 80%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/vegetation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
+                                                {% elif f.extension == 'grid' %}
+                                                    <a title=" {{ f.get_path }}" onclick="openLoadingPopUp()" style="padding-left: 1em; width : 80%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/vegetation?grid={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
+                                                {% else %}
+                                                    <a title=" {{ f.get_path }}" style="padding-left: 1em; width : 80%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/segmentation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if not node.is_leaf_node %}
+                                        {% comment %} recursive call to children directories {% endcomment %}
+                                        {{ children }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endrecursetree %}
+                        </div>
+
+						<div class="actions">
+							<a href="{% url 'projects' %}" class="leave"><i class="fas fa-arrow-circle-left"></i> Back to Projects</a>
+						</div>
+
+					</div>
+					<div class="right">
+						{% block content %}{% endblock %}
+					</div>
+				</div>
+
+                <!-- POP WHEN DELETE FILE-->
+                            <div class="delete-popup" id="deleteFile" style="height: fit-content; align-self: center;">
+                                <div class="container-delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                    <h4>Are you sure?</h4>
+                                    <p style="margin: 0 0 1.3em 0;">Do you want to delete this file? This process cannot be undone.</p>
+                                    <div class="options">
+                                        <ul class="actions" style="padding-top: 5%; margin-bottom: auto; text-align: center;">
+                                            <li><a id="delete_button" class="button primary create">Delete</a></li>
+                                            <li id="cancel"><a onclick="closeDelete()" class="button cancel">Cancel</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+			</div>
+
+			<!-- MOVE TO STATIC -->
+            <script>
+                let errorType, errorMessage;
+                const waiting = document.getElementById("waiting");
+                const warning_popup = document.getElementById("warning_popup");
+
+
+                $(document).ready(function () {
+                    location.search.substr(1).split("&").forEach(function(item) {
+                        if (item.includes("error")) {
+                            errorType = item.split("=")[1];
+                                if (errorType === "QuotaSurpassed" ) {
+                                    errorMessage = "[" + errorType + "] Your user quota was surpassed, delete some files to free up some space."
+                                } else if (errorType === "FrameNotGeoreferenced") {
+                                    errorMessage = "[" + errorType + "] Some frames are not georeferenced and the export is not possible."
+                                }
+
+                                if (errorMessage) {
+                                    openWarningPopUp(errorMessage);
+                                }
+                        }
+                    });
+                });
+
+                function openWarningPopUp(msg) {
+                    const element = document.getElementById("msg");
+                    element.innerHTML = msg;
+                    warning_popup.style.display = "flex";
+                    blur.style.filter = "blur(2px)";
+                    setTimeout(function() { closePopUp(); }, 10000);
+                }
+
+                function closePopUp() {
+                    errorType = null;
+                    errorMessage = null;
+
+                    warning_popup.style.display = "none";
+                    blur.style.filter = "none";
+                }
+
+                function toggleChildren(childrenName) {
+                    let dirId = "#" + childrenName + "_children"
+                    let iconId = "#" + childrenName + "_icon"
+                    let displayType = $(dirId).css("display")
+
+                    if (displayType === "none") {
+                         $(dirId).css("display", "block")
+                        $(iconId).attr("class", "fas fa-caret-down")
+                    } else {
+                         $(dirId).css("display", "none")
+                        $(iconId).attr("class", "fas fa-caret-right")
+                    }
+
+                }
+
+                function deleteFile(id, file_id) {
+                    document.getElementById("deleteFile").style.display = "flex";
+                    $("#delete_button").attr('href', '/projects/' + id + '/files/delete/' + file_id);
+
+                }
+
+                function closeDelete() {
+                    document.getElementById("deleteFile").style.display = "none";
+                }
+    </script>
+
+
+    <!-- CUSTOM SCRIPTS -->
+    <script src="{% static 'viewmodel/js/project_process.js' %}"></script>
+    <script src="{% static 'viewmodel/js/upload.js' %}"></script>
+	</body>
+</html>

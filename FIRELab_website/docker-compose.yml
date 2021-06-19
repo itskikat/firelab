@@ -1,0 +1,33 @@
+version: '3.7'
+
+services:
+  db:
+    image: "kartoza/postgis:13.0"
+    container_name: firelab_db
+    environment:
+      - POSTGRES_USER=superuser
+      - POSTGRES_PASS=firelabdbpass
+      - POSTGRES_DB=firlab
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_MULTIPLE_EXTENSIONS=postgis
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgis-data:/var/lib/postgresql
+
+  web:
+    build: .
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=FIRELab_website.settings_production
+    command: python3 manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  postgis-data:

@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html>
+    {% load static %}
+    {% load widget_tweaks %}
+	<head>
+		<title>FIRELab - Sign Up</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="{% static 'assets/css/main.css' %}" />
+		<link rel="stylesheet" href="{% static 'viewmodel/css/signup.css' %}" />
+        <link rel="icon"href="{% static 'favicon.png' %}">
+		<noscript><link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}" /></noscript>
+	</head>
+	<body class="is-preload">
+		<!-- Page Wrapper -->
+        <div id="page-wrapper">
+            <!-- Header -->
+            <header id="header">
+                <h1><a href="{% url 'index' %}">FIRELab</a></h1>
+            </header>
+
+            <!-- Main -->
+            <div class="row" style="margin: auto; width: 900px;">
+                <article id="main">
+                    <section class="wrapper style4">
+                        <div class="inner">
+                            <section>
+                                <h4>Create your account</h4>
+                               <form action="" method="post" id="signupForm" >
+                                    {% csrf_token %}
+                                    <div class="row gtr-uniform">
+                                        <div class="col-4 col-12-xsmall">
+                                            {{ form.first_name|add_class:'form-control' }}
+                                            {% if form.first_name.errors %}<span>Please provide a first name.</span>{% endif %}
+                                        </div>
+                                        <div class="col-4 col-12-xsmall">
+                                            {{ form.last_name|add_class:'form-control' }}
+                                            {% if form.last_name.errors %}<span>Please provide a last name.</span>{% endif %}
+                                        </div>
+                                        <div class="col-8 col-12-xsmall">
+                                            {{ form.username|add_class:'form-control' }}
+                                            {% if form.username.errors %}<span>Please provide a username.</span>{% endif %}
+                                        </div>
+                                        <div class="col-8 col-12-xsmall" style="align-items: center;">
+                                            {{ form.email|add_class:'form-control' }}
+                                            {% if form.email.errors %}<span>Please provide a valid email address.</span>{% endif %}
+                                        </div>
+                                        <div class="col-8 col-12-xsmall">
+                                            {{ form.password1.label_tag }}
+                                            {{ form.password1|add_class:'form-control' }}
+                                            {% if form.password1.errors %}<span>Please provide a password.</span>{% endif %}
+                                        </div>
+                                        <div class="col-8 col-12-xsmall">
+                                            {{ form.password2.label_tag }}
+                                            {{ form.password2|add_class:'form-control' }}
+                                            {% if form.password2.errors %}<span>Please confirm your password.</span>{% endif %}
+                                        </div>
+                                        <div class="col-8">
+                                            <ul class="actions" >
+                                                <li ><input type="submit" value="Sign Up" class="primary" onclick="submitForm()"/></li>
+                                                <li><p>Already have an account?<a href="{% url 'login' %}"> Log in.</a></p></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>
+                    </section>
+                </article>
+            </div>
+
+            {% include 'main/footer.html' %}
+
+        </div>
+
+        <!-- Scripts -->
+        <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+        <script src="{% static 'assets/js/jquery.scrollex.min.js' %}"></script>
+        <script src="{% static 'assets/js/jquery.scrolly.min.js' %}"></script>
+        <script src="{% static 'assets/js/browser.min.js' %}"></script>
+        <script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
+        <script src="{% static 'assets/js/util.js' %}"></script>
+        <script src="{% static 'assets/js/main.js' %}"></script>
+
+        <script>
+            function submitForm(){
+                $('#signupForm').submit();
+            }
+        </script>
+
+	</body>
+</html>
