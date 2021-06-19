@@ -76,7 +76,7 @@
         <div class="tooltip">
             <div class="tooltip-title">
                 <div class="steps"><a onclick="closeTutorial()" style="cursor: pointer"><i id="closeTutorial" class="fas fa-times" title="Stop tutorial"></i></a><a onclick="goBack()" style="cursor: pointer"><i class="fas fa-chevron-left" title="Previous Step" id="goBack" style="color: transparent"></i></a><a onclick="next()" style="cursor: pointer"><i class="fas fa-chevron-right" title="Next Step" id="nextStep"></i></a></div>
-                <div class="tips" id="tips">Click <i class='fa fa-folder-open fa-lg' ></i> and input the name of the image to work on.</div>
+                <div class="tips" id="tips">Click <i class='fa fa-image fa-lg'></i> to open an available image</div>
             </div>
         </div>
     </div>
@@ -133,14 +133,10 @@
                  {% endfor %}
 
             </div>
-        <ul class="actions">
-            <li>
-                <button class="button cancel" style="background: transparent !important;" onclick="closeImages()">Close</button>
-            </li>
-            <li>
-                <button class="button solid primary" onclick="goToImage()">Open</button>
-            </li>
-        </ul>
+            <div id="actions" style="padding: 5px; float: right">
+                <button type="button" class="button cancel" style="background: transparent !important;" onclick="closeImages()" />Close</button>
+                <button type="button" class="button solid primary" onclick="goToImage()">Open</button>
+        </div>
         </div>
     </div>
 

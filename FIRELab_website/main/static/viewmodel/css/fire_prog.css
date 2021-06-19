@@ -163,11 +163,11 @@ input[type="text"]:focus,
 }
 
 #actions {
-	bottom: 0 !important;
-	float: right;
-	padding-left: 50% !important;
-	width: 100%;
-	background-color: #2f3338;
+  bottom: 0 !important;
+  float: right;
+  padding-left: 50% !important;
+  width: 100%;
+  background-color: #2f3338;
 }
 
 .myGallery {
@@ -288,9 +288,10 @@ input[type="text"]:focus,
 }
 
 .selected_frame {
-    border-color: red;
+    border-color: #771300 ;
     border-width: 5px;
     border-style: solid;
+  }
 
 
 /*TUTORIAL */

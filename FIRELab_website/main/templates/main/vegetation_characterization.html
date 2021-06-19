@@ -149,7 +149,7 @@
 
 	<div class="upload" id="uploadVeg">
         <h1>Upload Files</h1>
-        <p>If you already have uploaded orthophotomaps or grids that you would like to work with, please select them from the [Project] - Orthophotos or Grids section in the left. <br>If you already have an orthophoto and a grid (shapefile) of the firing area, and only want to classify the vegetation, please use this automatic classification tool. Submit the files below, in the correct places: </p> 
+        <p>If you already have uploaded orthophotomaps or grids that you would like to work with, please select them from the [Project] - Orthophotos or Grids section in the left. <br>If you already have an orthophoto of the firing area, and only want to classify the vegetation, please use this automatic classification tool. Submit the file below, in the correct place: </p> 
         <div class="orthophoto">
             <form method="POST" action="{% url 'upload_ortophoto' project.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
