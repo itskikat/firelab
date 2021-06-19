@@ -192,3 +192,18 @@ class Tile(models.Model):
     def __str__(self):
         return "tile(" + str(self.position) + "), avgColor: " + str(self.avgColor) + ", classification: " + str(self.classification)
 
+
+class ReferencePoints(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    geo_coordinates = gisModels.PointField()
+    name = models.CharField(max_length=30)
+
+    def __str__(self):
+        return "POINT((" + str(self.geo_coordinates.coords[0]) + "," + str(self.geo_coordinates.coords[1]) + "))"
+
+
+class PointsInFrame(models.Model):
+    frame = models.ForeignKey(ImageFrame, on_delete=models.CASCADE)
+    point = models.ForeignKey(ReferencePoints, on_delete=models.CASCADE)
+    pixel_coordinate = gisModels.PointField()
+

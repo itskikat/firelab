@@ -1221,22 +1221,6 @@ def export_disperfire_file(request, project_id, video_id, grid_id):
         print("no video")
         return redirect("/projects")
 
-    # TODO: TEST THIS
-    # add test polygon
-    # coords = ((-7.614775, 41.391031), (-7.614078, 41.390717), (-7.615237, 41.390556), (-7.614775, 41.391031))
-    # poly = Polygon(coords)
-    #
-    # frame = ImageFrame.objects.get(id=21)
-    # frame.geoRefPolygon = poly
-    # frame.save()
-    #
-    # coords = ((-7.615859, 41.391369), (-7.615437, 41.388883), (-7.612594, 41.388883), (-7.613800, 41.391282),
-    #           (-7.615859, 41.391369))
-    # poly = Polygon(coords)
-    # frame = ImageFrame.objects.get(id=22)
-    # frame.geoRefPolygon = poly
-    # frame.save()
-
     # get top left in meters
     cell_size = _grid.cell_size
     top_left_pixels = _grid.topLeftCoordinate
@@ -1423,18 +1407,25 @@ def progression(request, project_id):
         points = PointModel.objects.all().filter(frame=frame)
 
         for p in points:
+            print(p.geo)
             pts += p.name + ',' + str(p.pix).split(';')[1].split('(')[1].split(')')[0] + ',' + \
                    str(p.geo).split(';')[1].split('(')[1].split(')')[0] + ';'
 
         pts = pts[:-1]
-        # available_frames = ImageFrame.objects.all().filter(
-        #     file_info__dir__project_id=project.id,
-        #     file_info__dir__project__owner=request.user,
-        #     polygon__isnull=False)
+        available_frames = ImageFrame.objects.all().filter(
+            file_info__dir__project_id=project.id,
+            file_info__dir__project__owner=request.user,
+            polygon__isnull=False)
+
+        # saved_coords = PointModel.objects.all().filter(frame__file_info__dir__project_id=project.id)
+        saved_coords = ReferencePoints.objects.all().filter(project_id=project.id)
+        print(saved_coords)
         param = {
             'frame': frame,
+            'saved_coordinates': saved_coords,
             'points': pts,
             'project': project,
+            'available_frames': available_frames,
             'project_dirs': Directory.objects.all().filter(project_id=project.id),
             'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
             'georreferencing': Georreferencing(),
@@ -1455,13 +1446,6 @@ def progression(request, project_id):
         return render(request, "main/fire_progression.html", param)
 
     elif request.method == 'POST':
-        try:
-            if request.POST["frame_name"]:
-                _file_info = FileInfo.objects.all().filter(name=request.POST["frame_name"])
-                frame_id = _file_info.values('id').first()['id']
-                return redirect("/projects/" + str(project_id) + "/progression?id=" + str(frame_id))
-        except:
-            print("no frame name")
 
         param = {
             'frame': None,
@@ -1511,13 +1495,29 @@ def progression(request, project_id):
         pts_src = np.array(pixels_json)
         pts_names = np.array(names_json)
         pts_dst = np.array(geo_json)
+
+        print(pts_src)
+        print(pts_dst)
+
         for i in range(len(pts_src)):
-            _point = PointModel(name=pts_names[i], geo=Point(tuple(pts_dst[i])), pix=Point(tuple(pts_src[i])))
-            _point.frame = _frame
             try:
-                _point.save()
-            except:
-                print("point already exists")
+                _reference = ReferencePoints.objects.get(name__exact=pts_names[i])
+
+            except ReferencePoints.DoesNotExist:
+                _reference = ReferencePoints(
+                    project=project,
+                    name=pts_names[i],
+                    geo_coordinates=Point(tuple(pts_dst[i]))
+                )
+                _reference.save()
+
+            _point = PointsInFrame(
+                frame=_frame,
+                point=_reference,
+                pixel_coordinate=Point(tuple(pts_src[i]))
+            )
+            _point.save()
+
 
         # given reference points	 from 2 spaces, returns a matrix that can convert between the 2 spaces (in this case, pixel to geo coords)
         h, status = cv2.findHomography(pts_src, pts_dst)

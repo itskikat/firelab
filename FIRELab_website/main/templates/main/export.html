@@ -65,6 +65,7 @@
         })
 
         function export_fuelMap() {
+            openWarningPopUp('Your fuelmap is being generated and will be downloaded as soon as it\'s ready. Please be patient.')
             if (fuelMap_grid) {
                 window.location.href = "vegetation/save/" + fuelMap_grid;
             }
@@ -79,6 +80,7 @@
         })
 
         function export_progMin() {
+            openWarningPopUp('Your fire progression file is being generated and will be downloaded as soon as it\'s ready. Please be patient.')
             if (progMin_video && progMin_grid) {
                 window.location.href = "export/" + progMin_video + "/grid/" + progMin_grid
             }

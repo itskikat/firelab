@@ -37,13 +37,8 @@
                 {{ georreferencing.polygon_wkt }}
               <input class="form-field" name="names" id="ptNames" >
             </div>
-            <div id="img_prog"  style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
-                {% if segmented %}
-                    <div hidden id="polygon_georreferenced"> {{ segmented }}></div>
-                    <img hidden draggable="false" id="WorkingImage" src={{ frame.content.url }}>
-                {% else %}
-                    <img hidden draggable="false" id="workingImage" src={{ frame.content.url }}>
-                {% endif %}
+            <div id="img_prog" style="display: flex; padding-top: 20vh; justify-content: center; align-items: center; ">
+                <img draggable="false" id="workingImage" src={{ frame.content.url }}>
             </div>
         {% endif %}
     </form>
@@ -53,7 +48,7 @@
 			<caption id="caption">Toolkit<a id= "cp" title="Close Toolkit"><i id="close" class="fas fa-times"></i></a></caption>
 			<tbody id="toolkit">
 			<tr>
-				<td id="showImage"><i class="fas fa-image fa-lg"></i></td>
+				<td id="showImage" onclick="openImages()"><i class="fas fa-image fa-lg"></i></td>
 				<td id="zoomIn"><i class="fas fa-search-plus fa-lg"></i></td>
 			</tr>
 			<tr>
@@ -66,16 +61,11 @@
 			</tr>
 			<tr>
 				<!-- <td id="stack"><i class="fas fa-layer-group fa-lg" aria-hidden="true"></i></td> -->
-                <td id="undo"><a ><i class="fa fa-undo" aria-hidden="true"></i></td>
-                <td id="loadPoint"><i class="fa fa-crosshairs" aria-hidden="true"></i></td>
+                <td id="undo"><a ><i class="fa fa-undo" aria-hidden="true"></i></a></td>
+				<td id="help"><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
 			</tr>
-            <tr>
-                <td id="loadImage"><a ><i class="fa fa-folder-open fa-lg" aria-hidden="true"></i></td>
-                <td><a ><i hidden></i></td>
-            </tr>
 			<tr>
 				<td><i class="fas fa-expand-arrows-alt fa-lg" aria-hidden="true"></i></td>
-				<td id="help"><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></td>
 			</tr>
 		</tbody>
 		</table>
@@ -116,36 +106,74 @@
         <button class="button icon solid" type="button" value="Draw" name="drawPolygonButton" id="drawPolygonButton" onclick="drawMap()">DRAW </button><br>
 	</div> -->
 
+
+    <!-- POP WHEN OPEN IMAGES-->
+        <div id="images-popup">
+         <div id="content">
+             <div class="myGallery" id="gallery">
+                 {% for f in available_frames %}
+                      <div class="item" onclick="setSelected({{ f.file_info.id }})">
+                        <img id="frame_{{ f.file_info.id }}" src="{{ f.content.url }}" />
+                        <span class="caption">{{ f.file_info.name }}.{{ f.file_info.extension }}</span>
+                      </div>
+                 {% endfor %}
+
+            </div>
+        <ul class="actions">
+            <li>
+                <button class="button cancel" style="background: transparent !important;" onclick="closeImages()">Close</button>
+            </li>
+            <li>
+                <button class="button solid primary" onclick="goToImage()">Open</button>
+            </li>
+        </ul>
+        </div>
+    </div>
+
     <div class="col-12" id="animationButtons" hidden>
         <button type="button" class="button icon solid" name="drawPolygonButton" id="drawPolygonButton">Play Animation</button>
         <button type="button" class="button icon solid" name="stopDraw" id="stopDraw">Stop Animation</button><br>
     </div>
     <br>
 
-    <span hidden id="span_frameid"> {{ frame.id }}</span>
+    <span hidden id="span_frameid"> {{ frame.file_info.id }}</span>
     <span hidden id="span_projectid"> {{ project.id }}</span>
 	  <div id="map" style="height: 750px;" hidden></div>
 
 
     <div id="popUpGEO" title="Geo Coord Input">
+        <small>Use a previously save</small>
+        <br>
+        <select id="previouslySavedPoints">
+            <option selected id="default">Select a point you have saved before</option>
+            {% for c in saved_coordinates %}
+                <option value="{{ c.geo_coordinates.coords.0}}, {{ c.geo_coordinates.coords.1 }}">{{ c.name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <small>OR Create a new one</small>
+        <br>
         <small>Location Name:</small>
         <br>
         <input id='coordLocName' type='text' name='LocName' class='form-control'>
         <br>
-
         <small>Geographic Coordinates: lat, lon</small>
         <br>
         <input id='coordinates' type='text' name='coordinates' class='form-control'>
         <br>
-        <button class='btn btn-default'id='submit_geo'> SAVE! </button>
+
+        <button class='btn btn-default' id='submit_geo'> SAVE! </button>
     </div>
 
+    {% for p in saved_coordinates %}
+        {{ p.geo.coords.0 }}
+    {% endfor %}
 
     <div id="loadPointPopUp" title="Point Finder" style="display:none" role="dialog" class="ui-dialog ui-corner-all ui-widget ui-widget-content ui-front ui-draggable">
         <small>Location Name:</small>
         <input id='coordNameToSearch' type='text' name='coordinates' class='form-control'>
         <br>
-        <button class='btn btn-default'id='SearchPointBtn'> SEARCH! </button>
+        <button class='btn btn-default' id='SearchPointBtn'> SEARCH! </button>
     </div>
 
     <form action="./progression" method="POST" id="loadImagePopUp" title="Image Finder" style="display:none" role="dialog" class="ui-dialog ui-corner-all ui-widget ui-widget-content ui-front ui-draggable">
@@ -153,7 +181,7 @@
         <small>Image Name:</small>
         <input id='imageNameToSearch' type='text' name='frame_name' class='form-control'>
         <br>
-        <button type="submit" class='btn btn-default'id='searchImageBtn'> SEARCH! </button>
+        <button type="submit" class='btn btn-default' id='searchImageBtn'> SEARCH! </button>
     </form>
     {% if warning %}
     <div class="alert alert-warning" role="alert">
@@ -178,8 +206,53 @@
 
     <!-- TODO: Move this script into viewmodel once it's finished -->
     <script>
-        
-   
+        let selected;
+        let isImageLoaded = document.getElementById("workingImage");
+
+        $(document).ready(function () {
+            location.search.substr(1).split("&").forEach(function(item) {
+                if (item.includes("id")) {
+                    selected = parseInt(item.split("=")[1]);
+                    $("#frame_" + selected).addClass("selected_frame");
+                }
+            })
+        })
+
+        $("#previouslySavedPoints").change(function () {
+            let textValue = $(this).find('option:selected').text()
+            if (textValue !== "Select a point you have saved before") {
+                console.log($(this).val())
+                $("#coordinates").val($(this).val());
+                $("#coordLocName").val(textValue);
+            } else {
+                $("#coordinates").val("");
+                $("#coordLocName").val("");
+            }
+        })
+
+        if (!isImageLoaded) {
+            openImages();
+        }
+
+        function openImages() {
+            document.getElementById("images-popup").style.display = "flex";
+            //blur.style.filter = "blur(2px)";
+        }
+
+        function closeImages() {
+           document.getElementById("images-popup").style.display = "none";
+        }
+
+        function setSelected(imageId) {
+            $(".selected_frame").removeClass("selected_frame")
+            $("#frame_" + imageId).addClass("selected_frame");
+            selected = imageId;
+        }
+
+        function goToImage(){
+            window.location.href = "progression?id=" + selected;
+        }
+
     </script>
     {% endblock %}
 

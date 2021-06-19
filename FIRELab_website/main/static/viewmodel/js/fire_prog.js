@@ -63,10 +63,6 @@
             modal: true,
         });
 
-        $('#showImage').click(function () {
-            workingImage.toggle();
-        });
-
         $('#cp').click(function () {
             $('#toolkit').toggle();
         });
@@ -163,6 +159,9 @@
         
 
         $('#submit_geo').click(function () {
+            $('#previouslySavedPoints').val($('#default').val())
+
+            console.log("reset")
             $("#pixel_table_coords").attr('hidden', false);
             var coords = inputForCoords.val().split(",");
             if((isFloat(parseFloat(coords[0].trim())) && isFloat(parseFloat(coords[1].trim())) || (isInt(parseFloat(coords[0].trim())) && isInt(parseFloat(coords[1].trim()))))){
