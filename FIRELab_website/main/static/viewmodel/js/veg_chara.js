@@ -87,7 +87,7 @@ function next() {
     }
     if (step === 2) {
       
-      tips.innerHTML = "Click <i class='fa fa-leaf fa-lg'></i> and characterize a few cells by clicking on a color in the table below and picking one or various cells";
+      tips.innerHTML = "Click <i class='fa fa-leaf fa-lg'></i> and characterize a few cells by clicking on a color in the table below and picking one or various cells. You can set the size of the brush in the bar next to the toolkit";
 
     }
     else if (step === 3) {
@@ -137,7 +137,7 @@ function goBack() {
       tips.innerHTML = "Click <i class='fa fa-border-all fa-lg' ></i> and mark two points in the map to create a grid";
     }
     if (step === 2) {
-      tips.innerHTML = "Click <i class='fa fa-leaf fa-lg'></i> and characterize a few cells by clicking on a color in the table below and picking one or various cells";
+      tips.innerHTML = "Click <i class='fa fa-leaf fa-lg'></i> and characterize a few cells by clicking on a color in the table below and picking one or various cells. You can set the size of the brush in the bar next to the toolkit";
 
     }
     else if (step === 3) {

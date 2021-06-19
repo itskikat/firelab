@@ -106,7 +106,13 @@
             $('#id_pixels').val(JSON.stringify(pixels));
             $('#ptNames').val(JSON.stringify(ptNames));
             $('#id_geo').val(JSON.stringify(geocoords));
-            document.getElementById("georreferencingForm").submit();
+            if ((document.getElementById("pixel_table_coords").rows.length - 1) < 5) {
+                openWarningPopUp("Please input at least 5 geographic coordinates to save.");
+            }
+            else {
+              document.getElementById("georreferencingForm").submit();  
+            }
+            //document.getElementById("georreferencingForm").submit();
         };
          
         $('#loadPoint').click(function () {
