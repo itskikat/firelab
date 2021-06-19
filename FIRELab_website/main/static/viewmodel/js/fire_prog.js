@@ -106,7 +106,13 @@
             $('#id_pixels').val(JSON.stringify(pixels));
             $('#ptNames').val(JSON.stringify(ptNames));
             $('#id_geo').val(JSON.stringify(geocoords));
-            document.getElementById("georreferencingForm").submit();
+            if ((document.getElementById("pixel_table_coords").rows.length - 1) < 5) {
+                openWarningPopUp("Please input at least 5 geographic coordinates to save.");
+            }
+            else {
+              document.getElementById("georreferencingForm").submit();  
+            }
+            //document.getElementById("georreferencingForm").submit();
         };
          
         $('#loadPoint').click(function () {
@@ -366,7 +372,7 @@ function openTutorial() {
 function closeTutorial() {
    tutorial.style.display = "none";
    step = 1;
-   tips.innerHTML = "Click <i class='fa fa-folder-open fa-lg' ></i> and input the name of the image to work on";
+   tips.innerHTML = "Click <i class='fa fa-image fa-lg'></i> to open an available image";
   
 }
 
@@ -429,7 +435,7 @@ function goBack() {
   
     if (step === 1) {
       goback.style.color = "transparent";
-      tips.innerHTML = "Click <i class='fa fa-image fa-lg'></i> to open tan available image";
+      tips.innerHTML = "Click <i class='fa fa-image fa-lg'></i> to open an available image";
 
     }
     else if (step === 2) {

@@ -725,8 +725,8 @@ def export_fuel_map(request, project_id, grid_id):
             for c in range(column):
                 elem = tile_list.filter(position=[c, r]).first()
                 if elem.classification is None:
-                    return redirect("/projects/" + str(project.id) + "/vegetation?id=" +
-                                    str(grid.ortophoto.file_info.id) + "&error=UnclassifiedTiles")
+                    return redirect("/projects/" + str(project.id) + "/vegetation?grid=" +
+                                    str(grid.file_info.id) + "&error=UnclassifiedTiles")
 
                 elem_percentage = float(Classification.objects.all().filter(model=model,
                                                                             classificationIndex=elem.classification).first().minPercentage)
@@ -1418,7 +1418,7 @@ def progression(request, project_id):
             polygon__isnull=False)
 
         # saved_coords = PointModel.objects.all().filter(frame__file_info__dir__project_id=project.id)
-        saved_coords = ReferencePoints.objects.all().filter(project_id=project.id)
+        saved_coords = ReferencePoints.objects.all().filter(project_id=project.id).order_by('name')
         print(saved_coords)
         param = {
             'frame': frame,
@@ -1447,10 +1447,17 @@ def progression(request, project_id):
 
     elif request.method == 'POST':
 
+        available_frames = ImageFrame.objects.all().filter(
+            file_info__dir__project_id=project.id,
+            file_info__dir__project__owner=request.user,
+            polygon__isnull=False)
+        
+
         param = {
             'frame': None,
             'points': None,
             'project': project,
+            'available_frames': available_frames,
             'project_dirs': Directory.objects.all().filter(project_id=project.id),
             'project_files': FileInfo.objects.all().filter(dir__project_id=project.id),
             'georreferencing': Georreferencing(initial={"marker": False}),
@@ -1559,6 +1566,8 @@ def progression(request, project_id):
         pts = pts[:-1]
         param['points'] = pts
         # Converted polygon WKT, to be analyzed by JS
+        saved_coords = ReferencePoints.objects.all().filter(project_id=project.id).order_by('name')
+        param['saved_coordinates'] = saved_coords
 
         param['georreferenced'] = geo_polygon
     return render(request, "main/fire_progression.html", param)
