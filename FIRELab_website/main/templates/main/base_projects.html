@@ -11,6 +11,7 @@
     	<link rel="stylesheet" href="{% static 'assets/css/projects.css' %}"/>
 		<link rel="stylesheet" href="{% static 'viewmodel/css/project_process.css' %}"/>
         <link rel="stylesheet" href="/static/viewmodel/css/project_main.css" />
+        <link rel="icon"href="{% static 'favicon.png' %}">
 		<noscript><link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}" /></noscript>
         {% block extracss %}{% endblock %}
 	</head>
@@ -55,7 +56,7 @@
                                     {% for f in project_files %}
                                         {% if f.dir == node %}
                                             <div class="filename_row">
-                                                <a class="delete_button" onclick='deleteFile("{{ node.project.id}}", "{{ f.id }}")'><i class="fas fa-trash"></i></a>
+                                                <a class="delete_button" title="Delete" onclick='deleteFile("{{ node.project.id}}", "{{ f.id }}")'><i class="fas fa-trash" style="cursor: pointer;"></i></a>
                                                 {% if f.extension == 'tif' %}
                                                     <a title=" {{ f.get_path }}" onclick="openLoadingPopUp()" style="padding-left: 1em; width : 80%; overflow:hidden; display:block; text-overflow: ellipsis; white-space: nowrap;" href="/projects/{{ project.id }}/vegetation?id={{ f.id }}"> {{ f.name }}.{{ f.extension }}</a>
                                                 {% elif f.extension == 'grid' %}

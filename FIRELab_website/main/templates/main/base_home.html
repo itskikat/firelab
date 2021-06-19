@@ -7,6 +7,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link type='text/css' rel="stylesheet" href="{% static 'assets/css/main.css' %}"/>
 		<noscript><link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}"/></noscript>
+        <link rel="icon"href="{% static 'favicon.png' %}">
         {% block extracss %}{% endblock %}
 	</head>
 	<body class="landing is-preload">
@@ -27,7 +28,7 @@
                                         <li><a href="{% url 'index' %}">Home</a></li>
                                         <li><a href="{% url 'projects' %}">My Projects</a></li>
                                         <li><a href="{% url 'account' %}">My account</a></li>
-                                        <li><a href={% url 'logout' %}>Log out</a></li>
+                                        <li><a href="{% url 'logout' %}">Log out</a></li>
                                     </ul>
                                 </div>
                             </li>

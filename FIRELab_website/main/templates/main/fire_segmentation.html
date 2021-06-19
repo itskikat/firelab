@@ -38,7 +38,7 @@
 			<tbody id="toolkit">
 			<tr>
 				<td title="Segment" id="pen" style="cursor: pointer; {% if segmentation.pen.value == True %} color: #B55B29 {% endif %}" {% if image is not None %} onclick="penOn()" {% endif %}><i class="fa fa-fire fa-lg" aria-hidden="true"></i></td>
-                <td><a title="Save" style="cursor: pointer" {% if image is not None %} href="{% url 'save_contour' project.id image.file_info.id %}"  onclick="openUpload()" {% endif %}><i class="fas fa-save fa-lg"></i></a></td>
+                <td><a title="Save" style="cursor: pointer" {% if image is not None %} href="{% url 'save_contour' project.id image.file_info.id %}"  onclick="openLoadingPopUp()" {% endif %}><i class="fas fa-save fa-lg"></i></a></td>
 			</tr>
 			<tr>
 				<td title="Erase" id="eraser" style="cursor: pointer; {% if segmentation.eraser.value == True %} color: #B55B29 {% endif %}" {% if image is not None %} onclick="penOff()" {% endif %}><i class="fa fa-fire-extinguisher fa-lg" aria-hidden="true"></i></td>
@@ -50,7 +50,7 @@
 			</tr>
 			<tr>
 				<td title="Reset Zoom"><i {% if image is not None %} onclick="fitToScreen()" {% endif %} class="fas fa-expand-arrows-alt fa-lg"></i></td>
-				<td><i class="fa fa-question-circle fa-lg" aria-hidden="true" onclick="openTutorial()" id="icon-tutorial" style="cursor: pointer;"></i></td>
+				<td title="Help"><a onclick="openTutorial()"><i class="fa fa-question-circle fa-lg" aria-hidden="true"></i></a></td>
 			</tr>
             <tr>
                 {% if segmented %}<td id="imgMask"><a title="Mask Toggle" id="maskToggle" style="cursor: pointer;"><i class="fas fa-eye fa-lg"></i></a></td>{% endif %}
@@ -75,15 +75,14 @@
                     <span class="file-upload__label"></span>
                 </div>
                 <div style="display: inline-block; padding-top: 1em;">
-                    <p style="display: inline-block; float: left" id="nrFrames">Number of frames: </p>
-                    {{ video_form.frames }}
-                    <p style="display: inline-block; float: right; font-weight: bold; padding: 0 0 0 1em; font-size: 14px;">(per minute)</p>
+                    <p style="display: inline-block; float: left; margin-right: 1%; margin-top: 0; padding-top: 0" id="nrFrames">Number of frames per minute: </p>
+                        {{ video_form.frames }}
                 </div>
-                <div>
+                <div style="padding-left: 1%">
                     <span id="startingTimestamp"></span><br>
                     <span id="endingTimestamp"></span>
                     <div id="startingDateTime" style="display: none">
-                    <p>Time to start extraction:</p>
+                    <p>Time to start extraction: </p>
                     {{ video_form.startingDateTime }}
                     </div>
                 </div>

@@ -10,6 +10,7 @@ function openCloseToolkit() {
     if (toolkit.style.display == "none") {
         icon.className = "fas fa-times";
         toolkit.style.display = "block";
+        cp.title = "Close Toolkit";
     }
     else {
         toolkit.style.display = "none";
@@ -170,19 +171,15 @@ function next() {
         tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize the image";
        
     }
-    else if (step === 7) {
-  
-        tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the results.";
+    else if (step === 8) {
+        tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the image";
  
     }
-    else if (step === 8) {
+    else if (step === 7) {
         if (document.getElementById('imgMask') != null) {
       tips.innerHTML = "Click <i class='fas fa-eye fa-lg'></i> if you want to toggle the mask. The icon should appear when you start segmentating.";
         }
-        else {
-      
-            closeTutorial();
-        }
+        
     }
 
     else if (step === 9) {
@@ -225,9 +222,19 @@ function goBack() {
         tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize the image";
 
     }
-    else if (step === 7) {
-        tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the image.";
+    else if (step === 8) {
+        tips.innerHTML = "Click <i class='fas fa-save fa-lg'></i> when you are done and want to save the image";
  
+    }
+    else if (step === 7) {
+        if (document.getElementById('imgMask') != null) {
+      tips.innerHTML = "Click <i class='fas fa-eye fa-lg'></i> if you want to toggle the mask. The icon should appear when you start segmentating.";
+        }
+        
+    }
+
+    else if (step === 9) {
+        closeTutorial();
     }
 
 }

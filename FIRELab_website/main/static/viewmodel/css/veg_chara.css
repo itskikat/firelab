@@ -14,9 +14,17 @@
 	height: 40%;
 	position:absolute;
    	top:0;
-   	right:1em;
+   	right: 1em;
 	padding-top: 1em;
 	
+}
+
+.right a {
+	cursor: pointer;
+}
+
+.toolkit td {
+	cursor: pointer;
 }
 
 .right {
@@ -39,14 +47,14 @@
 .points {
 	display: none;
 	position:absolute;
-	bottom: 1%;
-	left: 25%;
+	left: 30%;
+	padding-top: 2%;
+	margin-bottom: 1%;
 }
 
 .models {
 	position:absolute;
-	top: 22%;
-	left: 1%;
+	padding-top: 1%;
 }
 
 .cell {
@@ -61,15 +69,14 @@
 
 #explained {
  	padding-left: 1%;
-	padding-top: 2em;
 }
 
 #explained p {
 	font-size: 11px; 
 	height: 1%; 
-	padding-top: 23%; 
 	padding-bottom: 0; 
-	line-height: 2;
+	margin-bottom: 0!important;
+	line-height: 1.5;
 }
 
 .gridPop p {
@@ -81,15 +88,36 @@
 }
 
 .gridPop {
+    width: 30%;
+	height: fit-content;
+	overflow-y: auto;
 	display: none;
-    width: 24%;
-	height: 38%;
-	position: absolute;
-	bottom: 1%;
-   	right: 1em;
+  	position: absolute;
+  	background-color: white;
+  	right: 1%;
+  	bottom: 1%;
 	border:2px solid black;
-	box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
 
+}
+
+.gridPop::-webkit-scrollbar {
+  width: 9px;
+}
+
+/* Track */
+.gridPop::-webkit-scrollbar-track {
+  background: #f1f1f1;  
+}
+ 
+/* Handle */
+.gridPop::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+
+/* Handle on hover */
+.gridPop::-webkit-scrollbar-thumb:hover {
+  background: #555; 
 }
 
 .toolkit table {
@@ -176,6 +204,10 @@ a {
 	font-size: 20px;
 }
 
+body {
+	position: relative;
+}
+
 p, input, button{
     vertical-align:middle;
 }
@@ -187,12 +219,13 @@ p, input, button{
 }
 
 .right .picker {
-	bottom: 0;
-	position: fixed;
+	word-break: break-all;
+	bottom: 25%;
 	right: 1%;
+	position: absolute;
 	height: 8%;
 	width: 20%;
-	padding-bottom: 18%;
+
 }
 
 table.scroll {
@@ -219,8 +252,9 @@ table.scroll tbody,
 table.scroll thead tr { display: block; }
 
 table.scroll tbody {
+	word-break: break-all;
 	width: 100%;
-    height: 30vh;
+    height: 25vh;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -230,8 +264,25 @@ tbody td:last-child, thead th:last-child {
     border-bottom: none !important;
 }
 
+
+
 table.scroll tbody::-webkit-scrollbar {
-  display: none;
+  width: 10px;
+}
+
+/* Track */
+table.scroll tbody::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+ 
+/* Handle */
+table.scroll tbody::-webkit-scrollbar-thumb {
+ background: #555; 
+}
+
+/* Handle on hover */
+table.scroll tbody::-webkit-scrollbar-thumb:hover {
+  background: #2f3338; 
 }
 
 
@@ -336,7 +387,7 @@ input[type=number]::-webkit-outer-spin-button {
 	overflow: visible;
 	width: 3%;
 	height: 3%;
-	top: 50%;
+	top: 52%;
 	right: 1%;
 	animation: 1s linear;
 }
@@ -383,3 +434,10 @@ input[type=number]::-webkit-outer-spin-button {
 	color: #E4C3B1;
 }
 
+#createGridHelp {
+	right: 1%;
+	bottom: 28%;
+	position: absolute;
+	font-size: 13px;
+	display: none;
+}

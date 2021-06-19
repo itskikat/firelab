@@ -63,15 +63,24 @@
             modal: true,
         });
 
-        $('#showImage').click(function () {
-            workingImage.toggle();
-        });
+        function openCloseToolkit() {
+            var toolkit = document.getElementById("toolkit");
+            var icon = document.getElementById("close");
+            var cp = document.getElementById("cp");
 
-        $('#cp').click(function () {
-            $('#toolkit').toggle();
-        });
+            if (toolkit.style.display == "none") {
+                icon.className = "fas fa-times";
+                toolkit.style.display = "block";
+                cp.title = "Close Toolkit";
+            }
+            else {
+                toolkit.style.display = "none";
+                icon.className = "fas fa-angle-down";
+                cp.title = "Open Toolkit";
 
-      
+            }
+        }
+
 
         workingImage.mousedown(function (event) {
             if(clicking){
@@ -163,6 +172,9 @@
         
 
         $('#submit_geo').click(function () {
+            $('#previouslySavedPoints').val($('#default').val())
+
+            console.log("reset")
             $("#pixel_table_coords").attr('hidden', false);
             var coords = inputForCoords.val().split(",");
             if((isFloat(parseFloat(coords[0].trim())) && isFloat(parseFloat(coords[1].trim())) || (isInt(parseFloat(coords[0].trim())) && isInt(parseFloat(coords[1].trim()))))){
@@ -332,3 +344,134 @@ mymap.on('click', function(e){
         .setContent("You clicked the map at " + e.latlng.toString())
         .openOn(mymap);
 });
+
+
+//TUTORIAL
+
+const tutorial = document.getElementById("tutorial");
+const tips = document.getElementById("tips");
+const goback = document.getElementById("goBack");
+
+var step = 1;
+var className;
+
+function openTutorial() {
+    
+   goback.style.color = "transparent";
+    
+   tutorial.style.display = "flex";
+  
+}
+
+function closeTutorial() {
+   tutorial.style.display = "none";
+   step = 1;
+   tips.innerHTML = "Click <i class='fa fa-folder-open fa-lg' ></i> and input the name of the image to work on";
+  
+}
+
+function next() {
+  goback.style.color = "#E4C3B1";
+    step++;
+    if (step === 1) {
+      goback.style.color = "transparent";
+      tips.innerHTML = "Click <i class='fa fa-image fa-lg'></i> to open an available image";
+
+    }
+    else if (step === 2) {
+   
+        tips.innerHTML = "Click <i class='fa fa-map-marker-alt fa-lg' ></i> to input the geographic coordinates";
+      
+    }
+    else if (step === 3) {
+      
+        tips.innerHTML = "Click <i class='fa fa-undo fa-lg'></i> if you want to delete the last coordinate inputed";
+
+    }
+    else if (step === 4) {
+    
+        tips.innerHTML = "Click  <i class='fa fa-crosshairs fa-lg'></i> to search for a point by location name";
+       
+    }
+    else if (step === 5) {
+      
+        tips.innerHTML = "Click <i class='fa fa-search-plus fa-lg'></i> when you want to make the image bigger";
+       
+    }
+    else if (step === 6) {
+    
+        tips.innerHTML = "Click <i class='fa fa-search-minus fa-lg'></i> when you want to make the image smaller";
+ 
+    }
+    else if (step === 7) {
+        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize the image.";
+    }
+    else if (step === 8) {
+    
+        tips.innerHTML = "Click <i class='fa fa-save fa-lg'></i> to save when you are done inputing the coordinates";
+ 
+    }
+    else if (step === 9) {
+        tips.innerHTML = "Click <i class='fas fa-play fa-lg'></i> after you have saved the coordinates and want to play the animation";
+    }
+    
+
+    else if (step === 10) {
+        closeTutorial();
+    }
+    
+
+}
+
+//refactor nisto
+function goBack() {
+    step--;
+  
+    if (step === 1) {
+      goback.style.color = "transparent";
+      tips.innerHTML = "Click <i class='fa fa-image fa-lg'></i> to open tan available image";
+
+    }
+    else if (step === 2) {
+   
+        tips.innerHTML = "Click <i class='fa fa-map-marker-alt fa-lg' ></i> to input the geographic coordinates";
+      
+    }
+    else if (step === 3) {
+      
+        tips.innerHTML = "Click <i class='fa fa-undo fa-lg'></i> if you want to delete the last coordinate inputed";
+
+    }
+    else if (step === 4) {
+    
+        tips.innerHTML = "Click  <i class='fa fa-crosshairs fa-lg'></i> to search for a point by location name";
+       
+    }
+    else if (step === 5) {
+      
+        tips.innerHTML = "Click <i class='fa fa-search-plus fa-lg'></i> when you want to make the image bigger";
+       
+    }
+    else if (step === 6) {
+    
+        tips.innerHTML = "Click <i class='fa fa-search-minus fa-lg'></i> when you want to make the image smaller";
+ 
+    }
+    else if (step === 7) {
+        tips.innerHTML = "Click <i class='fas fa-expand-arrows-alt fa-lg'></i> when you want to resize the image.";
+    }
+    else if (step === 8) {
+    
+        tips.innerHTML = "Click <i class='fa fa-save fa-lg'></i> to save when you are done inputing the coordinates";
+ 
+    }
+    else if (step === 9) {
+        tips.innerHTML = "Click <i class='fas fa-play fa-lg'></i> after you have saved the coordinates and want to play the animation";
+    }
+    
+
+    else if (step === 10) {
+        closeTutorial();
+    }
+
+}

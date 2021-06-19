@@ -72,9 +72,9 @@ table tbody tr:nth-child(2n + 1) {
   top: 53%;
   transform: translate(-50%, -50%);
   z-index: 9;
-  width: 650px;
+  width: 640px;
   max-width: fit-content;
-  height: 590px;
+  height: 480px;
 }
 
 /* Add styles to the form container */
@@ -87,9 +87,29 @@ table tbody tr:nth-child(2n + 1) {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
+.form-container::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+.form-container::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+ 
+/* Handle */
+.form-container::-webkit-scrollbar-thumb {
+ background: #888; 
+}
+
+/* Handle on hover */
+.form-container::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
+
 .form-container .actions {
-  padding-top: 0.5em;
-  padding-left: 0.3em;
+  padding-left: 3% !important;
+  padding: 0.5em 0 0 0.3em;
 
 }
 
@@ -101,6 +121,11 @@ table tbody tr:nth-child(2n + 1) {
     -moz-appearance: textfield;
     appearance: textfield;
     margin: 0; 
+}
+
+.form-container ul.actions li {
+    padding: 0 3% 0 0 !important;
+ 
 }
 
 input[type=number]::-webkit-inner-spin-button, 
@@ -168,3 +193,5 @@ a {
   width: 100%;
   margin-bottom: 15px;
 }
+
+

@@ -26,7 +26,7 @@ $(document).ready(function () {
 
                 var fileExtension = file.name.substring(file.name.lastIndexOf('.')+1, file.name.length);
                 if (document.getElementById("uploadVeg") != null) {
-                  if (fileExtension == 'tif') {
+                  if (imageExtensions.includes(fileExtension.toLowerCase())) {
                     if (document.getElementById("ortophoto").files[0].size * 9.31*Math.pow(10, -10) > 1) {
                         openWarningPopUp("Sorry, that type file is too big. Compress the file before you upload it. Tip: You can use GDAL to achieve this.");
                     }
@@ -36,7 +36,7 @@ $(document).ready(function () {
                     
                   }
                   else {
-                    openWarningPopUp("Sorry, that type of file is not permited. Choose a file with 'tif' extension.");
+                    openWarningPopUp("Sorry, that type of file is not permited. Choose a file with the correct extension.");
                   }
                 }
                 else if (document.getElementById("uploadSeg") != null) {
@@ -44,7 +44,7 @@ $(document).ready(function () {
                     let dateTime = new RegExp(".*?\[0-9\]{4}-(0\[1-9\]|1\[0-2\])-(0\[1-9\]|\[1-2\]\[0-9\]|3\[0-1\]) (2\[0-3\]|\[01\]\[0-9\]):\[0-5\]\[0-9\]:\[0-5\]\[0-9\]");
                     if (videoExtensions.includes(fileExtension.toLowerCase())) {
                         document.getElementById("startingDateTime").style.display = "flex";
-                        console.log(nrframes);
+                        openWarningPopUp("Make sure you input a number of frames per minute as well as a correct extraction start time.");
                          $("#startingDateTime, #nrFramesInput").on("input", function(){
                             inputValue = document.getElementById("id_startingDateTime").value;
                             nrframes = inputFrames.value;
