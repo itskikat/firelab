@@ -30,7 +30,7 @@ The Milestone Presentations are all available in the *[`presentations`](https://
 
 The project's website is available on the following url - http://xcoa.av.it.pt/~pi202021g02/
 
-The final report is available (in pdf format) [here](https://github.com/itskikat/firelab#documentations).
+The final report is available (in pdf format) [here](https://github.com/itskikat/firelab/blob/main/documentation/PI_FIRELab_Report.pdf).
 
 
 
